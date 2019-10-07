@@ -1,0 +1,20 @@
+{
+  "1": {
+    "Gender": 0, 
+    "ID": 1, 
+    "Model": "LilySexy", 
+    "Name": "Lily", 
+    "Personality": 1, 
+    "Picture": "LilyBody", 
+    "Portrait": "LilyPorn"
+  }, 
+  "2": {
+    "Gender": 0, 
+    "ID": 2, 
+    "Model": "CirSexy", 
+    "Name": "Circle", 
+    "Personality": 1, 
+    "Picture": "CirBdy", 
+    "Portrait": "Circle"
+  }
+}

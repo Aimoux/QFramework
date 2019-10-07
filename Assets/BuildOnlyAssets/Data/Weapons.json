@@ -1,0 +1,40 @@
+{
+  "1": {
+    "Animator": "dg", 
+    "BaseDamage": 10, 
+    "Category": 0, 
+    "DexBonus": 1.0, 
+    "ID": 1, 
+    "Icon": "dg", 
+    "Length": 100, 
+    "Model": "dag", 
+    "Name": "Dagger", 
+    "RequireDex": 10, 
+    "RequireLevel": 10, 
+    "RequireStr": 10, 
+    "StaminaCost": 10, 
+    "SteadyDmg": 10, 
+    "SteadyEx": 10, 
+    "StrBonus": 1.0, 
+    "Weight": 1.0
+  }, 
+  "2": {
+    "Animator": "cb", 
+    "BaseDamage": 10, 
+    "Category": 0, 
+    "DexBonus": 1.0, 
+    "ID": 2, 
+    "Icon": "cb", 
+    "Length": 150, 
+    "Model": "cb", 
+    "Name": "Club", 
+    "RequireDex": 10, 
+    "RequireLevel": 10, 
+    "RequireStr": 10, 
+    "StaminaCost": 10, 
+    "SteadyDmg": 10, 
+    "SteadyEx": 10, 
+    "StrBonus": 1.0, 
+    "Weight": 2.0
+  }
+}

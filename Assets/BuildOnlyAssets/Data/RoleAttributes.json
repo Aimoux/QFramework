@@ -1,0 +1,66 @@
+{
+  "1": {
+    "1.0": {
+      "Dexterity": 10, 
+      "HP": 10, 
+      "ID": 1001, 
+      "Level": 1, 
+      "Mental": 10, 
+      "Stamina": 10, 
+      "Stimulation": 10, 
+      "Strength": 10
+    }, 
+    "2.0": {
+      "Dexterity": 15, 
+      "HP": 20, 
+      "ID": 1002, 
+      "Level": 2, 
+      "Mental": 15, 
+      "Stamina": 20, 
+      "Stimulation": 20, 
+      "Strength": 15
+    }, 
+    "3.0": {
+      "Dexterity": 20, 
+      "HP": 30, 
+      "ID": 1003, 
+      "Level": 3, 
+      "Mental": 20, 
+      "Stamina": 10, 
+      "Stimulation": 30, 
+      "Strength": 20
+    }
+  }, 
+  "2": {
+    "1.0": {
+      "Dexterity": 10, 
+      "HP": 10, 
+      "ID": 2001, 
+      "Level": 1, 
+      "Mental": 10, 
+      "Stamina": 10, 
+      "Stimulation": 10, 
+      "Strength": 10
+    }, 
+    "2.0": {
+      "Dexterity": 15, 
+      "HP": 20, 
+      "ID": 2002, 
+      "Level": 2, 
+      "Mental": 15, 
+      "Stamina": 20, 
+      "Stimulation": 20, 
+      "Strength": 15
+    }, 
+    "3.0": {
+      "Dexterity": 20, 
+      "HP": 30, 
+      "ID": 2003, 
+      "Level": 3, 
+      "Mental": 20, 
+      "Stamina": 10, 
+      "Stimulation": 30, 
+      "Strength": 20
+    }
+  }
+}

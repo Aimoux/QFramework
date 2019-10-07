@@ -15,7 +15,7 @@ public class Club : MonoBehaviour, IWeapon
     {
         //datamanager.contain()
         Id = id;
-        data = new GameData.WeaponData(id);//待修正为查字典??
+        //data = new GameData.WeaponData(id);//待修正为查字典??
         //weapon = ??
 
     }
