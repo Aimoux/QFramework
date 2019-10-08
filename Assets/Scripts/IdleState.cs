@@ -20,6 +20,26 @@ public class IdleState : AnimState
     {
         // 转换场景
         //m_Controller.SetState(new WalkState(m_Controller), "MainMenuScene");
+
+        base.OnStateUpdate();
     }
+
+    //手敲状态机
+    //缺陷：增加状态A时，除了添加A->X，还要找出所有能够转向A的X，并修改之。
+    public override bool CanTransit(AnimState next)
+    {
+        switch (next.State)
+        {
+            case Common.ANIMATIONSTATE.ATTACKHEAVY:
+                return false;
+
+
+        }
+
+        return true;
+
+    }
+
+    new public int FrameCount = 10;
 
 }

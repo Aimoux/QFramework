@@ -17,9 +17,13 @@ public class MoveToTarget : Action
     public float vertical = 1;
     public float MoveSpeedMultiplier = 1f;
 
+
+    private WalkState walkst;//避免过多的new
+
     public override void OnStart()
     {
         StartNav();
+        walkst = new WalkState(sdrole.Value );
     }
 
     public override TaskStatus OnUpdate()
@@ -75,7 +79,7 @@ public class MoveToTarget : Action
         //每帧new一个state不合理??
         if (sdrole.Value.Status != null && sdrole.Value.Status.State != Common.ANIMATIONSTATE.WALK)
         {
-            sdrole.Value.SetState(new WalkState(sdrole.Value));//状态模式动画机管理??
+            sdrole.Value.SetState(walkst);//状态模式动画机管理??
         }
         sdnav.Value.SetDestination(sdtarget.Value.position);
         sdnav.Value.speed = (sdanim.Value.deltaPosition / Time.deltaTime).magnitude;//time interval??
