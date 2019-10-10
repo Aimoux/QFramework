@@ -46,7 +46,7 @@ public class Role
 
     //drop out stack
     private Stack<AnimState> Cmds = new Stack<AnimState>();
-
+    private AnimState IdleSt;
 
     public Role()
     {
@@ -58,6 +58,7 @@ public class Role
     {
         this.anim = animator;
         this.Status = new IdleState(this);//至于构造方法中，可选初始状态
+        IdleSt = Status;
     }
 
     public Role(RoleAttributeData data)//NPC、玩家公用
@@ -116,6 +117,9 @@ public class Role
         Status = animState;
     }
 
+    public delegate void EnableSensor();//事件，指定帧触发检测。模型上的trigger始终勾选，但利用此处设置的bool值??
+    public delegate void DisableSnesor();
+
     //每个Tick被调用，入口尚未添加??
     public void StateUpdate()
     {
@@ -131,6 +135,12 @@ public class Role
 
         if (Status.FrameCount <= 0)
         {
+            //if cmds 皆不可用（或没有），自动转向idle??
+            if(Cmds.Count ==0)
+            {
+                Cmds.Push(IdleSt);
+            }
+
             while (Cmds.Count > 0)
             {
                 //有无必要lock??
@@ -146,6 +156,9 @@ public class Role
 
     }
 
+    //边走边嗑药、表情会运用到layer以及AvatarMask
+    //嗑药动作放在UpBody层，表情放在Head层
+    //为避免过度复杂，anim.SetLayerWeight(lyId, wgt), lerp。实际上可以在编辑器中直接指定Up及Head的weight为1??
 
     //手敲状态机??状态模式??
     //Idle, Move(?)到其他状态的转换不需要等待
@@ -179,5 +192,64 @@ public class Role
 
         return true;
 
+    }
+
+    public void OnSadism(Role Masoch)//打到别人
+    {
+        AddSelfExite();
+        float dmg = CalculateForce();
+        if(Masoch !=null)//过耦合??
+        {
+            Masoch.OnMasoch(dmg, this);
+        }
+        //Pop HUD "I Got You!"
+
+        //命中后武器增加特效??
+
+        //另一种方法，在攻击开始帧，把武器的伤害数量与类型传递给sensor??
+
+
+    }
+
+    public float WeaponForce//武器中调用??
+    {
+        get
+        {
+            return CalculateForce();
+        }
+    }
+
+    private float CalculateForce()//
+    {
+        //str dex fix
+        //buff fix
+        //weapon level
+
+        return 0f;
+    }
+
+    private int AddSelfExite()
+    {
+
+        return 0;
+    }
+
+    //单次攻击多种伤害属性混合??附魔、充电
+    public void OnMasoch(float dmg, Role Sadist)//被击中
+    {
+        //Pop HUD "How Dare You!"
+        float loss = CalcuteInjury(dmg);
+
+
+    }
+
+    //Dictionary<int, float> weaponforce;
+    //左剑右枪 仍然需要weapon 类的存在??
+    //挥砍->投掷 武器切换 curweapon 的缺陷，同时挥出两把武器。 先投掷出的武器比挥砍命中的时间更晚
+
+    private float CalcuteInjury(float dmg)
+    {
+
+        return 0f;
     }
 }

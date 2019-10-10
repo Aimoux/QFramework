@@ -1,6 +1,67 @@
-//using System.Collections;
-//using System.Collections.Generic;
-//using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using GameData;
+using QF;
+
+public class WeaponManager : MonoSingleton<WeaponManager>
+{
+    protected WeaponManager()
+    {
+
+
+    }
+
+    //武器制造、分配
+    public Weapon CreateWeapon(int id, int lv, Role owner)
+    {
+        Weapon wp = new Weapon(id, lv, owner);
+        Weapons.Add(wp);
+        return wp;
+    }
+
+    public void Release()
+    {
+        foreach (var wp in Weapons)
+            wp.OnDestroy();
+
+        Weapons.Clear();
+
+    }
+
+
+    public delegate void WeaponEvent();//有无必要??
+    public WeaponEvent wpt;
+
+    public float deltaTime = 1f;
+    public List<Weapon> Weapons = new List<Weapon>();
+
+    private void Update()
+    {
+        deltaTime -= Time.deltaTime;
+        if (deltaTime <= 0)
+        {
+            foreach (var wp in Weapons)// null check??
+            {
+                wp.Update(deltaTime);
+
+            }
+            deltaTime = 1f;
+        }
+
+
+
+    }
+
+
+
+
+
+
+}
+
+
+
 //
 //public class WeaponManager : MonoBehaviour {
 //

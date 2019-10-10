@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameData;
 
-public class Club : MonoBehaviour, IWeapon
+public class Club : MonoBehaviour
 {
     public bool isActive { get; private set; }//collider È«³Ì enable??
     public int Id;

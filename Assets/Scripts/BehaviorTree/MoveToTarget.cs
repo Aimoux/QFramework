@@ -79,7 +79,8 @@ public class MoveToTarget : Action
         //每帧new一个state不合理??
         if (sdrole.Value.Status != null && sdrole.Value.Status.State != Common.ANIMATIONSTATE.WALK)
         {
-            sdrole.Value.SetState(walkst);//状态模式动画机管理??
+            //sdrole.Value.SetState(walkst);//状态模式动画机管理??
+            sdrole.Value.PushState(walkst);
         }
         sdnav.Value.SetDestination(sdtarget.Value.position);
         sdnav.Value.speed = (sdanim.Value.deltaPosition / Time.deltaTime).magnitude;//time interval??

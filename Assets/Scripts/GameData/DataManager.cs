@@ -15,7 +15,7 @@ class DataManager : Singleton<DataManager>
     public Dictionary<int, WeaponData> Weapons
     {
         get
-        { 
+        {
             if (this._Weapons == null)
                 Load("Data/Weapons.json", ref _Weapons);
             return _Weapons;
@@ -27,25 +27,39 @@ class DataManager : Singleton<DataManager>
     public Dictionary<int, RoleData> Roles
     {
         get
-        { 
+        {
             if (this._Roles == null)
                 Load("Data/Roles.json", ref this._Roles);
             return _Roles;
         }
 
     }
-        
+
     private Dictionary<int, Dictionary<float, RoleAttributeData>> _RoleAttributes;
     public Dictionary<int, Dictionary<float, RoleAttributeData>> RoleAttributes
     {
-        get 
-        { 
+        get
+        {
             if (this._RoleAttributes == null)
             {
                 Load("Data/RoleAttributes.json", ref this._RoleAttributes);
             }
             return _RoleAttributes;
         }
+    }
+
+    private Dictionary<int, Dictionary<float, WeaponAttributeData>> _WeaponAttribues;
+    public Dictionary<int, Dictionary<float, WeaponAttributeData>> WeaponAttributes
+    {
+        get
+        {
+            if(this._WeaponAttribues == null)
+            {
+                Load("Data/WeaponAttributes.json", ref this._WeaponAttribues);
+            }
+            return _WeaponAttribues;
+        }
+
     }
 
 

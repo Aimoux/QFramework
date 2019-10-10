@@ -10,5 +10,6 @@ public interface IWeapon
     //int damage { get; set; }
 
     float OnHitTarget();
+    bool OnAttack { get; set; }
 
 }

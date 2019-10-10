@@ -49,6 +49,26 @@ namespace Common
 
     }
 
+    public enum RoleAttributeType//永久降智打击， 非永久则需要buff系统
+    {
+        HP =0,
+        STAMINA =1,
+        STRENGTH =2,
+        DEXTERITY =3,
+    }
+
+    public enum DamageType//用于抗性计算
+    {
+        SLASH = 0,
+        PIERCE =1,
+        BLUNT =2,
+        MAGIC =3,
+        FIRE =4,
+        ICE =5,
+        ELECTRIC =6,
+
+    }
+
     public class CommonAnim :Singleton<CommonAnim>
     {
         public const string StateID = "StateID";
