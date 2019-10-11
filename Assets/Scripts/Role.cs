@@ -8,7 +8,7 @@ using Common;
 //战斗即时数据，逻辑层注意与表现层分离??
 public class Role
 {
-    public RoleAttributeData Attributes { get; set; }
+    public RoleAttributeData Attributes { get; set; }//clone
     //NPC读表，玩家读配置?
     public int Level { get; set; }
 
@@ -194,62 +194,95 @@ public class Role
 
     }
 
-    public void OnSadism(Role Masoch)//打到别人
+    public virtual void OnSadism(Weapon wp, Role Masoch)//打到别人
     {
-        AddSelfExite();
-        float dmg = CalculateForce();
-        if(Masoch !=null)//过耦合??
-        {
-            Masoch.OnMasoch(dmg, this);
-        }
         //Pop HUD "I Got You!"
+        AddSelfExite();      
 
-        //命中后武器增加特效??
-
-        //另一种方法，在攻击开始帧，把武器的伤害数量与类型传递给sensor??
 
 
     }
 
-    public float WeaponForce//武器中调用??
+    //命中时被武器调用
+    public virtual void CalculateForce(Dictionary<DamageType, float> forceDict)
     {
-        get
+        if (forceDict[DamageType.BLUNT] > 0)//属性修正公式
         {
-            return CalculateForce();
+            float strFix = this.Strength * 1f;
+            forceDict[DamageType.BLUNT] += strFix;
+
         }
+
+        if (forceDict[DamageType.PIERCE] > 0)
+        {
+
+        }
+        if (forceDict[DamageType.SLASH] > 0)
+        {
+
+        }
+
+        if (forceDict[DamageType.ELECTRIC] > 0)
+        {
+
+        }
+
+        if (forceDict[DamageType.FIRE] > 0)
+        {
+
+        }
+
+        if (forceDict[DamageType.ICE] > 0)
+        {
+
+        }
+
+        if (forceDict[DamageType.MAGIC] > 0)
+        {
+
+        }
+
     }
 
-    private float CalculateForce()//
-    {
-        //str dex fix
-        //buff fix
-        //weapon level
-
-        return 0f;
-    }
-
-    private int AddSelfExite()
+    protected virtual int AddSelfExite()
     {
 
         return 0;
     }
 
-    //单次攻击多种伤害属性混合??附魔、充电
-    public void OnMasoch(float dmg, Role Sadist)//被击中
+    //被击中    
+    public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
-        float loss = CalcuteInjury(dmg);
+        CalculateInjury(wp.ForceDict);    
 
 
     }
 
-    //Dictionary<int, float> weaponforce;
-    //左剑右枪 仍然需要weapon 类的存在??
-    //挥砍->投掷 武器切换 curweapon 的缺陷，同时挥出两把武器。 先投掷出的武器比挥砍命中的时间更晚
-
-    private float CalcuteInjury(float dmg)
+    //受自身姿态影响：防御/背刺
+    //受武器伤害字典影响，受武器特殊效果影响
+    //受攻击方特殊技能影响
+    protected virtual void CalculateInjury(Dictionary<DamageType, float> forceDict)
     {
+        //防御值与伤害公式
+        //起始伤害
+        foreach (var kv in forceDict)
+        {
+            if (kv.Value > 0)
+            {
+                int type = (int)kv.Key;
 
-        return 0f;
+
+
+            }
+        }
+
+        float lostHP = 0f;
+
+        //考虑自身姿态的影响及后果（扣除耐力，增加exte）
+
+
+        //特殊效果的处理
+
     }
 }

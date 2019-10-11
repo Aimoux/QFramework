@@ -13,7 +13,7 @@ public class Weapon
 
     public Enchantium curEnchant;
 
-    private Dictionary<DamageType, float> _forceDict = new Dictionary<DamageType, float>
+    private Dictionary<DamageType, float> BaseForceDict = new Dictionary<DamageType, float>
     {
         { DamageType.BLUNT, 0f},
         { DamageType.ELECTRIC, 0f},
@@ -25,14 +25,17 @@ public class Weapon
 
     };
 
-
-    public Dictionary<DamageType, float> ForceDict//伤害类型、伤害数值
+    private Dictionary<DamageType, float> _ForceDict = new Dictionary<DamageType, float>();
+    public Dictionary<DamageType, float> ForceDict
     {
         get
         {
-            CalculateForce();
-            return this.ForceDict;
+            _ForceDict.Clear();
+            foreach (var kv in BaseForceDict)
+                _ForceDict.Add(kv.Key, kv.Value);
 
+            Owner.CalculateForce(_ForceDict);//是否导致循环??
+            return _ForceDict;
         }
     }
 
@@ -46,16 +49,21 @@ public class Weapon
 
         Attrs = DataManager.Instance.WeaponAttributes[id][level];
 
-        _forceDict[DamageType.BLUNT] = Attrs.DamageBlunt;
-        _forceDict[DamageType.ELECTRIC] = Attrs.DamageElectric;
-        _forceDict[DamageType.FIRE] = Attrs.DamageFire;
-        _forceDict[DamageType.ICE] = Attrs.DamageIce;
-        _forceDict[DamageType.MAGIC] = Attrs.DamageIce;
-        _forceDict[DamageType.PIERCE] = Attrs.DamagePierce;
-        _forceDict[DamageType.SLASH] = Attrs.DamageSlash;
+        BaseForceDict[DamageType.BLUNT] = Attrs.DamageBlunt;
+        BaseForceDict[DamageType.ELECTRIC] = Attrs.DamageElectric;
+        BaseForceDict[DamageType.FIRE] = Attrs.DamageFire;
+        BaseForceDict[DamageType.ICE] = Attrs.DamageIce;
+        BaseForceDict[DamageType.MAGIC] = Attrs.DamageMagic;
+        BaseForceDict[DamageType.PIERCE] = Attrs.DamagePierce;
+        BaseForceDict[DamageType.SLASH] = Attrs.DamageSlash;
 
         this.Owner = owner;
 
+    }
+
+    ~Weapon()
+    {
+        this.OnDestroy();
     }
 
     public virtual void Enchant(Enchantium encho)//唯一附魔，后者会取代前者
@@ -63,7 +71,7 @@ public class Weapon
         Dechant();
         curEnchant = encho;
         EnchantEffect(encho);//change materil or shader??
-        _forceDict[encho.type] += encho.exdmg;
+        BaseForceDict[encho.type] += encho.exdmg;
     }
 
     public virtual void EnchantEffect(Enchantium encho)
@@ -79,9 +87,9 @@ public class Weapon
             return;
 
         ResoreEffect();
-        float dmg = _forceDict[curEnchant.type];
+        float dmg = BaseForceDict[curEnchant.type];
         dmg -= curEnchant.exdmg;
-        _forceDict[curEnchant.type] = dmg > 0 ? dmg : 0f;
+        BaseForceDict[curEnchant.type] = dmg > 0 ? dmg : 0f;
 
         curEnchant = null;
     }
@@ -92,14 +100,6 @@ public class Weapon
 
     }
 
-
-    public virtual void CalculateForce()
-    {
-
-
-
-
-    }
 
     //武器到手之后根据力量加成计算真实伤害??
     //buff系统，暂时增加力量、直接增加伤害、改变伤害类型
