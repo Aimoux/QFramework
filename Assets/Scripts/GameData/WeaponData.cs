@@ -16,12 +16,14 @@ namespace GameData
         public int RequireLevel { get; set; }
         public int RequireStr { get; set; }
         public int RequireDex { get; set; }
-        public float BaseDamage { get; set; }//轻击伤害、重击伤害的数值产生与传递??
-        public float StrBonus { get; set; }
-        public float DexBonus { get; set; }
         public float Weight { get; set; }
         public float Length { get; set; }
-        public int DamageType { get; set; }//挥砍、穿刺、魔法、电流、流血
+        public int AddStrLv { get; set; }//力量修正等级 SABCDE
+        public int AddDexLv { get; set; }//敏捷修正等级
+        public int AddMntLv { get; set; }//意志修正等级
+        public int SteadyEx { get; set; }//出手韧性??
+        public int SteadyDmg { get; set; }//韧性削减
+        public int StaminaCost { get; set; }//基础体力消耗，重击倍数
 
     }
 

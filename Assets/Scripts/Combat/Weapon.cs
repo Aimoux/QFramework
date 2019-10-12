@@ -34,7 +34,8 @@ public class Weapon
             foreach (var kv in BaseForceDict)
                 _ForceDict.Add(kv.Key, kv.Value);
 
-            Owner.CalculateForce(_ForceDict);//是否导致循环??
+            if (Owner != null)
+                Owner.CalculateForce(this.Data, _ForceDict);//是否导致循环??
             return _ForceDict;
         }
     }

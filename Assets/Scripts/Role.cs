@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameData;
 using Common;
+using System.Linq;
 
 //角色基类，继承Q的Entity??
 //战斗即时数据，逻辑层注意与表现层分离??
 public class Role
 {
-    public RoleAttributeData Attributes { get; set; }//clone
-    //NPC读表，玩家读配置?
+    public RoleAttributeData Attributes { get; set; }//初始化后的开场数值，非即时数值
+    public RoleAttributeData BaseAttributes { get; set; }//NPC读表，玩家读配置?
+
     public int Level { get; set; }
 
     public int HP { get; set; }
@@ -50,7 +52,7 @@ public class Role
 
     public Role()
     {
-        
+
 
     }
 
@@ -136,7 +138,7 @@ public class Role
         if (Status.FrameCount <= 0)
         {
             //if cmds 皆不可用（或没有），自动转向idle??
-            if(Cmds.Count ==0)
+            if (Cmds.Count == 0)
             {
                 Cmds.Push(IdleSt);
             }
@@ -194,52 +196,91 @@ public class Role
 
     }
 
+    //初始化属性
+    //获取武器??
+    //初始化状态
+    public virtual void Init()
+    {
+
+
+        InitAttributes();
+    }
+
+    //初始化属性
+    protected void InitAttributes()
+    {
+        //base
+        if (BaseAttributes == null)
+        {
+            this.InitBaseAttributes();
+            this.InitStarAddition();
+            this.InitEquipAddition();
+            //符文
+            //this.InitRunesAttribAddition();
+            this.BaseAttributes = this.Attributes.Clone();
+        }
+        else
+        {
+            this.Attributes = this.BaseAttributes.Clone();
+        }
+        InitEquipAttributes();
+
+
+    }
+
+    //装备属性
+    protected void InitEquipAttributes()
+    {
+
+
+
+    }
+
+
     public virtual void OnSadism(Weapon wp, Role Masoch)//打到别人
     {
         //Pop HUD "I Got You!"
-        AddSelfExite();      
+        AddSelfExite();
 
 
 
     }
 
     //命中时被武器调用
-    public virtual void CalculateForce(Dictionary<DamageType, float> forceDict)
+    public virtual void CalculateForce(WeaponData data, Dictionary<DamageType, float> forceDict)
     {
-        if (forceDict[DamageType.BLUNT] > 0)//属性修正公式
+        int strDmg = DataManager.Instance.WeaponAdds[data.AddStrLv][this.Strength].StrengthAdd;//源于力量的附加伤害值
+        int dexDmg = DataManager.Instance.WeaponAdds[data.AddDexLv][this.Dexterity].DexterityAdd;//源于敏捷
+        int mtlDmg = DataManager.Instance.WeaponAdds[data.AddMntLv][this.Mental].MentalAdd;//源于意志
+
+        if (forceDict[DamageType.BLUNT] > 0)//属性修正公式，钝击仅受力量、敏捷加成
         {
-            float strFix = this.Strength * 1f;
-            forceDict[DamageType.BLUNT] += strFix;
-
+            forceDict[DamageType.BLUNT] += (strDmg + dexDmg);
         }
-
-        if (forceDict[DamageType.PIERCE] > 0)
+        if (forceDict[DamageType.PIERCE] > 0)//刺击
         {
-
+            forceDict[DamageType.PIERCE] += (strDmg + dexDmg);
         }
-        if (forceDict[DamageType.SLASH] > 0)
+        if (forceDict[DamageType.SLASH] > 0)//斩击
         {
-
+            forceDict[DamageType.SLASH] += (strDmg + dexDmg);
         }
-
-        if (forceDict[DamageType.ELECTRIC] > 0)
+        if (forceDict[DamageType.ELECTRIC] > 0)//电击仅受意志加成
         {
-
+            forceDict[DamageType.ELECTRIC] += mtlDmg;
         }
-
         if (forceDict[DamageType.FIRE] > 0)
         {
-
+            forceDict[DamageType.FIRE] += mtlDmg;
         }
-
         if (forceDict[DamageType.ICE] > 0)
         {
-
+            forceDict[DamageType.ICE] += mtlDmg;
         }
 
         if (forceDict[DamageType.MAGIC] > 0)
         {
-
+            forceDict[DamageType.MAGIC] += mtlDmg;
         }
 
     }
@@ -254,9 +295,14 @@ public class Role
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
-        CalculateInjury(wp.ForceDict);    
+        CalculateInjury(wp.ForceDict);
 
+        //耐力扣除
 
+        //韧性计算
+
+        //更新仇恨值
+        HatredDict[wp.Owner] += 10;
     }
 
     //受自身姿态影响：防御/背刺
@@ -284,5 +330,28 @@ public class Role
 
         //特殊效果的处理
 
+
+
     }
+
+    private Dictionary<Role, int> HatredDict = new Dictionary<Role, int>();
+
+    //被行为树调用
+    //开场、受攻击、上个目标丢失
+    public virtual Role FindTarget()
+    {
+        Role target = null;
+        int hate = 0;
+        foreach (var kv in HatredDict)
+        {
+            if (kv.Value > hate)
+            {
+                hate = kv.Value;
+                target = kv.Key;
+            }
+        }
+        return target;
+    }
+
+
 }

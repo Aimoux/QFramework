@@ -62,6 +62,19 @@ class DataManager : Singleton<DataManager>
 
     }
 
+    private Dictionary<int, Dictionary<float, WeaponAddData>> _WeaponAdds;
+    public Dictionary<int, Dictionary<float, WeaponAddData>> WeaponAdds
+    {
+        get
+        {
+            if(this._WeaponAdds == null)
+            {
+                Load("Data/WeaponAdds.json", ref this._WeaponAdds);
+            }
+            return _WeaponAdds;
+        }
+
+    }       
 
     protected DataManager()
     {

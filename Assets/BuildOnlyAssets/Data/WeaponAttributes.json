@@ -1,0 +1,66 @@
+{
+  "1": {
+    "1.0": {
+      "DamageBlunt": 0, 
+      "DamageElectric": 0, 
+      "DamageFire": 0, 
+      "DamageIce": 0, 
+      "DamageMagic": 0, 
+      "DamagePierce": 0, 
+      "DamageSlash": 10, 
+      "Level": 1
+    }, 
+    "2.0": {
+      "DamageBlunt": 0, 
+      "DamageElectric": 0, 
+      "DamageFire": 0, 
+      "DamageIce": 0, 
+      "DamageMagic": 0, 
+      "DamagePierce": 0, 
+      "DamageSlash": 20, 
+      "Level": 2
+    }, 
+    "3.0": {
+      "DamageBlunt": 0, 
+      "DamageElectric": 0, 
+      "DamageFire": 0, 
+      "DamageIce": 0, 
+      "DamageMagic": 0, 
+      "DamagePierce": 0, 
+      "DamageSlash": 30, 
+      "Level": 3
+    }
+  }, 
+  "2": {
+    "1.0": {
+      "DamageBlunt": 0, 
+      "DamageElectric": 0, 
+      "DamageFire": 10, 
+      "DamageIce": 0, 
+      "DamageMagic": 0, 
+      "DamagePierce": 10, 
+      "DamageSlash": 0, 
+      "Level": 1
+    }, 
+    "2.0": {
+      "DamageBlunt": 0, 
+      "DamageElectric": 0, 
+      "DamageFire": 15, 
+      "DamageIce": 0, 
+      "DamageMagic": 0, 
+      "DamagePierce": 15, 
+      "DamageSlash": 0, 
+      "Level": 2
+    }, 
+    "3.0": {
+      "DamageBlunt": 0, 
+      "DamageElectric": 0, 
+      "DamageFire": 20, 
+      "DamageIce": 0, 
+      "DamageMagic": 0, 
+      "DamagePierce": 20, 
+      "DamageSlash": 0, 
+      "Level": 3
+    }
+  }
+}
