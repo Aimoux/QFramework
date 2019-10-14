@@ -9,16 +9,57 @@ using System.Linq;
 //战斗即时数据，逻辑层注意与表现层分离??
 public class Role
 {
-    public RoleAttributeData Attributes { get; set; }//初始化后的开场数值，非即时数值
-    public RoleAttributeData BaseAttributes { get; set; }//NPC读表，玩家读配置?
+    public int ID { get; set; }   
+    private RoleData _Data;
+    public RoleData Data
+    {
+        get
+        {
+            if (_Data == null)
+                _Data = DataManager.Instance.Roles[ID].Clone();
+            return _Data;
+        }
+    }
 
-    public int Level { get; set; }
+    private int _Level { get; set; }
+    public int Level
+    {
+        get { return _Level; }
+        set
+        {
+            if (value < Data.MinLevel)
+                _Level = Data.MinLevel;
+            if (value > Data.MaxLevel)
+                _Level = Data.MaxLevel;
+        }
+    }
+
+    //NPC读表，玩家读配置?
+    private RoleAttributeData _BaseAttributes;
+    public RoleAttributeData BaseAttributes
+    {
+        get
+        {
+            if (_BaseAttributes == null)
+                _BaseAttributes = DataManager.Instance.RoleAttributes[ID][Level].Clone();
+
+            return _BaseAttributes;
+        }
+    }
+
+    //初始化后的开场数值，非即时数值:基础+装备
+    public RoleAttributeData Attributes {
+        get;
+        set;
+
+
+    }
 
     public int HP { get; set; }
     //实时HP
     public int Stamina { get; set; }
     //实时耐力
-    public int Stimulation { get; set; }
+    public int MP { get; set; }
     //实时兴奋
     public int Strength { get; set; }
     //降智打击及buff
@@ -50,12 +91,20 @@ public class Role
     private Stack<AnimState> Cmds = new Stack<AnimState>();
     private AnimState IdleSt;
 
+    public Hero hero;
+
+    //是否有必要??
+    //RoleController
+    //RoleJoint
+
+
     public Role()
     {
 
 
     }
 
+    //涉及到Unity实体的逻辑全部移到RoleController??
     public Role(Animator animator)
     {
         this.anim = animator;
@@ -63,30 +112,12 @@ public class Role
         IdleSt = Status;
     }
 
-    public Role(RoleAttributeData data)//NPC、玩家公用
+    public Role(int id, int lv)//NPC only, extra config: clothes ,accorsory, weapon
     {
-        this.Attributes = data;
-        //        this.Level = this.Attributes.Level;
-        //        this.HP = this.Attributes.HP;
-        //        this.Stamina = this.Attributes.Stamina;
-        //        this.Stimulation = this.Attributes.Stimulation;
-        //        this.Strength = this.Attributes.Strength;
-        //        this.Dexterity = this.Attributes.Dexterity;
-        //        this.Mental = this.Attributes.Mental;
+        ID = id;
+        Level = lv;
 
     }
-
-    // public Role(bool om)//??
-    // {
-    // Attributes = new RoleAttributeData();
-    // Attributes.Level = Player.Instance.Level;
-    //Attributes.HP = Player.Instance.CfgHP;
-    //Attributes.Stamina = Player.Instance.CfgStamina;
-    // Attributes.Stimulation = Player.Instance.CfgStimulation;
-    //Attributes.Strength = Player.Instance.CfgStrength;
-    // Attributes.Dexterity = Player.Instance.CfgDexterity;
-    // Attributes.Mental = Player.Instance.CfgMental;
-    // }
 
     //同样使用状态模式来更换武器、服装??
     //WeaponState
@@ -199,6 +230,10 @@ public class Role
     //初始化属性
     //获取武器??
     //初始化状态
+    //LoadScene->EnterLevel->Logic.InitHeroes->Role.Init
+
+
+
     public virtual void Init()
     {
 
@@ -210,21 +245,8 @@ public class Role
     protected void InitAttributes()
     {
         //base
-        if (BaseAttributes == null)
-        {
-            this.InitBaseAttributes();
-            this.InitStarAddition();
-            this.InitEquipAddition();
-            //符文
-            //this.InitRunesAttribAddition();
-            this.BaseAttributes = this.Attributes.Clone();
-        }
-        else
-        {
-            this.Attributes = this.BaseAttributes.Clone();
-        }
+        Attributes = BaseAttributes.Clone();
         InitEquipAttributes();
-
 
     }
 
@@ -240,10 +262,10 @@ public class Role
     public virtual void OnSadism(Weapon wp, Role Masoch)//打到别人
     {
         //Pop HUD "I Got You!"
-        AddSelfExite();
 
-
-
+        //命中回蓝,不设上限,可叠加??
+        float mpGain = wp.Data.MPAtkRecovery + Attributes.MPAtkRecovery;
+        Remedy(RoleAttribute.MP, mpGain, this);
     }
 
     //命中时被武器调用
@@ -285,17 +307,15 @@ public class Role
 
     }
 
-    protected virtual int AddSelfExite()
-    {
-
-        return 0;
-    }
-
     //被击中    
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
         CalculateInjury(wp.ForceDict);
+
+        //回魔计算
+        float mpGain = Attributes.MPDmgRecovery;
+        Remedy(RoleAttribute.MP, mpGain, this);
 
         //耐力扣除
 
@@ -308,7 +328,8 @@ public class Role
     //受自身姿态影响：防御/背刺
     //受武器伤害字典影响，受武器特殊效果影响
     //受攻击方特殊技能影响
-    protected virtual void CalculateInjury(Dictionary<DamageType, float> forceDict)
+    //仅作用于HP??
+    protected virtual float CalculateInjury(Dictionary<DamageType, float> forceDict)
     {
         //防御值与伤害公式
         //起始伤害
@@ -331,7 +352,25 @@ public class Role
         //特殊效果的处理
 
 
+        return 0f;
+    }
 
+
+    protected virtual float Remedy(RoleAttribute type, float force, Role from)
+    {
+
+        if(type == RoleAttribute.HP )
+        {
+
+
+        }
+        else if(type == RoleAttribute.MP )
+        {
+
+        }
+
+
+        return 0f;
     }
 
     private Dictionary<Role, int> HatredDict = new Dictionary<Role, int>();

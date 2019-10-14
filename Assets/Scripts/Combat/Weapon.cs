@@ -105,6 +105,7 @@ public class Weapon
     //武器到手之后根据力量加成计算真实伤害??
     //buff系统，暂时增加力量、直接增加伤害、改变伤害类型
     //weapon 类似hc的 talent
+
     public virtual void OnHit()//命中特效
     {
 

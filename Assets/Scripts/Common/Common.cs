@@ -7,6 +7,16 @@ using UnityEngine.AI;
 
 namespace Common
 {
+    public enum BATTLEMODE
+    {
+        AREAN =0,//战斗
+        STORY =1,//剧情模式
+        HENTAI =2,
+
+
+    }
+
+
     public enum ANIMATIONSTATE
     {
         //状态是否必须与动画机clip一一对应??
@@ -68,6 +78,24 @@ namespace Common
         ELECTRIC =6,
 
     }
+
+    //确有必要??
+    public class Hero
+    {
+        public int ID;
+        public int Level;
+        public List<int> gears;
+
+
+    }
+
+    //装备
+    public class Item
+    {
+        public int ID;
+        public int Amount;
+    }
+
 
     public class CommonAnim :Singleton<CommonAnim>
     {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace GameData
 {
@@ -129,7 +131,7 @@ namespace GameData
             }
         }
 
-        public T this[string propertyName]
+        public T this[string propertyName]//索引器
         {
             get
             {
@@ -238,4 +240,102 @@ namespace GameData
             }
         }
     }
+
+    [Serializable]
+    public class Cloneable
+    {
+        /// <summary>
+        /// 属性赋值器
+        /// </summary>
+        /// <typeparam name="TD">目的类型</typeparam>
+        /// <typeparam name="TS">源类型</typeparam>
+        /// <param name="d">目的实例</param>
+        /// <param name="s">源实例</param>
+        /// <returns>目的类型实例</returns>
+        TD PropertySetter<TD, TS>(TD d, TS s)
+        {
+            var tsType = s.GetType();
+            var tdType = typeof(TD);
+            var tsProperties = tsType.GetProperties();
+            var tdProperties = tdType.GetProperties();
+            foreach (var tsp in tsProperties)
+            {
+                foreach (var tdp in tdProperties)
+                {
+                    if (!tdp.Name.Equals(tsp.Name) || tdp.PropertyType != tsp.PropertyType)
+                        continue;
+                    tdp.SetValue(d, tsp.GetValue(s, null), null);
+                    break;
+                }
+            }
+            return d;
+        }
+        /// <summary>
+        /// 属性赋值器
+        /// </summary>
+        /// <typeparam name="TD">目的类型</typeparam>
+        /// <typeparam name="TS">源类型</typeparam>
+        /// <param name="d">目的实例</param>
+        /// <param name="s">源实例</param>
+        /// <returns>目的类型实例</returns>
+        TD UnrealPropertySetter<TD, TS>(TD d, TS s)
+        {
+            var tsType = s.GetType();
+            var tdType = typeof(TD);
+            var tsProperties = tsType.GetProperties();
+            var tdProperties = tdType.GetProperties();
+            foreach (var tsp in tsProperties)
+            {
+                foreach (var tdp in tdProperties)
+                {
+                    if (!tdp.Name.Equals(tsp.Name) || tdp.PropertyType != tsp.PropertyType || (tdp.Name == "Item"))
+                        continue;
+                    if (!tdp.CanWrite)
+                        continue;
+                    tdp.SetValue(d, tsp.GetValue(s, null), null);
+                    break;
+                }
+            }
+            return d;
+        }
+
+        /// <summary>
+        /// 克隆
+        /// </summary>
+        /// <typeparam name="T">类型</typeparam>
+        /// <param name="t">实例</param>
+        /// <returns>克隆后的实例</returns>
+        T Clone<T>(T t) where T : new()
+        {
+            var tType = typeof(T);
+            var clonedT = new T();//Activator.CreateInstance<T>();
+            foreach (var tProperty in tType.GetProperties())
+            {
+                tProperty.SetValue(clonedT, tProperty.GetValue(t, null), null);
+            }
+            return clonedT;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public T DeepClone<T>(T t)
+        {
+            var stream = new MemoryStream();
+            var formatter = new BinaryFormatter();
+            formatter.Serialize(stream, t);
+            stream.Position = 0;
+            return (T)formatter.Deserialize(stream);
+        }
+
+
+    }
+
+
+
+
 }
