@@ -12,10 +12,7 @@ namespace Common
         AREAN =0,//战斗
         STORY =1,//剧情模式
         HENTAI =2,
-
-
     }
-
 
     public enum ANIMATIONSTATE
     {

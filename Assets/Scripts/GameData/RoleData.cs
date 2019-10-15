@@ -16,7 +16,7 @@ namespace GameData
         public int Personality { get; set; }
         public int MaxLevel { get; set; }
         public int MinLevel { get; set; }
-
+        public int Radius { get; set; }
 
         public RoleData Clone()
         {

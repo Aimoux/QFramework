@@ -16,7 +16,16 @@ namespace GameData
         public int Mental { get; set; }//特技需求，特技抵抗判定，元素伤害修正??
         public int MPAtkRecovery { get; set; }//攻击别人时回复MP(aoe攻击应只算一次,并设定上限?)
         public int MPDmgRecovery { get; set; }//被攻击时回复MP
+        public int Armor { get; set; }
+        public int FireResistance { get; set; }
+        public int IceResistance { get; set; }
+        public int ElectricResistance { get; set; }
+        public int MagicResistance { get; set; }
 
+        //MAGIC = 3,
+        //FIRE = 4,
+        //ICE = 5,
+        //ELECTRIC = 6,
 
         //public static string GetExtraNameField(string name)
         //{

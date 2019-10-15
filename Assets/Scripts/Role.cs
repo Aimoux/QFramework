@@ -4,12 +4,13 @@ using UnityEngine;
 using GameData;
 using Common;
 using System.Linq;
+using UnityEngine.AI;//??待取消
 
 //角色基类，继承Q的Entity??
 //战斗即时数据，逻辑层注意与表现层分离??
 public class Role
 {
-    public int ID { get; set; }   
+    public int ID { get; set; }
     private RoleData _Data;
     public RoleData Data
     {
@@ -48,7 +49,8 @@ public class Role
     }
 
     //初始化后的开场数值，非即时数值:基础+装备
-    public RoleAttributeData Attributes {
+    public RoleAttributeData Attributes
+    {
         get;
         set;
 
@@ -70,6 +72,7 @@ public class Role
     public int Steady { get; set; }
     //韧性（打断）
     public Vector3 Position { get; set; }
+    public Vector3 Forward { get; set; }
 
     public WeaponData weapon { get; set; }
     //策略模式，更换武器，使用接口??
@@ -171,7 +174,7 @@ public class Role
             //if cmds 皆不可用（或没有），自动转向idle??
             if (Cmds.Count == 0)
             {
-                Cmds.Push(IdleSt);
+                Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
             }
 
             while (Cmds.Count > 0)
@@ -311,7 +314,7 @@ public class Role
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
-        CalculateInjury(wp.ForceDict);
+        CalculateLostHP(wp.ForceDict);
 
         //回魔计算
         float mpGain = Attributes.MPDmgRecovery;
@@ -329,26 +332,35 @@ public class Role
     //受武器伤害字典影响，受武器特殊效果影响
     //受攻击方特殊技能影响
     //仅作用于HP??
-    protected virtual float CalculateInjury(Dictionary<DamageType, float> forceDict)
+    protected virtual float CalculateLostHP(Dictionary<DamageType, float> forceDict)
     {
-        //防御值与伤害公式
-        //起始伤害
-        foreach (var kv in forceDict)
+        //物理攻击考虑护甲
+        float physicalForce = forceDict[DamageType.BLUNT] + forceDict[DamageType.PIERCE] + forceDict[DamageType.SLASH];
+        float amr = Attributes.Armor;
+        float lostHP = 0f;
+        if (amr >= 0f)
         {
-            if (kv.Value > 0)
-            {
-                int type = (int)kv.Key;
-
-
-
-            }
+            lostHP = physicalForce / (1f + 0.06f * physicalForce);
+        }
+        else
+        {
+            lostHP = physicalForce * (2f - 1f / (1f - 0.06f * amr));
         }
 
-        float lostHP = 0f;
+        //非物理攻击考虑抗性,天生基础抗性25%(配表)
+        //考虑用this索引器,方便计算,规定好顺序,不轻易变更
+        float[] emtForces = new float[] { forceDict[DamageType.FIRE], forceDict[DamageType.ICE],
+            forceDict[DamageType.ELECTRIC], forceDict[DamageType.MAGIC]};
+        float[] emtResists = new float[] {Attributes.FireResistance, Attributes.IceResistance,
+        Attributes.ElectricResistance, Attributes.MagicResistance };
+
+        for (int i = 0; i < emtForces.Length; i++)
+        {
+            lostHP += emtForces[i] * 0.75f * (1f - emtResists[i]);
+        }
+
 
         //考虑自身姿态的影响及后果（扣除耐力，增加exte）
-
-
         //特殊效果的处理
 
 
@@ -359,12 +371,12 @@ public class Role
     protected virtual float Remedy(RoleAttribute type, float force, Role from)
     {
 
-        if(type == RoleAttribute.HP )
+        if (type == RoleAttribute.HP)
         {
 
 
         }
-        else if(type == RoleAttribute.MP )
+        else if (type == RoleAttribute.MP)
         {
 
         }
@@ -392,5 +404,151 @@ public class Role
         return target;
     }
 
+    //if(idle or move) ->FindTarget ->Move(Rotate) ->Atk {atk1, atk2, atk3}{gen random avail comb sets and push}
+    //if(out range) ->Find->Move()->...cycle
+    //can not rotate in atk motion(other than attached in anim clip)
+
+    //behaviour pattern gen and select( supported by sufficient anim combo)
+
+    //virtual behavior
+    //override behav for each npc??
+
+    //Atk Combo ids
+    public ANIMATIONSTATE[] GenTactic()
+    {
+        //每把武器的combo不同,读取自weapon配置??
+        ANIMATIONSTATE[] LightCombo = new ANIMATIONSTATE[]
+        { ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKLITE };
+
+        ANIMATIONSTATE[] HybridCombo = new ANIMATIONSTATE[]
+        {
+            ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY
+        };
+
+
+        return LightCombo;
+    }
+
+    //update rotation??
+    public RoleController Controller;
+    public virtual bool MoveToTarget(Role target)
+    {
+        float dist = SquarePlanarDist(target);
+        float arriveDist = (Data.Radius + target.Data.Radius) * (Data.Radius + target.Data.Radius);
+        if (dist > arriveDist)
+        {
+            Controller.StartNav(target.Position);
+            ResultType ret = Controller.MoveToTargetByNav(target.Position);
+            return ret == ResultType.Success;
+        }
+        else
+        {
+            return true;
+        }
+
+    }
+
+    private float SquarePlanarDist(Role target)
+    {
+        if (target == null)
+        {
+            Debug.Log("null target for planar dist");
+            return 0f;
+        }
+
+        float dist = (target.Position.x - Position.x) * (target.Position.x - Position.x) +
+            (target.Position.z - Position.z) * (target.Position.z - Position.z);
+
+        return dist;
+    }
+
+    public virtual Role GetMostHated()
+    {
+
+        return new Role();
+    }
+
+
+
+}
+
+//deal with unity objetcs
+//合理的调用顺序层级??:BT->Role->Controller
+public class RoleController : MonoBehaviour
+{
+    public Role role;
+    public Animator anim;
+    public NavMeshAgent nav;
+    public bool IsGrounded { get { return IsOnGround(); } }//落地检测的应用场合??
+    //public Vector3 pos;//??不直接取transform,而是通过逻辑计算:位移+速度时间积分??
+
+    private bool navigating = false;
+    private NavMeshPath path = new NavMeshPath();
+    private WalkState walk;
+    //start move
+    public void StartNav(Vector3 pos)
+    {
+        if (!navigating)
+        {
+            nav.enabled = true;
+            nav.isStopped = false;
+            nav.updatePosition = true;
+            nav.updateRotation = false;
+            navigating = true;
+        }
+
+        if (walk == null)
+            walk = new WalkState(role);
+
+        if (role.Status != walk)
+            role.PushState(walk);//受控不能移动的逻辑位于role的状态转换中??
+
+    }
+
+    public void StopNav()
+    {
+        nav.isStopped = true;
+        navigating = false;
+    }
+
+    //Player也可以利用此处??多人碰撞以及跨越障碍??
+    public ResultType MoveToTargetByNav(Vector3 pos)
+    {
+        if (!NavMesh.CalculatePath(transform.position, pos, NavMesh.AllAreas, path))
+            return ResultType.Failure;
+
+        if (path.status != NavMeshPathStatus.PathComplete)
+            return ResultType.Failure;
+
+        nav.SetDestination(pos);
+        nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//浮空判断??
+        nav.nextPosition = transform.position;//Animator Apply root motion
+        Vector3 targetFWD = nav.desiredVelocity;
+        targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
+        transform.forward = Vector3.Slerp(transform.forward, targetFWD, 0.8f);
+        //nav.Warp(transform.position);//此语句导致desiredVelocity=0？？   
+
+        role.Position = transform.position;//非移动状态下如何传递值,利用动画??
+        role.Forward = transform.forward;//受控/滞空 直接传递模型的朝向位置??
+        //transform.forward = anim.deltaRotation * transform.forward;??
+
+        return ResultType.Success;
+
+        //官方案例方案
+        //nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;
+        ////使此句有意义，需改变ApplyRootMotion？？
+        //transform.position = nav.nextPosition;
+        ////取消RigidBody件？？
+        //transform.forward = anim.deltaRotation * transform.forward;
+        ////瞬移nav，解决卡地形问题
+        //nav.Warp(transform.position);
+
+    }
+
+    public bool IsOnGround()
+    {
+
+        return true;
+    }
 
 }
