@@ -5,19 +5,18 @@ using UnityEngine.Events;
 using QF;
 using Common;
 using GameData;
+using BehaviorDesigner.Runtime;
+using BehaviorDesigner.Runtime.Tasks;
+
 
 public class Logic : MonoSingleton<Logic>
 {
     public IBattleScene Scene;
     public BATTLEMODE BattleMode;
 
-    //Tick
-    public void OnTimer(float passTime)
-    {
-        //TickTree??
-
-
-    }
+    public Dictionary<int, List<Role>> Surviors = new Dictionary<int, List<Role>>();//阵营,角色
+    public Dictionary<int, List<Role>> Deads = new Dictionary<int, List<Role>>();
+    public Dictionary<int, List<Role>> AllRoles = new Dictionary<int, List<Role>>();
 
     public void LoadLevel(BATTLEMODE mode, string scene, UnityAction onLoad)
     {
@@ -26,13 +25,85 @@ public class Logic : MonoSingleton<Logic>
 
     }
 
-    //role创建独立于role model(RoleController)??
-    public void InitAllies(List<Role> allies)
+    //Tick
+    public void Tick(float passTime)
     {
+
+        //英雄的行为树Tick
+        int roleNum = this.Roles.Count;
+        for (int i = 0; i < roleNum; i++)
+        {
+            BTRoleData element = this.Roles[i];
+            if (!element.IsPause)
+            {
+                //if (element.anim.GetInteger("AtkST") != -1)
+                //Debug.Log("Tick Start: " + element.obj.name);
+                BehaviorManager.instance.Tick(element.tree);
+            }
+            else
+            {
+                element.tree.PauseWhenDisabled = true;
+                element.tree.DisableBehavior(true);
+            }
+            roleNum = this.Roles.Count;//element的单个Tick内，可改变Roles[]
+        }
+
+        //特效类
+        int castCount = this.CastEffects.Count;
+        for (int i = 0; i < castCount; i++)
+        {
+            Behavior element = this.CastEffects[i];
+            //if (element == null) Debug.LogError("null cast effect: " + element.name);
+            BehaviorManager.instance.Tick(element);
+            castCount = this.CastEffects.Count;//element的单个Tick内，可改变CastEffects[]
+        }
+
+        // 召唤物
+        foreach (BTRoleData element in this.Summons)
+        {
+            if (!element.IsPause) BehaviorManager.instance.Tick(element.tree);
+        }
+
 
     }
 
-    public void InitEnemies(List<Role> enemies)
+    public void InitRoles(Dictionary<int, List<Hero>> roles)
+    {
+        foreach(int side in roles.Keys)
+        {
+            foreach(Hero hero in roles[side])
+            {
+                Role role = Role.Create(hero);
+                role.Faction = side;
+                role.FactOrg = side;
+
+
+                BehaviorTree tree = Enemies[i].GetComponent<BehaviorTree>();
+                SharedBTRoleData role = (SharedBTRoleData)tree.GetVariable("BTCaster");
+                if (role.Value == null) role.Value = new BTRoleData();
+                role.Value.Index = i;
+                role.Value.Side = RoleSide.Enemy;
+                role.Value.AntiSide = -(int)role.Value.Side;
+                AddRole(role.Value);
+
+            }
+
+
+
+
+        }
+
+
+    }
+
+    //role创建独立于role model(RoleController)??
+    public void InitAllies(List<Hero> allies)
+    {
+
+
+    }
+
+    public void InitEnemies(List<Hero> enemies)
     {
 
 
@@ -46,11 +117,101 @@ public class Logic : MonoSingleton<Logic>
 
     }
 
+    public List<Behavior> CastEffects = new List<Behavior>();
 
+    void Start()
+    {
+        AliveCount.Add(RoleSide.Player, 0);
+        AliveCount.Add(RoleSide.Enemy, 0);
+
+        DeadCount.Add(RoleSide.Player, 0);
+        DeadCount.Add(RoleSide.Enemy, 0);
+
+        //利用Tag，名称来初始化role 列表？？
+        GameObject[] Enemies = GameObject.FindGameObjectsWithTag("Bot");
+        if (Enemies == null) Debug.LogError("find no enemy!!!");
+        for (int i = 0; i < Enemies.Length; i++)
+        {
+            BehaviorTree tree = Enemies[i].GetComponent<BehaviorTree>();
+            SharedBTRoleData role = (SharedBTRoleData)tree.GetVariable("BTCaster");
+            if (role.Value == null) role.Value = new BTRoleData();
+            role.Value.Index = i;
+            role.Value.Side = RoleSide.Enemy;
+            role.Value.AntiSide = -(int)role.Value.Side;
+            AddRole(role.Value);
+        }
+
+        GameObject[] Players = GameObject.FindGameObjectsWithTag("Player");
+        if (Players == null) Debug.LogError("find no player!!!");
+        for (int i = 0; i < Players.Length; i++)
+        {
+            BehaviorTree tree = Players[i].GetComponent<BehaviorTree>();
+            SharedBTRoleData role = (SharedBTRoleData)tree.GetVariable("BTCaster");
+            if (role.Value == null) Debug.LogError("null player roledata");
+            role.Value.Index = Roles.Count;
+            role.Value.Side = RoleSide.Player;
+            role.Value.AntiSide = -(int)role.Value.Side;
+            AddRole(role.Value);
+        }
+
+    }
+
+    public void onTimer(double passTime)
+    {
+       
+    }
+
+    public IEnumerable<BTRoleData> GetSurvivors(RoleSide side)
+    {
+        BTRoleData[] units = new BTRoleData[this.AliveRoles[side].Count];
+        this.AliveRoles[side].CopyTo(units);
+
+        for (int i = units.Length - 1; i >= 0; i--)
+        {
+            BTRoleData role = units[i];
+            yield return role;
+        }
+    }
+
+    public void AddRole(BTRoleData role)
+    {
+        this.Roles.Add(role);
+        role.Index = this.Roles.Count - 1;
+
+        if (role.RoleST == (int)RoleState.Death)
+        {
+            this.DeadCount[role.Side]++;
+        }
+        else
+        {
+            this.AliveRoles[role.Side].Add(role);
+            this.AliveRoles[RoleSide.Both].Add(role);
+            this.AliveCount[role.Side]++;
+        }
+
+    }
+
+    public void RoleDead(BTRoleData role)
+    {
+        this.AliveRoles[role.Side].Remove(role);
+        this.AliveRoles[RoleSide.Both].Remove(role);
+        DeadRoles.Add(role);
+        DeadCount[role.Side]++;
+        AliveCount[role.Side]--;
+
+    }
+
+
+    public bool VertifyBattleResult(RoleSide side)
+    {
+        if (AliveRoles[side].Count == 0)//limitTime
+            return true;
+
+
+        return false;
+    }
 
 }
-
-
 
 
 //public enum TotemTriggerType

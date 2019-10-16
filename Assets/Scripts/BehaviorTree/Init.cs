@@ -7,18 +7,13 @@ using System.Collections.Generic;
 
 public class Init : Action
 {
-    public SharedAnimator sdanim;
-//缩并到role中??
-    public SharedNavAgent sdnav;
     public SharedTransform sdtarget;
     public SharedRole sdrole;
 
     public override void OnStart()
     {
-        sdtarget.SetValue(GamingManager.Instance.PlayerRoot);
-        sdanim.SetValue(GetComponent<Animator>());
-        sdnav.SetValue(GetComponent<NavMeshAgent>());
-        sdrole.SetValue(new Role(sdanim.Value));//logic manager 中初始化??
+        //sdtarget.SetValue(GamingManager.Instance.PlayerRoot);
+        //sdrole.SetValue(new Role(sdanim.Value));//logic manager 中初始化??
 
         //string mod = DataManager.Instance.Roles[1].Model;
         //int hp = DataManager.Instance.RoleAttributes[1].Dict[1].HP;

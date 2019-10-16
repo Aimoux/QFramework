@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -77,12 +78,13 @@ namespace Common
     }
 
     //确有必要??
+    [Serializable]
     public class Hero
     {
         public int ID;
         public int Level;
         public List<int> gears;
-
+        public int Exp;//是否固定与玩家相等,或是必须带动升级??
 
     }
 

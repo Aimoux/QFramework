@@ -81,7 +81,7 @@ public class GSM : MonoBehaviour
     private void FixedUpdate()
     {
 
-        Logic.Instance.OnTimer(Time.fixedDeltaTime);
+        Logic.Instance.Tick(Time.fixedDeltaTime);
 
     }
 

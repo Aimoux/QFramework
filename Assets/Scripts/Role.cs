@@ -5,6 +5,8 @@ using GameData;
 using Common;
 using System.Linq;
 using UnityEngine.AI;//??待取消
+using BehaviorDesigner.Runtime;
+using BehaviorDesigner.Runtime.Tasks;
 
 //角色基类，继承Q的Entity??
 //战斗即时数据，逻辑层注意与表现层分离??
@@ -57,6 +59,10 @@ public class Role
 
     }
 
+    public RoleController Controller;
+
+    public int FactOrg { get; set; }//原阵容
+    public int Faction { get; set; }//动态阵容
     public int HP { get; set; }
     //实时HP
     public int Stamina { get; set; }
@@ -94,32 +100,29 @@ public class Role
     private Stack<AnimState> Cmds = new Stack<AnimState>();
     private AnimState IdleSt;
 
-    public Hero hero;
+    public Hero hero;//是否有必要??
+    public bool IsPause;
 
-    //是否有必要??
-    //RoleController
-    //RoleJoint
-
-
-    public Role()
+    //读取存档(队友装备)
+    public static Role Create(Hero hero)
     {
-
-
+        return new Role(hero);
     }
 
-    //涉及到Unity实体的逻辑全部移到RoleController??
-    public Role(Animator animator)
+    public Role(Hero hero)
     {
-        this.anim = animator;
-        this.Status = new IdleState(this);//至于构造方法中，可选初始状态
-        IdleSt = Status;
+        this.hero = hero;
     }
 
-    public Role(int id, int lv)//NPC only, extra config: clothes ,accorsory, weapon
+    public static Role Create(int id, int lv)
     {
-        ID = id;
-        Level = lv;
+        return new Role(id, lv);
+    }
 
+    public Role(int id, int lv)
+    {
+        this.ID = id;
+        this.Level = lv;
     }
 
     //同样使用状态模式来更换武器、服装??
@@ -429,8 +432,7 @@ public class Role
         return LightCombo;
     }
 
-    //update rotation??
-    public RoleController Controller;
+
     public virtual bool MoveToTarget(Role target)
     {
         float dist = SquarePlanarDist(target);
@@ -474,18 +476,47 @@ public class Role
 
 //deal with unity objetcs
 //合理的调用顺序层级??:BT->Role->Controller
+//Role中使用GetComponent方式获取
 public class RoleController : MonoBehaviour
 {
     public Role role;
-    public Animator anim;
-    public NavMeshAgent nav;
-    public bool IsGrounded { get { return IsOnGround(); } }//落地检测的应用场合??
-    //public Vector3 pos;//??不直接取transform,而是通过逻辑计算:位移+速度时间积分??
+    public Animator anim;//在预制体中绑定??
+    public NavMeshAgent nav;//预制体中绑定??
+    public bool isGrounded { get { return IsOnGround(); } }//落地检测的应用场合??
+    public UIFloatingBar floatingBar;
+    public BehaviorTree tree;
+
+    public Transform model;
+    public Vector3 position
+    {
+        get
+        {
+            return model.position;
+        }
+        set
+        {
+            model.position = value; 
+        }
+
+    }
+
+    public Vector3 forward
+    {
+        get
+        {
+            return model.forward;
+        }
+        set
+        {
+            model.forward = value;
+        }
+    }
 
     private bool navigating = false;
     private NavMeshPath path = new NavMeshPath();
     private WalkState walk;
-    //start move
+
+
     public void StartNav(Vector3 pos)
     {
         if (!navigating)
@@ -550,5 +581,47 @@ public class RoleController : MonoBehaviour
 
         return true;
     }
+
+}
+
+//实时伤害数字跳动??
+//血条\蓝显示在屏幕两侧??
+public class UIFloatingBar : MonoBehaviour
+{
+    public Role role;
+
+    //静态准构造(创建)实例函数
+    public static UIFloatingBar Create(Role role, RoleController ctrl)
+    {
+        if(role == null)
+        {
+            Debug.LogError("null role for floating bar");
+            return null;
+        }
+
+        UIFloatingBar hpbar = ctrl.floatingBar;
+        if (hpbar == null)
+        {
+            //GameObject floatbar = ObjectPoolManager.Take("UI/prefab/", "UIFloatingBar");
+            GameObject floatbar = new GameObject();
+            floatbar.name = "UIFloatingBar";
+            hpbar = floatbar.GetComponent<UIFloatingBar>();
+        }
+        hpbar.role = role;
+        hpbar.Init();
+        hpbar.transform.SetParent(ctrl.gameObject.transform, false);
+        //hpbar.transform.localPosition = Vector3.up * 1.7f + new Vector3(0, 0, -1);
+        //hpbar.transform.localRotation = Quaternion.identity;
+        //hpbar.transform.localScale = Vector3.one * 0.01f / ctrl.transform.localScale.y;
+        return hpbar;
+    }
+
+    public void Init()
+    {
+
+
+    }
+        
+
 
 }
