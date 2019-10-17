@@ -74,7 +74,34 @@ class DataManager : Singleton<DataManager>
             return _WeaponAdds;
         }
 
-    }       
+    }
+
+    private Dictionary<int, LevelData> _Levels;
+    public Dictionary<int, LevelData> Levels
+    {
+        get
+        {
+            if(_Levels == null)
+            {
+                Load("Data/Levels.json", ref _Levels);
+            }
+            return _Levels;
+        }
+    }
+
+    private Dictionary<int, MonsterConfigData> _MonsterConfigs;
+    public Dictionary<int, MonsterConfigData> MonsterConfigs
+    {
+        get
+        {
+            if(_MonsterConfigs == null)
+            {
+                Load("Data/MonsterConfigs.json", ref _MonsterConfigs);               
+            }
+            return _MonsterConfigs;
+        }
+    }
+
 
     protected DataManager()
     {

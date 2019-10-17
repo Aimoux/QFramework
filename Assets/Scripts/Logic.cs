@@ -16,199 +16,156 @@ public class Logic : MonoSingleton<Logic>
 
     public Dictionary<int, List<Role>> Surviors = new Dictionary<int, List<Role>>();//阵营,角色
     public Dictionary<int, List<Role>> Deads = new Dictionary<int, List<Role>>();
-    public Dictionary<int, List<Role>> AllRoles = new Dictionary<int, List<Role>>();
+    public List<Role> AllRoles = new List<Role>();
+    public List<Behavior> CastEffects = new List<Behavior>();
 
     public void LoadLevel(BATTLEMODE mode, string scene, UnityAction onLoad)
     {
-
         BattleSceneLoader.Instance.LoadLevel(mode, scene, onLoad);
+    }
 
+    public void InitBattle()
+    {
+        AllRoles.Clear();
+        Surviors.Clear();
+        Deads.Clear();
+        CastEffects.Clear();
+    }
+
+    public void CreatePlayerRoles(int side, List<Hero> savedHeroes)//玩家数据存档,非配置表敌人
+    {
+        foreach (Hero hero in savedHeroes)
+        {
+            Role role = Role.Create(hero);
+            role.Faction = side;
+            role.FactOrg = side;
+
+            //born position??
+
+            AddRole(role);
+        }
+    }
+
+    public void AddRole(Role role)
+    {
+        AllRoles.Add(role);
+        role.Index = AllRoles.Count - 1;
+
+        if (role.Status.State == ANIMATIONSTATE.DEATH)//开始就是终结??
+        {
+            Deads[role.FactOrg].Add(role);
+        }
+        else
+        {
+            if (!Surviors.ContainsKey(role.FactOrg))
+                Surviors[role.FactOrg] = new List<Role> { role };
+            else if (!Surviors[role.FactOrg].Contains(role))
+                Surviors[role.FactOrg].Add(role);
+        }
+
+    }
+
+    public void RoleDead(Role role)
+    {
+        if (Surviors.ContainsKey(role.FactOrg) && Surviors[role.FactOrg].Contains(role))
+            Surviors[role.FactOrg].Remove(role);
+
+        if (!Deads.ContainsKey(role.FactOrg))
+            Deads[role.FactOrg] = new List<Role> { role };
+        else if (!Deads[role.FactOrg].Contains(role))
+            Deads[role.FactOrg].Add(role);
+    }
+
+    //关卡模式,固定等级数据
+    public void CreateEnemiesByLevelData(int id)
+    {
+        LevelData data = DataManager.Instance.Levels[id];
+
+        foreach(int mid in data.Monsters)
+        {
+            CreateMonsterByID(mid);
+        }
+
+
+    }
+
+    private void CreateMonsterByID(int mid)
+    {
+        MonsterConfigData data = DataManager.Instance.MonsterConfigs[mid];
+
+
+        Role eny = new Role(null);
+
+    }
+
+
+    //自由模式,敌方保持与玩家平级
+    public void CreateMatchedEnemies(List<int> enemies)
+    {
+
+
+
+    }
+
+    public IEnumerable<Role> GetSurvivors(int side)
+    {
+        if (!Surviors.ContainsKey(side))
+            yield return null;
+
+        foreach (Role role in Surviors[side].ToArray())
+            yield return role;
     }
 
     //Tick
     public void Tick(float passTime)
     {
-
-        //英雄的行为树Tick
-        int roleNum = this.Roles.Count;
+        int roleNum = AllRoles.Count;
         for (int i = 0; i < roleNum; i++)
         {
-            BTRoleData element = this.Roles[i];
-            if (!element.IsPause)
+            Role role = AllRoles[i];
+            if (!role.IsPause)
             {
-                //if (element.anim.GetInteger("AtkST") != -1)
                 //Debug.Log("Tick Start: " + element.obj.name);
-                BehaviorManager.instance.Tick(element.tree);
+                BehaviorManager.instance.Tick(role.Controller.tree);
             }
-            else
-            {
-                element.tree.PauseWhenDisabled = true;
-                element.tree.DisableBehavior(true);
-            }
-            roleNum = this.Roles.Count;//element的单个Tick内，可改变Roles[]
+            //else
+            //{
+            //    role.tree.PauseWhenDisabled = true;
+            //    role.tree.DisableBehavior(true);
+            //}
+            roleNum = AllRoles.Count;//单个Tick内，可能改变Roles[],比如中途出现的召唤物
         }
 
         //特效类
         int castCount = this.CastEffects.Count;
         for (int i = 0; i < castCount; i++)
         {
-            Behavior element = this.CastEffects[i];
             //if (element == null) Debug.LogError("null cast effect: " + element.name);
+            Behavior element = this.CastEffects[i];
             BehaviorManager.instance.Tick(element);
             castCount = this.CastEffects.Count;//element的单个Tick内，可改变CastEffects[]
         }
 
         // 召唤物
-        foreach (BTRoleData element in this.Summons)
+        //foreach (BTRoleData element in this.Summons)
+        //{
+        //    if (!element.IsPause)
+        //        BehaviorManager.instance.Tick(element.tree);
+        //}
+    }
+
+    //不同阵容的人无一生存则为胜利
+    public bool VertifyBattleResult(int side)
+    {
+        foreach (int fact in Surviors.Keys)
         {
-            if (!element.IsPause) BehaviorManager.instance.Tick(element.tree);
+            if (fact == side)
+                continue;
+
+            if (Surviors[fact] != null && Surviors[fact].Count > 0)
+                return false;
         }
-
-
-    }
-
-    public void InitRoles(Dictionary<int, List<Hero>> roles)
-    {
-        foreach(int side in roles.Keys)
-        {
-            foreach(Hero hero in roles[side])
-            {
-                Role role = Role.Create(hero);
-                role.Faction = side;
-                role.FactOrg = side;
-
-
-                BehaviorTree tree = Enemies[i].GetComponent<BehaviorTree>();
-                SharedBTRoleData role = (SharedBTRoleData)tree.GetVariable("BTCaster");
-                if (role.Value == null) role.Value = new BTRoleData();
-                role.Value.Index = i;
-                role.Value.Side = RoleSide.Enemy;
-                role.Value.AntiSide = -(int)role.Value.Side;
-                AddRole(role.Value);
-
-            }
-
-
-
-
-        }
-
-
-    }
-
-    //role创建独立于role model(RoleController)??
-    public void InitAllies(List<Hero> allies)
-    {
-
-
-    }
-
-    public void InitEnemies(List<Hero> enemies)
-    {
-
-
-
-    }
-
-    public void InitBattle()
-    {
-        
-
-
-    }
-
-    public List<Behavior> CastEffects = new List<Behavior>();
-
-    void Start()
-    {
-        AliveCount.Add(RoleSide.Player, 0);
-        AliveCount.Add(RoleSide.Enemy, 0);
-
-        DeadCount.Add(RoleSide.Player, 0);
-        DeadCount.Add(RoleSide.Enemy, 0);
-
-        //利用Tag，名称来初始化role 列表？？
-        GameObject[] Enemies = GameObject.FindGameObjectsWithTag("Bot");
-        if (Enemies == null) Debug.LogError("find no enemy!!!");
-        for (int i = 0; i < Enemies.Length; i++)
-        {
-            BehaviorTree tree = Enemies[i].GetComponent<BehaviorTree>();
-            SharedBTRoleData role = (SharedBTRoleData)tree.GetVariable("BTCaster");
-            if (role.Value == null) role.Value = new BTRoleData();
-            role.Value.Index = i;
-            role.Value.Side = RoleSide.Enemy;
-            role.Value.AntiSide = -(int)role.Value.Side;
-            AddRole(role.Value);
-        }
-
-        GameObject[] Players = GameObject.FindGameObjectsWithTag("Player");
-        if (Players == null) Debug.LogError("find no player!!!");
-        for (int i = 0; i < Players.Length; i++)
-        {
-            BehaviorTree tree = Players[i].GetComponent<BehaviorTree>();
-            SharedBTRoleData role = (SharedBTRoleData)tree.GetVariable("BTCaster");
-            if (role.Value == null) Debug.LogError("null player roledata");
-            role.Value.Index = Roles.Count;
-            role.Value.Side = RoleSide.Player;
-            role.Value.AntiSide = -(int)role.Value.Side;
-            AddRole(role.Value);
-        }
-
-    }
-
-    public void onTimer(double passTime)
-    {
-       
-    }
-
-    public IEnumerable<BTRoleData> GetSurvivors(RoleSide side)
-    {
-        BTRoleData[] units = new BTRoleData[this.AliveRoles[side].Count];
-        this.AliveRoles[side].CopyTo(units);
-
-        for (int i = units.Length - 1; i >= 0; i--)
-        {
-            BTRoleData role = units[i];
-            yield return role;
-        }
-    }
-
-    public void AddRole(BTRoleData role)
-    {
-        this.Roles.Add(role);
-        role.Index = this.Roles.Count - 1;
-
-        if (role.RoleST == (int)RoleState.Death)
-        {
-            this.DeadCount[role.Side]++;
-        }
-        else
-        {
-            this.AliveRoles[role.Side].Add(role);
-            this.AliveRoles[RoleSide.Both].Add(role);
-            this.AliveCount[role.Side]++;
-        }
-
-    }
-
-    public void RoleDead(BTRoleData role)
-    {
-        this.AliveRoles[role.Side].Remove(role);
-        this.AliveRoles[RoleSide.Both].Remove(role);
-        DeadRoles.Add(role);
-        DeadCount[role.Side]++;
-        AliveCount[role.Side]--;
-
-    }
-
-
-    public bool VertifyBattleResult(RoleSide side)
-    {
-        if (AliveRoles[side].Count == 0)//limitTime
-            return true;
-
-
-        return false;
+        return true;
     }
 
 }

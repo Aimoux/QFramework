@@ -10,9 +10,10 @@ namespace Common
 {
     public enum BATTLEMODE
     {
-        AREAN =0,//战斗
-        STORY =1,//剧情模式
-        HENTAI =2,
+        STORY =0,//剧情模式
+        HENTAI =1,//HX
+        CAMPAIGN = 2,//关卡
+        CUSTOMIZED =3,//自定义
     }
 
     public enum ANIMATIONSTATE
@@ -83,7 +84,7 @@ namespace Common
     {
         public int ID;
         public int Level;
-        public List<int> gears;
+        public List<int> gears = new List<int>();
         public int Exp;//是否固定与玩家相等,或是必须带动升级??
 
     }
