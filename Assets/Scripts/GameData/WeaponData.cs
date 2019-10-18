@@ -17,7 +17,8 @@ namespace GameData
         public int RequireStr { get; set; }
         public int RequireDex { get; set; }
         public float Weight { get; set; }
-        public float Length { get; set; }
+        //武器的攻击范围是固定的,但是同一武器的不同招数的范围允许不同(原地劈砍 vs 前跃攻击)
+        public float Length { get; set; }// vs max range, min range?? 战斗检测用unity 的trigger
         public int AddStrLv { get; set; }//力量修正等级 SABCDE
         public int AddDexLv { get; set; }//敏捷修正等级
         public int AddMntLv { get; set; }//意志修正等级

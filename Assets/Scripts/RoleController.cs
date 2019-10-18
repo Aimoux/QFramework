@@ -4,9 +4,11 @@ using UnityEngine;
 using UnityEngine.AI;
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
+using Common;
+using GameData;
 
 //deal with unity objetcs
-//合理的调用顺序层级??:BT->Role->Controller
+//合理的调用顺序层级:BT->Role->Controller??
 //Role中使用GetComponent方式获取
 public class RoleController : MonoBehaviour
 {
@@ -112,5 +114,26 @@ public class RoleController : MonoBehaviour
 
         return true;
     }
+
+
+
+
+
+    //直接调用BTMove 的can see target??
+    public float AngleToTarget(Vector3 pos)
+    {
+        Vector2 from = new Vector2(forward.x, forward.z);
+        Vector2 ToTarget = new Vector2(pos.x - position.x, pos.z - position.z);
+        float angle = Vector2.SignedAngle(from, ToTarget);
+        return angle;
+    }
+
+    //角度范围判定
+    public bool WithInAngle (Vector3 pos)
+    {
+        return AngleToTarget(pos) < DataManager.Instance.GlobalConfig.ViewAngle;
+    }
+
+    //
 
 }

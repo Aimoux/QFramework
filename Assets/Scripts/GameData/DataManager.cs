@@ -102,6 +102,19 @@ class DataManager : Singleton<DataManager>
         }
     }
 
+    private GlobalConfigData _GlobalConfig;
+    public GlobalConfigData GlobalConfig
+    {
+        get
+        {
+            if(_GlobalConfig == null)
+            {
+                Load("Data/GlobalConfig.json", ref _GlobalConfig);
+            }
+            return _GlobalConfig;
+        }
+    }
+
 
     protected DataManager()
     {

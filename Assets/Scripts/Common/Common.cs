@@ -51,10 +51,32 @@ namespace Common
 
     }
 
-    public enum ResultType
+    public enum ResultType//多用途
     {
         Success =0,//寻路
         Failure =1,
+
+
+        SameTick = 2,
+        Cooldown = 3,
+        Stun = 6,
+        Disable = 7,
+        Silence = 8,
+        NoTarget = 9,
+        Untargetable = 10,
+        TooFar = 12,
+        TooNear = 13,//确有必要??
+        OutOfScreen = 14,
+        TalentCastring = 15,
+        HasAbility = 16,
+        CantUseInInstance = 17,
+        MindChain = 18,
+        OnlyNormalAttack = 19,
+        UnHeal = 20,
+        UnMove = 21
+
+
+
 
     }
 
