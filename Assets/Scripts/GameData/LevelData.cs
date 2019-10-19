@@ -7,12 +7,11 @@ using UnityEngine;
 namespace GameData
 {
     [Serializable]
-    public class LevelData
+    public class LevelMonsterData
     {
         public int ID { get; set; }
-        public string Scene { get; set; }
+        public string Name { get; set; }
         public List<int> Monsters { get; set; }//索引
-        public List<Vector3> Positions { get; set; }
         public int Round { get; set; }//??
 
     }
@@ -27,7 +26,7 @@ namespace GameData
         public float RatioHP { get; set; }
         public float RatioMP { get; set; }//??
         public float Scale { get; set; }
-        public int IsBoss { get; set; }//??
+        public int BossType { get; set; }//??
         public int RewardMoney { get; set; }
         public int RewardEXP { get; set; }//??
         public int RewardItem1 { get; set; }//??掉落概率??

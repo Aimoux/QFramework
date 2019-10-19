@@ -51,12 +51,10 @@ namespace Common
 
     }
 
-    public enum ResultType//多用途
+    public enum ResultType//多用途,寻路以及可释放技能
     {
         Success =0,//寻路
         Failure =1,
-
-
         SameTick = 2,
         Cooldown = 3,
         Stun = 6,
@@ -74,9 +72,6 @@ namespace Common
         OnlyNormalAttack = 19,
         UnHeal = 20,
         UnMove = 21
-
-
-
 
     }
 

@@ -76,16 +76,16 @@ class DataManager : Singleton<DataManager>
 
     }
 
-    private Dictionary<int, LevelData> _Levels;
-    public Dictionary<int, LevelData> Levels
+    private Dictionary<int, Dictionary<float, LevelMonsterData>> _LevelMonsters;
+    public Dictionary<int, Dictionary<float, LevelMonsterData>> LevelMonsters
     {
         get
         {
-            if(_Levels == null)
+            if(_LevelMonsters == null)
             {
-                Load("Data/Levels.json", ref _Levels);
+                Load("Data/LevelMonsters.json", ref _LevelMonsters);
             }
-            return _Levels;
+            return _LevelMonsters;
         }
     }
 
@@ -96,7 +96,7 @@ class DataManager : Singleton<DataManager>
         {
             if(_MonsterConfigs == null)
             {
-                Load("Data/MonsterConfigs.json", ref _MonsterConfigs);               
+                Load("Data/Monsters.json", ref _MonsterConfigs);               
             }
             return _MonsterConfigs;
         }

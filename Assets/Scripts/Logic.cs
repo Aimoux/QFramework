@@ -79,7 +79,7 @@ public class Logic : MonoSingleton<Logic>
     //关卡模式,固定等级数据
     public void CreateEnemiesByLevelData(int id)
     {
-        LevelData data = DataManager.Instance.Levels[id];
+        LevelMonsterData data = DataManager.Instance.LevelMonsters[id][1];
 
         foreach(int mid in data.Monsters)
         {
