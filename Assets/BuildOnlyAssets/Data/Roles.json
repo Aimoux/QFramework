@@ -1,20 +1,28 @@
 {
   "1": {
+    "Behavior": "Resources/Behaviors/Rookie", 
     "Gender": 0, 
     "ID": 1, 
-    "Model": "LilySexy", 
+    "MaxLevel": 3, 
+    "MinLevel": 1, 
+    "Model": "Resources/Prefabs/C001", 
     "Name": "Lily", 
     "Personality": 1, 
     "Picture": "LilyBody", 
-    "Portrait": "LilyPorn"
+    "Portrait": "LilyPorn", 
+    "Radius": 1.0
   }, 
   "2": {
+    "Behavior": "Resources/Behaviors/Rookie", 
     "Gender": 0, 
     "ID": 2, 
-    "Model": "CirSexy", 
+    "MaxLevel": 3, 
+    "MinLevel": 1, 
+    "Model": "Resources/Prefabs/C002", 
     "Name": "Circle", 
     "Personality": 1, 
     "Picture": "CirBdy", 
-    "Portrait": "Circle"
+    "Portrait": "Circle", 
+    "Radius": 1.0
   }
 }

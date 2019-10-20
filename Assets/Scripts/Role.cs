@@ -5,8 +5,8 @@ using GameData;
 using Common;
 using System.Linq;
 
-//½ÇÉ«»ùÀà£¬¼Ì³ĞQµÄEntity??
-//Õ½¶·¼´Ê±Êı¾İ£¬Âß¼­²ã×¢ÒâÓë±íÏÖ²ã·ÖÀë??
+//è§’è‰²åŸºç±»ï¼Œç»§æ‰¿Qçš„Entity??
+//æˆ˜æ–—å³æ—¶æ•°æ®ï¼Œé€»è¾‘å±‚æ³¨æ„ä¸è¡¨ç°å±‚åˆ†ç¦»??
 public class Role
 {
     public int ID { get; set; }
@@ -29,12 +29,14 @@ public class Role
         {
             if (value < Data.MinLevel)
                 _Level = Data.MinLevel;
-            if (value > Data.MaxLevel)
+            else if (value > Data.MaxLevel)
                 _Level = Data.MaxLevel;
+            else
+                _Level = value;
         }
     }
 
-    //NPC¶Á±í£¬Íæ¼Ò¶ÁÅäÖÃ?
+    //NPCè¯»è¡¨ï¼Œç©å®¶è¯»é…ç½®?
     private RoleAttributeData _BaseAttributes;
     public RoleAttributeData BaseAttributes
     {
@@ -47,7 +49,7 @@ public class Role
         }
     }
 
-    //³õÊ¼»¯ºóµÄ¿ª³¡ÊıÖµ£¬·Ç¼´Ê±ÊıÖµ:»ù´¡+×°±¸
+    //åˆå§‹åŒ–åçš„å¼€åœºæ•°å€¼ï¼Œéå³æ—¶æ•°å€¼:åŸºç¡€+è£…å¤‡
     public RoleAttributeData Attributes
     {
         get;
@@ -58,53 +60,60 @@ public class Role
 
     public RoleController Controller;
 
-    public int Index { get; set; }//³¡¾°Î¨Ò»ID,tickË³Ğò??
-    public int FactOrg { get; set; }//Ô­ÕóÈİ
-    public int Faction { get; set; }//¶¯Ì¬ÕóÈİ
+    public int Index { get; set; }//åœºæ™¯å”¯ä¸€ID,tické¡ºåº??
+    public int FactOrg { get; set; }//åŸé˜µå®¹
+    public int Faction { get; set; }//åŠ¨æ€é˜µå®¹
     public int HP { get; set; }
-    //ÊµÊ±HP
+    //å®æ—¶HP
     public int Stamina { get; set; }
-    //ÊµÊ±ÄÍÁ¦
+    //å®æ—¶è€åŠ›
     public int MP { get; set; }
-    //ÊµÊ±ĞË·Ü
+    //å®æ—¶å…´å¥‹
     public int Strength { get; set; }
-    //½µÖÇ´ò»÷¼°buff
+    //é™æ™ºæ‰“å‡»åŠbuff
     public int Dexterity { get; set; }
 
     public int Mental { get; set; }
 
     public int Steady { get; set; }
-    //ÈÍĞÔ£¨´ò¶Ï£©
-    public Vector3 Position { get; set; }
-    public Vector3 Forward { get; set; }
+    //éŸ§æ€§ï¼ˆæ‰“æ–­ï¼‰
+    public Vector3 Position
+    {
+        get
+        {
+            return Controller.position;
+        }
+        set
+        {
+            Controller.position = value;
+        }
+    }
+    public Vector3 Forward
+    {
+        get
+        {
+            return Controller.forward;
+        }
+        set
+        {
+            Controller.forward = value;
+        }
+    }
 
     public WeaponData weapon { get; set; }
-    //²ßÂÔÄ£Ê½£¬¸ü»»ÎäÆ÷£¬Ê¹ÓÃ½Ó¿Ú??
-    //    public int StateID
-    //    {
-    //        get
-    //        { 
-    //            return anim.GetInteger(Common.CommonAnim.StateID);
-    //        }
-    //        set
-    //        {
-    //            anim.SetInteger(Common.CommonAnim.StateID, value);
-    //        }
-    //    }
-
-    public Animator anim;
-
-    //drop out stack
+    public Weapon CurWeapon { get; set; }
     private Stack<AnimState> Cmds = new Stack<AnimState>();
     private AnimState IdleSt;
+    public QF.Res.ResLoader Loader;
 
-    public Hero hero;//ÊÇ·ñÓĞ±ØÒª??
+    public Hero hero;//æ˜¯å¦æœ‰å¿…è¦??
     public bool IsPause;
 
-    //¶ÁÈ¡´æµµ(¶ÓÓÑ×°±¸)
+    //è¯»å–å­˜æ¡£(é˜Ÿå‹è£…å¤‡)
     public static Role Create(Hero hero)
     {
         return new Role(hero);
+
     }
 
     public Role(Hero hero)
@@ -112,61 +121,44 @@ public class Role
         this.hero = hero;
         ID = hero.ID;
         Level = hero.Level;
-        GameObject model = new GameObject();//load instantiate
-        Controller = model.GetComponent<RoleController>();
-        Controller.tree.SetVariableValue("sdrole", this);//const//??
+
+        int wpid = hero.Weapons.First().Key;
+        int wplv = hero.Weapons.First().Value;
+        CurWeapon = new Weapon(wpid, wplv, this);
+        IdleSt = new IdleState(this);
+        Status = IdleSt;
+
+        Loader = QF.Res.ResLoader.Allocate();
+        //use preload async in manager to ensure sync here ??
+        GameObject model = Loader.LoadSync<GameObject>(Data.Model);
+        Controller = GameObject.Instantiate(model).GetComponent<RoleController>();
+        Controller.role = this;
+        Controller.Init();
         Init();
     }
 
-    public static Role Create(int id, int lv)
-    {
-        return new Role(id, lv);
-    }
-
-    public Role(int id, int lv)
-    {
-        this.ID = id;
-        this.Level = lv;
-    }
-
-    //Í¬ÑùÊ¹ÓÃ×´Ì¬Ä£Ê½À´¸ü»»ÎäÆ÷¡¢·ş×°??
+    //åŒæ ·ä½¿ç”¨çŠ¶æ€æ¨¡å¼æ¥æ›´æ¢æ­¦å™¨ã€æœè£…??
     //WeaponState
     //ClothState
-
-
-    //¶¯»­»úÂß¼­´¦Àí£¨¹¥»÷¡¢Ìõ¼ş£©Î»ÓÚ´Ë´¦??
-    public AnimState Status { get; private set; }
-    //×´Ì¬Éè¼ÆÄ£Ê½
-    private bool m_bRunBegin = false;//OnXXEnterµÄ´¥·¢ÅĞ¶¨
-
-    //²Ù×÷»º´æ
-    public void PushState(AnimState animState)
+    public void SetWeapon(Weapon wp)
     {
-        Cmds.Push(animState);
+        CurWeapon = wp;//create instance by name
+
     }
 
-    // Éè¶¨×´Ì¬£¬»º´æ×´Ì¬¶ÑÕ»£¬×ª»»ÅĞ¶¨?? Á¬»÷ÅĞ¶¨??
-    public void SetState(AnimState animState)
-    {
-        Debug.Log(anim.name + " SetState:" + animState.State.ToString());
-        m_bRunBegin = false;
-
-        anim.SetInteger(CommonAnim.StateID, (int)animState.State);
-        // Í¨ÖªÇ°Ò»¸öState½YÊø
-        if (Status != null)
-            Status.OnStateExit();
-
-        // Éè¶¨
-        Status = animState;
-    }
-
-    public delegate void EnableSensor();//ÊÂ¼ş£¬Ö¸¶¨Ö¡´¥·¢¼ì²â¡£Ä£ĞÍÉÏµÄtriggerÊ¼ÖÕ¹´Ñ¡£¬µ«ÀûÓÃ´Ë´¦ÉèÖÃµÄboolÖµ??
+    public delegate void EnableSensor();//äº‹ä»¶ï¼ŒæŒ‡å®šå¸§è§¦å‘æ£€æµ‹ã€‚æ¨¡å‹ä¸Šçš„triggerå§‹ç»ˆå‹¾é€‰ï¼Œä½†åˆ©ç”¨æ­¤å¤„è®¾ç½®çš„boolå€¼??
     public delegate void DisableSnesor();
+    //åŠ¨ç”»æœºé€»è¾‘å¤„ç†ï¼ˆæ”»å‡»ã€æ¡ä»¶ï¼‰ä½äºæ­¤å¤„??
+    public AnimState Status { get; private set; }
+    //çŠ¶æ€è®¾è®¡æ¨¡å¼
+    private bool m_bRunBegin = false;//OnXXEnterçš„è§¦å‘åˆ¤å®š
 
-    //Ã¿¸öTick±»µ÷ÓÃ£¬Èë¿ÚÉĞÎ´Ìí¼Ó??
-    public void StateUpdate()
+    public Role Target;
+
+    //æ¯ä¸ªTickè¢«è°ƒç”¨ï¼Œå…¥å£å°šæœªæ·»åŠ ??
+    private void StateUpdate()
     {
-        // Í¨ÖªĞÂµÄStateé_Ê¼
+        // é€šçŸ¥æ–°çš„Stateé–‹å§‹
         if (Status != null && m_bRunBegin == false)
         {
             Status.OnStateEnter();
@@ -176,22 +168,22 @@ public class Role
         if (Status != null)
             Status.OnStateUpdate();
 
-        if (Status.FrameCount <= 0)
+        if (Status.CurFrame <= 0)//to add break cur status??
         {
-            //if cmds ½Ô²»¿ÉÓÃ£¨»òÃ»ÓĞ£©£¬×Ô¶¯×ªÏòidle??
+            //if cmds çš†ä¸å¯ç”¨ï¼ˆæˆ–æ²¡æœ‰ï¼‰ï¼Œè‡ªåŠ¨è½¬å‘idle??
             if (Cmds.Count == 0)
             {
-                Cmds.Push(IdleSt);//Idle¿ÉºÏ²¢Èëwalk(vertical =0)??
+                Cmds.Push(IdleSt);//Idleå¯åˆå¹¶å…¥walk(vertical =0)??
             }
 
             while (Cmds.Count > 0)
             {
-                //ÓĞÎŞ±ØÒªlock??
+                //æœ‰æ— å¿…è¦lock??
                 AnimState next = Cmds.Pop();
                 if (CanTrans(next))
                 {
                     SetState(next);
-                    Cmds.Clear();//ÉúĞ§µÄÖ»ÓĞÒ»¸ö??
+                    Cmds.Clear();//ç”Ÿæ•ˆçš„åªæœ‰ä¸€ä¸ª??
                     break;
                 }
             }
@@ -199,17 +191,38 @@ public class Role
 
     }
 
-    //±ß×ß±ßà¾Ò©¡¢±íÇé»áÔËÓÃµ½layerÒÔ¼°AvatarMask
-    //à¾Ò©¶¯×÷·ÅÔÚUpBody²ã£¬±íÇé·ÅÔÚHead²ã
-    //Îª±ÜÃâ¹ı¶È¸´ÔÓ£¬anim.SetLayerWeight(lyId, wgt), lerp¡£Êµ¼ÊÉÏ¿ÉÒÔÔÚ±à¼­Æ÷ÖĞÖ±½ÓÖ¸¶¨Up¼°HeadµÄweightÎª1??
+        //æ“ä½œç¼“å­˜
+    public void PushState(AnimState animState)
+    {
+        Cmds.Push(animState);
+    }
 
-    //ÊÖÇÃ×´Ì¬»ú??×´Ì¬Ä£Ê½??
-    //Idle, Move(?)µ½ÆäËû×´Ì¬µÄ×ª»»²»ĞèÒªµÈ´ı
-    //·ÇIdleµ½ÆäËû×´Ì¬µÄ×ª»»´ó¶àĞèÒªµÈ´ı
-    //ÈçÄÜÉèÖÃanystate µÄ has exit time£¬Ôò²»Ğè´Ë´¦
+    // è®¾å®šçŠ¶æ€ï¼Œç¼“å­˜çŠ¶æ€å †æ ˆï¼Œè½¬æ¢åˆ¤å®š?? è¿å‡»åˆ¤å®š??
+    public void SetState(AnimState animState)
+    {
+        m_bRunBegin = false;
+
+        Controller.SetState(animState);
+        // é€šçŸ¥å‰ä¸€ä¸ªStateçµæŸ
+        if (Status != null)
+            Status.OnStateExit();
+
+        // è®¾å®š
+        Status = animState;
+    }
+
+
+    //è¾¹èµ°è¾¹å—‘è¯ã€è¡¨æƒ…ä¼šè¿ç”¨åˆ°layerä»¥åŠAvatarMask
+    //å—‘è¯åŠ¨ä½œæ”¾åœ¨UpBodyå±‚ï¼Œè¡¨æƒ…æ”¾åœ¨Headå±‚
+    //ä¸ºé¿å…è¿‡åº¦å¤æ‚ï¼Œanim.SetLayerWeight(lyId, wgt), lerpã€‚å®é™…ä¸Šå¯ä»¥åœ¨ç¼–è¾‘å™¨ä¸­ç›´æ¥æŒ‡å®šUpåŠHeadçš„weightä¸º1??
+
+    //æ‰‹æ•²çŠ¶æ€æœº??çŠ¶æ€æ¨¡å¼??
+    //Idle, Move(?)åˆ°å…¶ä»–çŠ¶æ€çš„è½¬æ¢ä¸éœ€è¦ç­‰å¾…
+    //éIdleåˆ°å…¶ä»–çŠ¶æ€çš„è½¬æ¢å¤§å¤šéœ€è¦ç­‰å¾…
+    //å¦‚èƒ½è®¾ç½®anystate çš„ has exit timeï¼Œåˆ™ä¸éœ€æ­¤å¤„
     public bool CanTrans(AnimState next)
     {
-        switch (Status.State)//µ±Ç°
+        switch (Status.State)//å½“å‰
         {
             case Common.ANIMATIONSTATE.ATTACKHEAVY:
 
@@ -237,30 +250,37 @@ public class Role
 
     }
 
-    //³õÊ¼»¯ÊôĞÔ
-    //»ñÈ¡ÎäÆ÷??
-    //³õÊ¼»¯×´Ì¬
+    //åˆå§‹åŒ–å±æ€§
+    //è·å–æ­¦å™¨??
+    //åˆå§‹åŒ–çŠ¶æ€
     //LoadScene->EnterLevel->Logic.InitHeroes->Role.Init
 
 
 
     public virtual void Init()
     {
-
-
         InitAttributes();
+        InitWeapon();
+
+
     }
 
-    //³õÊ¼»¯ÊôĞÔ
+    //åˆå§‹åŒ–å±æ€§
     protected void InitAttributes()
     {
         //base
         Attributes = BaseAttributes.Clone();
         InitEquipAttributes();
+        HP = Attributes.HP;
+        MP = Attributes.MP;
+        Stamina = Attributes.Stamina;
+        Strength = Attributes.Strength;
+        Dexterity = Attributes.Dexterity;
+        Mental = Attributes.Mental;
 
     }
 
-    //×°±¸ÊôĞÔ
+    //è£…å¤‡å±æ€§
     protected void InitEquipAttributes()
     {
 
@@ -268,36 +288,54 @@ public class Role
 
     }
 
+    protected void InitWeapon()//
+    {
 
-    public virtual void OnSadism(Weapon wp, Role Masoch)//´òµ½±ğÈË
+
+
+
+
+    }
+
+//roleé©±åŠ¨è¡Œä¸ºæ ‘æ›´åˆé€‚ï¼Œè¡Œä¸ºæ ‘ä»…æä¾›å†³ç­–ï¼Œå¤§éƒ¨åˆ†é€»è¾‘ä»åœ¨roleä¸­å®Œæˆ??
+    public virtual void Update(float dt)
+    {
+        StateUpdate();
+        CurWeapon.Update(dt);
+        //å†³ç­–æ”¾åœ¨é€»è¾‘å¸§çš„æœ€å??
+        BehaviorDesigner.Runtime.BehaviorManager.instance.Tick(Controller.tree);
+
+    }
+
+    public virtual void OnSadism(Weapon wp, Role Masoch)//æ‰“åˆ°åˆ«äºº
     {
         //Pop HUD "I Got You!"
 
-        //ÃüÖĞ»ØÀ¶,²»ÉèÉÏÏŞ,¿Éµş¼Ó??
+        //å‘½ä¸­å›è“,ä¸è®¾ä¸Šé™,å¯å åŠ ??
         float mpGain = wp.Data.MPAtkRecovery + Attributes.MPAtkRecovery;
         Remedy(RoleAttribute.MP, mpGain, this);
     }
 
-    //ÃüÖĞÊ±±»ÎäÆ÷µ÷ÓÃ
+    //å‘½ä¸­æ—¶è¢«æ­¦å™¨è°ƒç”¨
     public virtual void CalculateForce(WeaponData data, Dictionary<DamageType, float> forceDict)
     {
-        int strDmg = DataManager.Instance.WeaponAdds[data.AddStrLv][this.Strength].StrengthAdd;//Ô´ÓÚÁ¦Á¿µÄ¸½¼ÓÉËº¦Öµ
-        int dexDmg = DataManager.Instance.WeaponAdds[data.AddDexLv][this.Dexterity].DexterityAdd;//Ô´ÓÚÃô½İ
-        int mtlDmg = DataManager.Instance.WeaponAdds[data.AddMntLv][this.Mental].MentalAdd;//Ô´ÓÚÒâÖ¾
+        int strDmg = DataManager.Instance.WeaponAdds[data.AddStrLv][this.Strength].StrengthAdd;//æºäºåŠ›é‡çš„é™„åŠ ä¼¤å®³å€¼
+        int dexDmg = DataManager.Instance.WeaponAdds[data.AddDexLv][this.Dexterity].DexterityAdd;//æºäºæ•æ·
+        int mtlDmg = DataManager.Instance.WeaponAdds[data.AddMntLv][this.Mental].MentalAdd;//æºäºæ„å¿—
 
-        if (forceDict[DamageType.BLUNT] > 0)//ÊôĞÔĞŞÕı¹«Ê½£¬¶Û»÷½öÊÜÁ¦Á¿¡¢Ãô½İ¼Ó³É
+        if (forceDict[DamageType.BLUNT] > 0)//å±æ€§ä¿®æ­£å…¬å¼ï¼Œé’å‡»ä»…å—åŠ›é‡ã€æ•æ·åŠ æˆ
         {
             forceDict[DamageType.BLUNT] += (strDmg + dexDmg);
         }
-        if (forceDict[DamageType.PIERCE] > 0)//´Ì»÷
+        if (forceDict[DamageType.PIERCE] > 0)//åˆºå‡»
         {
             forceDict[DamageType.PIERCE] += (strDmg + dexDmg);
         }
-        if (forceDict[DamageType.SLASH] > 0)//Õ¶»÷
+        if (forceDict[DamageType.SLASH] > 0)//æ–©å‡»
         {
             forceDict[DamageType.SLASH] += (strDmg + dexDmg);
         }
-        if (forceDict[DamageType.ELECTRIC] > 0)//µç»÷½öÊÜÒâÖ¾¼Ó³É
+        if (forceDict[DamageType.ELECTRIC] > 0)//ç”µå‡»ä»…å—æ„å¿—åŠ æˆ
         {
             forceDict[DamageType.ELECTRIC] += mtlDmg;
         }
@@ -317,31 +355,31 @@ public class Role
 
     }
 
-    //±»»÷ÖĞ    
+    //è¢«å‡»ä¸­    
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
         CalculateLostHP(wp.ForceDict);
 
-        //»ØÄ§¼ÆËã
+        //å›é­”è®¡ç®—
         float mpGain = Attributes.MPDmgRecovery;
         Remedy(RoleAttribute.MP, mpGain, this);
 
-        //ÄÍÁ¦¿Û³ı
+        //è€åŠ›æ‰£é™¤
 
-        //ÈÍĞÔ¼ÆËã
+        //éŸ§æ€§è®¡ç®—
 
-        //¸üĞÂ³ğºŞÖµ
+        //æ›´æ–°ä»‡æ¨å€¼
         HatredDict[wp.Owner] += 10;
     }
 
-    //ÊÜ×ÔÉí×ËÌ¬Ó°Ïì£º·ÀÓù/±³´Ì
-    //ÊÜÎäÆ÷ÉËº¦×ÖµäÓ°Ïì£¬ÊÜÎäÆ÷ÌØÊâĞ§¹ûÓ°Ïì
-    //ÊÜ¹¥»÷·½ÌØÊâ¼¼ÄÜÓ°Ïì
-    //½ö×÷ÓÃÓÚHP??
+    //å—è‡ªèº«å§¿æ€å½±å“ï¼šé˜²å¾¡/èƒŒåˆº
+    //å—æ­¦å™¨ä¼¤å®³å­—å…¸å½±å“ï¼Œå—æ­¦å™¨ç‰¹æ®Šæ•ˆæœå½±å“
+    //å—æ”»å‡»æ–¹ç‰¹æ®ŠæŠ€èƒ½å½±å“
+    //ä»…ä½œç”¨äºHP??
     protected virtual float CalculateLostHP(Dictionary<DamageType, float> forceDict)
     {
-        //ÎïÀí¹¥»÷¿¼ÂÇ»¤¼×
+        //ç‰©ç†æ”»å‡»è€ƒè™‘æŠ¤ç”²
         float physicalForce = forceDict[DamageType.BLUNT] + forceDict[DamageType.PIERCE] + forceDict[DamageType.SLASH];
         float amr = Attributes.Armor;
         float lostHP = 0f;
@@ -354,8 +392,8 @@ public class Role
             lostHP = physicalForce * (2f - 1f / (1f - 0.06f * amr));
         }
 
-        //·ÇÎïÀí¹¥»÷¿¼ÂÇ¿¹ĞÔ,ÌìÉú»ù´¡¿¹ĞÔ25%(Åä±í)
-        //¿¼ÂÇÓÃthisË÷ÒıÆ÷,·½±ã¼ÆËã,¹æ¶¨ºÃË³Ğò,²»ÇáÒ×±ä¸ü
+        //éç‰©ç†æ”»å‡»è€ƒè™‘æŠ—æ€§,å¤©ç”ŸåŸºç¡€æŠ—æ€§25%(é…è¡¨)
+        //è€ƒè™‘ç”¨thisç´¢å¼•å™¨,æ–¹ä¾¿è®¡ç®—,è§„å®šå¥½é¡ºåº,ä¸è½»æ˜“å˜æ›´
         float[] emtForces = new float[] { forceDict[DamageType.FIRE], forceDict[DamageType.ICE],
             forceDict[DamageType.ELECTRIC], forceDict[DamageType.MAGIC]};
         float[] emtResists = new float[] {Attributes.FireResistance, Attributes.IceResistance,
@@ -367,8 +405,8 @@ public class Role
         }
 
 
-        //¿¼ÂÇ×ÔÉí×ËÌ¬µÄÓ°Ïì¼°ºó¹û£¨¿Û³ıÄÍÁ¦£¬Ôö¼Óexte£©
-        //ÌØÊâĞ§¹ûµÄ´¦Àí
+        //è€ƒè™‘è‡ªèº«å§¿æ€çš„å½±å“åŠåæœï¼ˆæ‰£é™¤è€åŠ›ï¼Œå¢åŠ exteï¼‰
+        //ç‰¹æ®Šæ•ˆæœçš„å¤„ç†
 
 
         return 0f;
@@ -394,21 +432,30 @@ public class Role
 
     private Dictionary<Role, int> HatredDict = new Dictionary<Role, int>();
 
-    //±»ĞĞÎªÊ÷µ÷ÓÃ
-    //¿ª³¡¡¢ÊÜ¹¥»÷¡¢ÉÏ¸öÄ¿±ê¶ªÊ§
+    //è¢«è¡Œä¸ºæ ‘è°ƒç”¨
+    //å¼€åœºã€å—æ”»å‡»ã€ä¸Šä¸ªç›®æ ‡ä¸¢å¤±
     public virtual Role FindTarget()
     {
-        Role target = null;
-        int hate = 0;
-        foreach (var kv in HatredDict)
+        // Role target = null;
+        // int hate = 0;
+        // foreach (var kv in HatredDict)
+        // {
+        //     if (kv.Value > hate)
+        //     {
+        //         hate = kv.Value;
+        //         target = kv.Key;
+        //     }
+        // }
+        if(Target != null)
+            return Target;
+
+        foreach(Role role in Logic.Instance.GetAliveEnemies(Faction))
         {
-            if (kv.Value > hate)
-            {
-                hate = kv.Value;
-                target = kv.Key;
-            }
+            Target = role;
+            return role;
         }
-        return target;
+
+        return null;
     }
 
     //if(idle or move) ->FindTarget ->Move(Rotate) ->Atk {atk1, atk2, atk3}{gen random avail comb sets and push}
@@ -423,7 +470,7 @@ public class Role
     //Atk Combo ids
     public ANIMATIONSTATE[] GenTactic()
     {
-        //Ã¿°ÑÎäÆ÷µÄcombo²»Í¬,¶ÁÈ¡×ÔweaponÅäÖÃ??
+        //æ¯æŠŠæ­¦å™¨çš„comboä¸åŒ,è¯»å–è‡ªweaponé…ç½®??
         ANIMATIONSTATE[] LightCombo = new ANIMATIONSTATE[]
         { ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKLITE };
 
@@ -437,14 +484,14 @@ public class Role
     }
 
 
-    public virtual bool MoveToTarget(Role target)
+    public virtual bool MoveToTarget()
     {
-        float dist = SquarePlanarDist(target);
-        float arriveDist = (Data.Radius + target.Data.Radius) * (Data.Radius + target.Data.Radius);
+        float dist = SquarePlanarDist(Target);
+        float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
         if (dist > arriveDist)
         {
-            Controller.StartNav(target.Position);
-            ResultType ret = Controller.MoveToTargetByNav(target.Position);
+            Controller.StartNav(Target.Position);
+            ResultType ret = Controller.MoveToTargetByNav(Target.Position);
             return ret == ResultType.Success;
         }
         else
@@ -472,6 +519,15 @@ public class Role
     {
 
         return null;
+    }
+
+    public virtual void End(Role attacker)
+    {
+
+        this.Status = null;//åº”ç§»æ¤controller??
+        Logic.Instance.RoleDead(this);
+
+
     }
 
 

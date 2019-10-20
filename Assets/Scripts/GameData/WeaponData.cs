@@ -13,23 +13,24 @@ namespace GameData
         public string Icon { get; set; }
         public string Model { get; set; }
         public string Animator { get; set; }
+        public int FrameConfig { get; set; }
         public int RequireLevel { get; set; }
         public int RequireStr { get; set; }
         public int RequireDex { get; set; }
         public float Weight { get; set; }
-        //ÎäÆ÷µÄ¹¥»÷·¶Î§ÊÇ¹Ì¶¨µÄ,µ«ÊÇÍ¬Ò»ÎäÆ÷µÄ²»Í¬ÕĞÊıµÄ·¶Î§ÔÊĞí²»Í¬(Ô­µØÅü¿³ vs Ç°Ô¾¹¥»÷)
-        public float Length { get; set; }// vs max range, min range?? Õ½¶·¼ì²âÓÃunity µÄtrigger
-        public int AddStrLv { get; set; }//Á¦Á¿ĞŞÕıµÈ¼¶ SABCDE
-        public int AddDexLv { get; set; }//Ãô½İĞŞÕıµÈ¼¶
-        public int AddMntLv { get; set; }//ÒâÖ¾ĞŞÕıµÈ¼¶
-        public int MPAtkRecovery { get; set; }//²»ËæÎäÆ÷Éı¼¶¶øÔö³¤
+        //æ­¦å™¨çš„æ”»å‡»èŒƒå›´æ˜¯å›ºå®šçš„,ä½†æ˜¯åŒä¸€æ­¦å™¨çš„ä¸åŒæ‹›æ•°çš„èŒƒå›´å…è®¸ä¸åŒ(åŸåœ°åŠˆç  vs å‰è·ƒæ”»å‡»)
+        public float Length { get; set; }// vs max range, min range?? æˆ˜æ–—æ£€æµ‹ç”¨unity çš„trigger
+        public int AddStrLv { get; set; }//åŠ›é‡ä¿®æ­£ç­‰çº§ SABCDE
+        public int AddDexLv { get; set; }//æ•æ·ä¿®æ­£ç­‰çº§
+        public int AddMntLv { get; set; }//æ„å¿—ä¿®æ­£ç­‰çº§
+        public int MPAtkRecovery { get; set; }//ä¸éšæ­¦å™¨å‡çº§è€Œå¢é•¿
 
 
 
 
-        public int SteadyEx { get; set; }//³öÊÖÈÍĞÔ??
-        public int SteadyDmg { get; set; }//ÈÍĞÔÏ÷¼õ
-        public int StaminaCost { get; set; }//»ù´¡ÌåÁ¦ÏûºÄ£¬ÖØ»÷±¶Êı
+        public int SteadyEx { get; set; }//å‡ºæ‰‹éŸ§æ€§??
+        public int SteadyDmg { get; set; }//éŸ§æ€§å‰Šå‡
+        public int StaminaCost { get; set; }//åŸºç¡€ä½“åŠ›æ¶ˆè€—ï¼Œé‡å‡»å€æ•°
 
 
         }

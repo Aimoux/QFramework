@@ -39,7 +39,7 @@ public class TimeLineManager : MonoBehaviour
     {
         Debug.Log("Binding Timeline Tracks!");
         //director.playableAsset = Resources.Load<PlayableAsset>(path);
-        director.playableAsset = loader.LoadSync<PlayableAsset>(path);//Òì²½¼ÓÔØ´æÔÚÒş»¼??        
+        director.playableAsset = loader.LoadSync<PlayableAsset>(path);//åŒæ­¥åŠ è½½??      
         foreach (var playableAssetOutput in director.playableAsset.outputs)
         {
             if (playableAssetOutput.streamName == "PlayerAnim")

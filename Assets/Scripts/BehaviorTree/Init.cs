@@ -6,20 +6,15 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Init : Action
-{
-    public SharedTransform sdtarget;
-    public SharedRole sdrole;
+{    
+    public SharedRole sdself;
 
     public override void OnStart()
     {
-        //sdtarget.SetValue(GamingManager.Instance.PlayerRoot);
-        //sdrole.SetValue(new Role(sdanim.Value));//logic manager 中初始化??
+        Debug.LogError("init task start: " + sdself.Value.Data.Name);
 
-        //string mod = DataManager.Instance.Roles[1].Model;
-        //int hp = DataManager.Instance.RoleAttributes[1].Dict[1].HP;
-        int hp = DataManager.Instance.RoleAttributes[1][1].HP;
-        Debug.LogError("hp=: " + hp);
-       
+
+
     }
 
     public override TaskStatus OnUpdate()

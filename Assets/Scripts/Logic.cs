@@ -14,7 +14,7 @@ public class Logic : MonoSingleton<Logic>
     public IBattleScene Scene;
     public BATTLEMODE BattleMode;
 
-    public Dictionary<int, List<Role>> Surviors = new Dictionary<int, List<Role>>();//ÕóÓª,½ÇÉ«
+    public Dictionary<int, List<Role>> Surviors = new Dictionary<int, List<Role>>();//ï¿½ï¿½Óª,ï¿½ï¿½É«
     public Dictionary<int, List<Role>> Deads = new Dictionary<int, List<Role>>();
     public List<Role> AllRoles = new List<Role>();
     public List<Behavior> CastEffects = new List<Behavior>();
@@ -32,7 +32,8 @@ public class Logic : MonoSingleton<Logic>
         CastEffects.Clear();
     }
 
-    public void CreatePlayerRoles(int side, List<Hero> savedHeroes)//Íæ¼ÒÊý¾Ý´æµµ,·ÇÅäÖÃ±íµÐÈË
+    //read from player saves, not monster config
+    public void CreatePlayerRoles(int side, List<Hero> savedHeroes)
     {
         foreach (Hero hero in savedHeroes)
         {
@@ -41,7 +42,6 @@ public class Logic : MonoSingleton<Logic>
             role.FactOrg = side;
 
             //born position??
-
             AddRole(role);
         }
     }
@@ -51,7 +51,7 @@ public class Logic : MonoSingleton<Logic>
         AllRoles.Add(role);
         role.Index = AllRoles.Count - 1;
 
-        if (role.Status.State == ANIMATIONSTATE.DEATH)//¿ªÊ¼¾ÍÊÇÖÕ½á??
+        if (role.Status.State == ANIMATIONSTATE.DEATH)//die at born??
         {
             Deads[role.FactOrg].Add(role);
         }
@@ -62,6 +62,9 @@ public class Logic : MonoSingleton<Logic>
             else if (!Surviors[role.FactOrg].Contains(role))
                 Surviors[role.FactOrg].Add(role);
         }
+
+        //æµ‹è¯•ä¸“ç”¨
+        role.Position += Vector3.forward * role.Index * 5;
 
     }
 
@@ -76,44 +79,66 @@ public class Logic : MonoSingleton<Logic>
             Deads[role.FactOrg].Add(role);
     }
 
-    //¹Ø¿¨Ä£Ê½,¹Ì¶¨µÈ¼¶Êý¾Ý
-    public void CreateEnemiesByLevelData(int id)
+    //read config data
+    public void CreateEnemiesByLevelData(int Level, int side = 1)
     {
-        LevelMonsterData data = DataManager.Instance.LevelMonsters[id][1];
+        //first round only for now
+        LevelMonsterData data = DataManager.Instance.LevelMonsters[Level][1];
 
-        foreach(int mid in data.Monsters)
+        foreach (int mid in data.Monsters)
         {
-            CreateMonsterByID(mid);
+            CreateMonsterByID(mid, side);
         }
 
 
     }
 
-    private void CreateMonsterByID(int mid)
+    private void CreateMonsterByID(int mid, int side)
     {
         MonsterConfigData data = DataManager.Instance.MonsterConfigs[mid];
-
-
-        Role eny = new Role(null);
-
+        Hero hero = new Hero(data.ID, data.Level, data.Weapons);
+        Role role = Role.Create(hero);
+        role.Faction = side;//??
+        role.FactOrg = side;
+        AddRole(role);
     }
 
 
-    //×ÔÓÉÄ£Ê½,µÐ·½±£³ÖÓëÍæ¼ÒÆ½¼¶
+    //stay same level with player
     public void CreateMatchedEnemies(List<int> enemies)
     {
 
 
-
     }
 
-    public IEnumerable<Role> GetSurvivors(int side)
+    public IEnumerable<Role> GetAliveAllies(int side)
     {
         if (!Surviors.ContainsKey(side))
             yield return null;
 
         foreach (Role role in Surviors[side].ToArray())
             yield return role;
+    }
+    
+    public IEnumerable<Role> GetAliveEnemies(int side)//pass self side
+    {
+        // if (!Surviors.ContainsKey(side))
+        //     yield return null;
+
+        // foreach (Role role in Surviors[side].ToArray())
+        //     yield return role;
+        
+        foreach(int faction in Surviors.Keys)
+        {
+            if(faction == side)
+                continue;
+            
+            foreach(Role role in Surviors[faction])
+                yield return role;
+
+        }
+
+
     }
 
     //Tick
@@ -126,27 +151,27 @@ public class Logic : MonoSingleton<Logic>
             if (!role.IsPause)
             {
                 //Debug.Log("Tick Start: " + element.obj.name);
-                BehaviorManager.instance.Tick(role.Controller.tree);
+                role.Update(passTime);
+                //BehaviorManager.instance.Tick(role.Controller.tree);// call role.onenterframe in task to drive
             }
             //else
             //{
             //    role.tree.PauseWhenDisabled = true;
             //    role.tree.DisableBehavior(true);
             //}
-            roleNum = AllRoles.Count;//µ¥¸öTickÄÚ£¬¿ÉÄÜ¸Ä±äRoles[],±ÈÈçÖÐÍ¾³öÏÖµÄÕÙ»½Îï
+            roleNum = AllRoles.Count;//may change within one tick(summon)
         }
 
-        //ÌØÐ§Àà
         int castCount = this.CastEffects.Count;
         for (int i = 0; i < castCount; i++)
         {
             //if (element == null) Debug.LogError("null cast effect: " + element.name);
             Behavior element = this.CastEffects[i];
             BehaviorManager.instance.Tick(element);
-            castCount = this.CastEffects.Count;//elementµÄµ¥¸öTickÄÚ£¬¿É¸Ä±äCastEffects[]
+            castCount = this.CastEffects.Count;//within one tick, summon new effect possible
         }
 
-        // ÕÙ»½Îï
+        // summon
         //foreach (BTRoleData element in this.Summons)
         //{
         //    if (!element.IsPause)
@@ -154,7 +179,7 @@ public class Logic : MonoSingleton<Logic>
         //}
     }
 
-    //²»Í¬ÕóÈÝµÄÈËÎÞÒ»Éú´æÔòÎªÊ¤Àû
+    //no other side member exist
     public bool VertifyBattleResult(int side)
     {
         foreach (int fact in Surviors.Keys)
@@ -166,6 +191,7 @@ public class Logic : MonoSingleton<Logic>
                 return false;
         }
         return true;
+
     }
 
 }
@@ -181,158 +207,158 @@ public class Logic : MonoSingleton<Logic>
 //    Passive,
 //    NormalAttack,
 //    ActiveTalent = 10,
-//    Poisoming = 11 //¶¾Ïµ´¥·¢
+//    Poisoming = 11 //ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½
 //}
-////Í¼ÌÚÊôÐÔÃû³ÆÀàÐÍ
+////Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //public enum TotemAddSkillEffect
 //{
-//    Poison_Injury_Per_Second = 100,// ¶¾ÏµÍ¼ÌÚ £º Ã¿Ãë¶¾ÉË
-//    Reduce_Response = 101, //¶¾ÏµÍ¼ÌÚ £º ½µµÍ»Ø¸´Ð§¹û
+//    Poison_Injury_Per_Second = 100,// ï¿½ï¿½ÏµÍ¼ï¿½ï¿½ ï¿½ï¿½ Ã¿ï¿½ë¶¾ï¿½ï¿½
+//    Reduce_Response = 101, //ï¿½ï¿½ÏµÍ¼ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Í»Ø¸ï¿½Ð§ï¿½ï¿½
 //}
 //public enum E_BattleMode
 //{
 //    /// <summary>
-//    /// ÆÕÍ¨Õ½¶·--PVE
+//    /// ï¿½ï¿½Í¨Õ½ï¿½ï¿½--PVE
 //    /// </summary>
 //    Campaign,
 //    /// <summary>
-//    /// ÌôÕ½Duel--PVP
+//    /// ï¿½ï¿½Õ½Duel--PVP
 //    /// </summary>
 //    Duel,
 //    /// <summary>
-//    /// ¾º¼¼³¡--PVP
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½--PVP
 //    /// </summary>
 //    Arena,
 //    /// <summary>
-//    /// Ô¶Õ÷--PVE
+//    /// Ô¶ï¿½ï¿½--PVE
 //    /// </summary>
 //    Crusade,
 //    /// <summary>
-//    /// Ô¶Õ÷ÌôÕ½Ä£Ê½--PVE
+//    /// Ô¶ï¿½ï¿½ï¿½ï¿½Õ½Ä£Ê½--PVE
 //    /// </summary>
 //    CrusadeChallenge,
 //    /// <summary>
-//    /// ÃØ±¦ÁúÑ¨--PVP
+//    /// ï¿½Ø±ï¿½ï¿½ï¿½Ñ¨--PVP
 //    /// </summary>
 //    Treasure,
 //    /// <summary>
-//    /// Ê±¿ÕÁÑ·ì--PVE
+//    /// Ê±ï¿½ï¿½ï¿½Ñ·ï¿½--PVE
 //    /// </summary>
 //    TimeRift,
 //    /// <summary>
-//    /// Ó¢ÐÛÑÝÎäÌÃ--PVE
+//    /// Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½--PVE
 //    /// </summary>
 //    HeroTrial,
 //    /// <summary>
-//    /// ÍâÓòÄ£Ê½--PVE
+//    /// ï¿½ï¿½ï¿½ï¿½Ä£Ê½--PVE
 //    /// </summary>
 //    Outland,
 //    /// <summary>
-//    /// ¹«»á¸±±¾
+//    /// ï¿½ï¿½ï¿½á¸±ï¿½ï¿½
 //    /// </summary>
 //    GuildInstance,
 //    /// <summary>
-//    /// ÍõÕß¾º¼¼³¡--PVP
+//    /// ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½--PVP
 //    /// </summary>
 //    GrandArena,
 //    /// <summary>
-//    /// Ô¶¹ÅÉñÃí--PVE
+//    /// Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½--PVE
 //    /// </summary>
 //    Temple,
 //    /// <summary>
-//    /// áÛ·åÌôÕ½--PVP
+//    /// ï¿½Û·ï¿½ï¿½ï¿½Õ½--PVP
 //    /// </summary>
 //    GrandChallenge,
 //    /// <summary>
-//    /// µÚÒ»Õ½
+//    /// ï¿½ï¿½Ò»Õ½
 //    /// </summary>
 //    FirstBattle,
 //    /// <summary>
-//    /// ¹¤»áÕ½
+//    /// ï¿½ï¿½ï¿½ï¿½Õ½
 //    /// </summary>
 //    GuildChampion,
 //    /// <summary>
-//    /// Õù°ÔÕ½(Ö±²¥£¬·ÇÖ±²¥Á½ÖÖ·½Ê½)
+//    /// ï¿½ï¿½ï¿½ï¿½Õ½(Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½Ê½)
 //    /// </summary>
 //    PersonChampion,
 //    /// <summary>
-//    /// Õ½ÕùÓªµØ£¬´óÌü·ÀÊØÕóÐÎ
+//    /// Õ½ï¿½ï¿½Óªï¿½Ø£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    WarCampHallSetTeam,
 //    /// <summary>
-//    /// Õ½ÕùÓªµØ, ´óÌüµÄÂÓ¶áÕ½¶·
+//    /// Õ½ï¿½ï¿½Óªï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¶ï¿½Õ½ï¿½ï¿½
 //    /// </summary>
 //    HallOfWar,
 //    /// <summary>
-//    /// ÐÂÓ¢ÐÛÕ½¶·²âÊÔ£¬²âÊÔÈËÔ±ÓÃ
+//    /// ï¿½ï¿½Ó¢ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½
 //    /// </summary>
 //    BattleTest,
 //    /// <summary>
-//    /// ÖîÉñÕù°Ô
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    WarOfGods,
 //    /// <summary>
-//    /// ¶Ô¾öAlpha×¨ÓÃ
+//    /// ï¿½Ô¾ï¿½Alpha×¨ï¿½ï¿½
 //    /// </summary>
 //    DuelAlpha,
 //    /// <summary>
-//    /// ÊÀ½çBoss
+//    /// ï¿½ï¿½ï¿½ï¿½Boss
 //    /// </summary>
 //    WorldBoss,
 //    /// <summary>
-//    /// ÊÀ½ç Boss ×Ô¶¯Õ½¶·
+//    /// ï¿½ï¿½ï¿½ï¿½ Boss ï¿½Ô¶ï¿½Õ½ï¿½ï¿½
 //    /// </summary>
 //    WorldBossAuto,
 //    /// <summary>
-//    /// ¶«Õ÷ÏÈÇ²¶Ó
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç²ï¿½ï¿½
 //    /// </summary>
 //    CrusadeRaid,
 //    /// <summary>
-//    /// ¶«Õ÷ÌôÕ½Ä£Ê½ÏÈÇ²¶Ó
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ½Ä£Ê½ï¿½ï¿½Ç²ï¿½ï¿½
 //    /// </summary>
 //    CrusadeChallengeRaid,
 //    /// <summary>
-//    /// ÓÂÕßÂÒ¶·
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½
 //    /// </summary>
 //    BraveMelee,
 //    /// <summary>
-//    /// Íâ´«
+//    /// ï¿½â´«
 //    /// </summary>
 //    Story,
 //    /// <summary>
-//    /// Ðé»Ã
+//    /// ï¿½ï¿½ï¿½
 //    /// </summary>
 //    Unreal
 //}
 
-///// Õ½¶·¹ÜÀíÆ÷£¬µ¥Àý£¬¹ÜÀíËùÓÐÕ½¶·Êý¾Ý¼°Âß¼­
-//public class Logic : Singleton<Logic>//Õ½¶·Êý¾ÝµÄ»ù±¾ÅÐ¶Ï
+///// Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼ï¿½ï¿½ß¼ï¿½
+//public class Logic : Singleton<Logic>//Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ÝµÄ»ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 //{
-//    // Õ½¶·×´Ì¬£¨Ã²ËÆ²»ÓÃÁËOnEnterFame£©
+//    // Õ½ï¿½ï¿½×´Ì¬ï¿½ï¿½Ã²ï¿½Æ²ï¿½ï¿½ï¿½ï¿½ï¿½OnEnterFameï¿½ï¿½
 //    const int BATTLE_STAGE_INIT = -1;
 //    const int BATTLE_STAGE_WATCHING = 0;
 //    const int BATTLE_STAGE_FIGHTING = 1;
 //    const int BATTLE_STAGE_FINISHED = 2;
 //    const int BATTLE_STAGE_PLAY_ANIMATION_BEFORE_START = 3;
-//    // Ã²ËÆÒ²²»ÓÃÁË£¨OnEnterFame£©
+//    // Ã²ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½OnEnterFameï¿½ï¿½
 //    const float FIGHTING_TIMEOUT = 60f * 3f;
 //    const float NEW_PVE_FIGHTING_TIMEOUT = 60 * 1.5f;
-//    const int INTERVAL_SAVE_TEMP_BATTLE = 10;    // -- ÁÙÊ±±£´æÕ½¶·½á¹ûµÄÊ±¼ä¼ä¸ô£¬10s
-//    // Ò»²¨Õ½¶·Ê±ÏÞ90Ãë
+//    const int INTERVAL_SAVE_TEMP_BATTLE = 10;    // -- ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½10s
+//    // Ò»ï¿½ï¿½Õ½ï¿½ï¿½Ê±ï¿½ï¿½90ï¿½ï¿½
 //    const float defaultTimeLimit = 90;
-//    // Õ½¶·ÀàÐÍ
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public E_BattleMode BattleMode;
-//    // ÊÇ·ñÎª»Ø·Å
+//    // ï¿½Ç·ï¿½Îªï¿½Ø·ï¿½
 //    public bool IsReplayMode;
-//    // »Ø·ÅÖÐÔÙÊÔÒ»´Î±ê¼Ç
+//    // ï¿½Ø·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î±ï¿½ï¿½
 //    public bool IsTryAgain;
-//    // ÊÇ·ñÊÇboss¹Ø
+//    // ï¿½Ç·ï¿½ï¿½ï¿½bossï¿½ï¿½
 //    public bool IsBossLevel = false;
-//    // ÊÇ·ñÊÇpvp¾º¼¼
+//    // ï¿½Ç·ï¿½ï¿½ï¿½pvpï¿½ï¿½ï¿½ï¿½
 
-//    // ÊÇ·ñÎªÊµÊ±Õ½¶·²¥·Å
+//    // ï¿½Ç·ï¿½ÎªÊµÊ±Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public bool IsLiveMode;
-//    // ÊÇ·ñÎªPVPÀàÕ½¶·
+//    // ï¿½Ç·ï¿½ÎªPVPï¿½ï¿½Õ½ï¿½ï¿½
 //    public bool IsArenaMode
 //    {
 //        get
@@ -349,107 +375,107 @@ public class Logic : MonoSingleton<Logic>
 //            return false;
 //        }
 //    }
-//    // Î´Ê¹ÓÃ£¿£¿
+//    // Î´Ê¹ï¿½Ã£ï¿½ï¿½ï¿½
 //    public bool GMMode;
-//    // »Ø·Å¼ÇÂ¼£¨ÆÕÍ¨¾º¼¼³¡£¬¶Ô¾ö£¬ÁúÑ¨£©
+//    // ï¿½Ø·Å¼ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¨ï¿½ï¿½
 //    public Server.PVPRecord PvpReplayRecord;
-//    // »Ø·Å¼ÇÂ¼£¨ÍõÕß¾º¼¼³¡£©
+//    // ï¿½Ø·Å¼ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public Server.AdvArenaRoundBattleRecord TopPvpReplayRecord;
-//    // »Ø·Å¼ÇÂ¼(Õù°ÔÈü)
+//    // ï¿½Ø·Å¼ï¿½Â¼(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 //    public Server.PCSPlusBattleReplay PersonalChampionRecord;
-//    // »Ø·Å¼ÇÂ¼(Õ½¶ÓÓªµØ)
+//    // ï¿½Ø·Å¼ï¿½Â¼(Õ½ï¿½ï¿½Óªï¿½ï¿½)
 //    public Server.HallOfWarQueryReplayReply HallOfWarRecord;
-//    // »Ø·Å¼ÇÂ¼(ÖîÉñÕ½)
+//    // ï¿½Ø·Å¼ï¿½Â¼(ï¿½ï¿½ï¿½ï¿½Õ½)
 //    public Server.WarOfGodsQueryReplayReply WarOfGodsRecord;
-//    // »Ø·Å¼ÇÂ¼(ÓÂÕßÂÒ¶·)
+//    // ï¿½Ø·Å¼ï¿½Â¼(ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½)
 //    public Server.BraveMeleeQueryReplayReply BraveMeleeRecord;
 
-//    // Õ½¶·¹Ø¿¨Êý¾Ý
+//    // Õ½ï¿½ï¿½ï¿½Ø¿ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public LevelData LevelData;
-//    // Õ½¶·Ã¿Ò»²¨Õ½¶·Êý¾Ý
+//    // Õ½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public CombatConfigData CombatConfig;
-//    // ¹Ø¿¨Å­ÆøÔöÒæÏµÊý
+//    // ï¿½Ø¿ï¿½Å­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½
 //    public float MPBonus;
-//    // »ØºÏÊý
+//    // ï¿½Øºï¿½ï¿½ï¿½
 //    public int Round;
-//    // Õ½¶·¾ØÐÎÇøÓò
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public Rect BattleRect;
-//    // Ç°½øËÙ¶ÈÏµÊý
+//    // Ç°ï¿½ï¿½ï¿½Ù¶ï¿½Ïµï¿½ï¿½
 //    public float MarchingSpeed = 1.75f;
-//    // ÊÇ·ñÕýÔÚÔËÐÐ
+//    // ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public bool Running = false;
-//    // Õ½¶·ÒýÇæ×´Ì¬
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 //    public bool Enabled;
-//    // Ö¡¼ÆÊý
+//    // Ö¡ï¿½ï¿½ï¿½ï¿½
 //    public int doneFrameCount;
-//    // Õ½¶·µ¹¼ÆÊ±Ê±¼ä£¨90s£©
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ê±ï¿½ä£¨90sï¿½ï¿½
 //    public double LimitTime;
-//    // Õ½¶·½ð±ÒµôÂä½±Àø
+//    // Õ½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ä½±ï¿½ï¿½
 //    public int GoldCount = 0;
-//    // Õ½¶·±¦ÏäµôÂä½±ÀøÍ³¼Æ
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä½±ï¿½ï¿½Í³ï¿½ï¿½
 //    public int LootCount = 0;
 
-//    // ÉñÃíÐèÒªµÄ¶îÍâÊý¾Ý
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public int monsterIndex;
 //    public int ownerUserId;
 
-//    // ÊÀ½çBoss¶îÍâÊý¾Ý
+//    // ï¿½ï¿½ï¿½ï¿½Bossï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public int worldBossTeamId;
 //    public int worldBossBuffCount;
 
-//    // ÔÝÍ£¼¶±ð
+//    // ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
 //    public int PauseLevel;
-//    // ÊÍ·Å´óÕÐÒýÆðÆÁÄ»ÔÝÍ£µÄÕóÓª£¨Ã»ÓÐÓÃ£¿£¿£¿£©
+//    // ï¿½Í·Å´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½Óªï¿½ï¿½Ã»ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public RoleSide PauseSide;
-//    // Õ½¶·½á¹û
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public Common.BATTLE_RESULT BattleResult;
-//    // Õ½¶·ÆÀÐÇ
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public int ResultStars;
 
-//    // ¼º·½Ó¢ÐÛÊý¾ÝÁÐ±í±£´æ
+//    // ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½
 //    public List<Common.Hero> HeroList;
-//    // Ë«·½Ó¢ÐÛ½ÇÉ«¶ÔÏóÁÐ±í
+//    // Ë«ï¿½ï¿½Ó¢ï¿½Û½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
 //    public List<Role> Roles = new List<Role>();
-//    // Íæ¼Ò²Ù×÷Êý¾Ý¼ÇÂ¼£¨»Ø·Å»áÓÃµ½£©
+//    // ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¼ï¿½Â¼ï¿½ï¿½ï¿½Ø·Å»ï¿½ï¿½Ãµï¿½ï¿½ï¿½
 //    public List<OpRecord> OpRecords = new List<OpRecord>();
 
-//    // Ó¢ÐÛ´æ»îÊý£¨Ã¿Ò»·½µÄ´æ»î£©
+//    // Ó¢ï¿½Û´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½Ä´ï¿½î£©
 //    public Dictionary<RoleSide, int> AliveCount = new Dictionary<RoleSide, int>();
-//    // Ó¢ÐÛËÀÍöÊý£¨Ã¿Ò»·½µÄËÀÍö£©
+//    // Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public Dictionary<RoleSide, int> DeadCount = new Dictionary<RoleSide, int>();
 
-//    // ´æ»î½ÇÉ«¶ÔÏó±£´æ
+//    // ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ó±£´ï¿½
 //    public Dictionary<RoleSide, List<Role>> AliveRoles = new Dictionary<RoleSide, List<Role>>()
 //    {
 //        { RoleSide.Player , new List<Role>() },
 //        { RoleSide.Enemy , new List<Role>() },
 //        { RoleSide.Both , new List<Role>() }
 //    };
-//    // ÕÙ»½Îï
+//    // ï¿½Ù»ï¿½ï¿½ï¿½
 //    public List<Role> Summons = new List<Role>();
-//    // ËÀÍö½ÇÉ«¶ÔÏó±£´æ
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ó±£´ï¿½
 //    public List<Role> DeadRoles = new List<Role>();
 //    // 
 //    public List<Element> CastEffects = new List<Element>();
-//    // ¹ÖÎïÉÏÕó×î´óÏÞÖÆ
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    const int MAX_POSITION = 5;
-//    // Õ½¶·×´Ì¬
+//    // Õ½ï¿½ï¿½×´Ì¬
 //    private int _battleState = -1;
-//    // ¹Ø¿¨ÊÇ·ñ½áÊø
+//    // ï¿½Ø¿ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 //    public bool LevelEnded;
-//    // Õ½¶·½áÊø
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public bool BattleEnd;
-//    // Õ½¶·ÖÐÉËº¦Öµ¼ÇÂ¼
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ëºï¿½Öµï¿½ï¿½Â¼
 //    public BattleStatistic Statistic = new BattleStatistic();
-//    // Õ½¶·³¡¾°Ö¸Õë
+//    // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 //    public IBattleScene Scene { get; set; }
-//    // ÒÑ¾­ÎÞÐ§£¨·ÏÆú£©
+//    // ï¿½Ñ¾ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public float beginTime = 0;
-//    // ÒÑ¾­ÎÞÐ§£¨·ÏÆú£©
+//    // ï¿½Ñ¾ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    private float lastSaveTempBattleTime = 0;
-//    // µ±Ç°Ö±²¥µ½µÚ¼¸Ö¡
+//    // ï¿½ï¿½Ç°Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½Ö¡
 //    public int TargetDoneFrameCount = 0;
-//    //ChickenDinner Õ½¶·×ÊÔ´ÊÇ·ñ¼ÓÔØÍê³É
+//    //ChickenDinner Õ½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public bool isLoaded = false;
 
 //    public Vector3 ForwardDirection
@@ -463,7 +489,7 @@ public class Logic : MonoSingleton<Logic>
 //            return Vector3.one;
 //        }
 //    }
-//    // Ç°½ø½Ç¶È
+//    // Ç°ï¿½ï¿½ï¿½Ç¶ï¿½
 //    public Vector3 ForwardAngle
 //    {
 //        get
@@ -475,7 +501,7 @@ public class Logic : MonoSingleton<Logic>
 //            return Vector3.one;
 //        }
 //    }
-//    // Õâ¸öÊÇ3dÖÐÊ¹ÓÃµÄ£¬Î»ÖÃ½Úµã
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½3dï¿½ï¿½Ê¹ï¿½ÃµÄ£ï¿½Î»ï¿½Ã½Úµï¿½
 //    public Vector3[] BattlePoints
 //    {
 //        get
@@ -487,34 +513,34 @@ public class Logic : MonoSingleton<Logic>
 //            return new Vector3[3];
 //        }
 //    }
-//    // ÌôÕ½ÖÐµÄ·ÀÊØ·½id£¨²»Ó¦¸Ã·ÅÔÚÕ½¶·Âß¼­ÖÐ£©    
+//    // ï¿½ï¿½Õ½ï¿½ÐµÄ·ï¿½ï¿½Ø·ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã·ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½Ð£ï¿½    
 //    public int DefenderID;
-//    // ÁúÑ¨ÀàÐÍid£¨²»Ó¦¸Ã·ÅÔÚÕ½¶·Âß¼­ÖÐ£©
+//    // ï¿½ï¿½Ñ¨ï¿½ï¿½ï¿½ï¿½idï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã·ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½Ð£ï¿½
 //    public int TreasureTypeID;
-//    // ¹ÖÎï×ÜÊý£¨Ã»ÓÐÊ¹ÓÃ¹ý£¿£¿£©
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ê¹ï¿½Ã¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    int totalMonster = 0;
-//    //  ÊÖ¶¯²Ù×÷Ë÷Òý£¨´óÕÐ£©
+//    //  ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½
 //    int NextOperationIdx;
 
 //    public bool Supplied;
-//    // ¼º·½Ó¢ÐÛidÁÐ±í
+//    // ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½idï¿½Ð±ï¿½
 //    List<int> HeroIDList = new List<int>();
 
-//    // ËÀÍöÄ¹±®ÁÐ±í
+//    // ï¿½ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½Ð±ï¿½
 //    public List<Vector2> DeathPositions = new List<Vector2>();
 //    public List<EffectJoint> DeathPositionEffectJoints = new List<EffectJoint>();
 
-//    // ¶ÔÕ½Ë«·½µÄÍ¼ÌÚµÈ¼¶
+//    // ï¿½ï¿½Õ½Ë«ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ÚµÈ¼ï¿½
 //    public int playerTotemLevel = 0;
 //    public int enemyTotemLevel = 0;
 
-//    // ¶ÔÕ½Ë«·½µÄÍ¼ÌÚÀàÐÍ
+//    // ï¿½ï¿½Õ½Ë«ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public int playerTotemType = 0;
 //    public int enemyTotemType = 0;
-//    //ChickenDinner ³öÉúÎ»ÖÃ
+//    //ChickenDinner ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 //    public int offSetX = 0;
 //    /// <summary>
-//    /// Àà¹¹Ôìº¯Êý
+//    /// ï¿½à¹¹ï¿½ìº¯ï¿½ï¿½
 //    /// </summary>
 //    public Logic()
 //    {
@@ -522,7 +548,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ½ÇÉ«µ¥Î»ÁÐ±íÌí¼Ó
+//    /// ï¿½ï¿½É«ï¿½ï¿½Î»ï¿½Ð±ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="role"></param>
 //    /// <param name="promisor"></param>
@@ -552,7 +578,7 @@ public class Logic : MonoSingleton<Logic>
 //        {
 //            promisor.SummonList.Add(role);
 //            role.Config.IsDemon = true;
-//            //role.InitAttributes();//·ûÎÄ  ÌáÉýÕÙ»½ÎïÊôÐÔÌí¼Ó  
+//            //role.InitAttributes();//ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½Ù»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 //            role.Position = position;
 //            role.PreviousPosition = role.Position;
 //            role.Born(1, init_action);
@@ -563,7 +589,7 @@ public class Logic : MonoSingleton<Logic>
 
 
 //    /// <summary>
-//    /// ¼º·½Ó¢ÐÛµ¥Î»ÐÅÏ¢ÅäÖÃ
+//    /// ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ûµï¿½Î»ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="config"></param>
 //    /// <param name="tid"></param>
@@ -595,14 +621,14 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// Ìæ²¹
+//    /// ï¿½æ²¹
 //    /// </summary>
 //    /// <param name="substitute"></param>
 //    /// <param name="isBot"></param>
 //    /// <param name="side"></param>
 //    public void SetSubstitute(HeroDataEx substitute, bool isBot, RoleSide side)
 //    {
-//        // ÖîÉñÕ½Ìæ²¹Âß¼­
+//        // ï¿½ï¿½ï¿½ï¿½Õ½ï¿½æ²¹ï¿½ß¼ï¿½
 //        if (BattleMode != E_BattleMode.WarOfGods)
 //            return; ;
 
@@ -630,7 +656,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// pvpÀàÕ½¶·µ÷ÓÃ£º³õÊ¼»¯¼º·½Ó¢ÐÛ(initMyHeroes¡¢initEnemyHeoes)
+//    /// pvpï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½(initMyHeroesï¿½ï¿½initEnemyHeoes)
 //    /// </summary>
 //    /// <param name="heroes"></param>
 //    /// <param name="isBot"></param>
@@ -662,7 +688,7 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //            //Init hero hire data here
 //            this.AddRole(role);
-//            // ÉèÖÃrole avatarµÄÎ»ÖÃ
+//            // ï¿½ï¿½ï¿½ï¿½role avatarï¿½ï¿½Î»ï¿½ï¿½
 //            role.Position = new Vector2();
 //            role.Position.x = Const.InitialPosition[i].x - this.BattleRect.xMax * 0.5f;
 //            role.Position.y = Const.InitialPosition[i].y;
@@ -671,7 +697,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// pvpÀàÕ½¶·µ÷ÓÃ£º³õÊ¼»¯µÐ·½Ó¢ÐÛ(initMyHeroes¡¢initEnemyHeoes)
+//    /// pvpï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ð·ï¿½Ó¢ï¿½ï¿½(initMyHeroesï¿½ï¿½initEnemyHeoes)
 //    /// </summary>
 //    /// <param name="enemys"></param>
 //    /// <param name="isBot"></param>
@@ -696,14 +722,14 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //            Role role = Role.Create(hero_enermy, RoleSide.Enemy, config_enermy, extra);
 //            this.AddRole(role);
-//            // ÉèÖÃrole avatarµÄÎ»ÖÃ
+//            // ï¿½ï¿½ï¿½ï¿½role avatarï¿½ï¿½Î»ï¿½ï¿½
 //            role.Position = new Vector2();
 //            role.Position.x = this.BattleRect.xMax * 0.5f - Const.InitialPosition[i].x;
 //            role.Position.y = Const.InitialPosition[i].y;
 //        }
 //    }
 //    /// <summary>
-//    /// ChickenDinnerÀàÕ½¶·µ÷ÓÃ£º³õÊ¼»¯¼º·½Ó¢ÐÛ(initMyHeroes¡¢initEnemyHeoes)
+//    /// ChickenDinnerï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½(initMyHeroesï¿½ï¿½initEnemyHeoes)
 //    /// </summary>
 //    /// <param name="heroes"></param>
 //    /// <param name="isBot"></param>
@@ -731,14 +757,14 @@ public class Logic : MonoSingleton<Logic>
 //            Role role = Role.CreateUnreal(hero, RoleSide.Player, config, extra, birthPos);
 //            //Init hero hire data here
 //            this.AddRole(role);
-//            // ÉèÖÃrole avatarµÄÎ»ÖÃ
+//            // ï¿½ï¿½ï¿½ï¿½role avatarï¿½ï¿½Î»ï¿½ï¿½
 //            role.Position = birthPos;
 //            this.HeroIDList.Add(hero.tid);
 //        }
 //    }
 
 //    /// <summary>
-//    /// ChickenDinnerÀàÕ½¶·µ÷ÓÃ£º³õÊ¼»¯µÐ·½Ó¢ÐÛ(initMyHeroes¡¢initEnemyHeoes)
+//    /// ChickenDinnerï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ð·ï¿½Ó¢ï¿½ï¿½(initMyHeroesï¿½ï¿½initEnemyHeoes)
 //    /// </summary>
 //    /// <param name="enemys"></param>
 //    /// <param name="isBot"></param>
@@ -765,13 +791,13 @@ public class Logic : MonoSingleton<Logic>
 //            Role role = Role.CreateUnreal(hero_enermy, RoleSide.Enemy, config_enermy, extra, birthPos);
 //            role.MonIdx = hero_enermy.favoriteState + 1;
 //            this.AddRole(role);
-//            // ÉèÖÃrole avatarµÄÎ»ÖÃ
+//            // ï¿½ï¿½ï¿½ï¿½role avatarï¿½ï¿½Î»ï¿½ï¿½
 //            role.Position = birthPos;
 //        }
 //    }
 
 //    /// <summary>
-//    /// Éú³É¹ÖÎïµ¥Î»ÐÅÏ¢ÅäÖÃ
+//    /// ï¿½ï¿½ï¿½É¹ï¿½ï¿½ïµ¥Î»ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="isboss"></param>
 //    /// <param name="index"></param>
@@ -799,13 +825,13 @@ public class Logic : MonoSingleton<Logic>
 //        return config;
 //    }
 //    /// <summary>
-//    /// pveÀàÕ½¶·µ÷ÓÃ£º³õÊ¼»¯¼º·½Ó¢ÐÛ£¨InitPlayerHeroes¡¢InitMonsters£©
+//    /// pveï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Û£ï¿½InitPlayerHeroesï¿½ï¿½InitMonstersï¿½ï¿½
 //    /// </summary>
 //    /// <param name="heroList"></param>
 //    /// <param name="isbot"></param>
 //    public void InitPlayerHeroes(List<Common.Hero> heroList, bool isbot)
 //    {
-//        //³õÊ¼»¯Íæ¼ÒÓ¢ÐÛÊý¾Ý
+//        //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //        this.HeroList = heroList;
 //        //this.HeroList.Sort(new HeroAttackRangeComparer());
 //        QuickSort.Sort(HeroList, new HeroAttackRangeComparer());
@@ -823,7 +849,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// pveÀàÕ½¶·µ÷ÓÃ£º¹ÖÎï³õÊ¼»¯£¨InitPlayerHeroes¡¢InitMonsters£©
+//    /// pveï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½InitPlayerHeroesï¿½ï¿½InitMonstersï¿½ï¿½
 //    /// </summary>
 //    /// <param name="ls"></param>
 //    /// <param name="boss"></param>
@@ -855,7 +881,7 @@ public class Logic : MonoSingleton<Logic>
 //                hero.currSkinId = roleData.CurrentSkin;
 //            }
 
-//            //ÉñÆ÷¹Ø¿¨bossÎªÂú¼¶×´Ì¬ YuHaizhi 20190514
+//            //ï¿½ï¿½ï¿½ï¿½ï¿½Ø¿ï¿½bossÎªï¿½ï¿½ï¿½ï¿½×´Ì¬ YuHaizhi 20190514
 //            if (CombatConfig.LevelType == "mirac" && i + 1 == boss && DataManager.Instance.Roles[id].CanMirac)
 //            {
 //                hero = CreateMiracBoss(hero, CombatConfig);
@@ -870,15 +896,15 @@ public class Logic : MonoSingleton<Logic>
 //            {
 //                curIndex++;
 //            }
-//            //bossÕ½²âÊÔ
-//            foreach (int k in this.CombatConfig.BossPosition)//Éè¶¨ÊÇ·ñÎªboss£¬ÔÙ¸ù¾ÝÊÇ·ñÎªbossÕ½À´Éè¶¨´óÐ¡
+//            //bossÕ½ï¿½ï¿½ï¿½ï¿½
+//            foreach (int k in this.CombatConfig.BossPosition)//ï¿½è¶¨ï¿½Ç·ï¿½Îªbossï¿½ï¿½ï¿½Ù¸ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ÎªbossÕ½ï¿½ï¿½ï¿½è¶¨ï¿½ï¿½Ð¡
 //            {
 //                if (curIndex == k)
 //                {
 //                    ro.IsBoss = true;
 //                }
 //            }
-//            //bossÕ½²âÊÔ
+//            //bossÕ½ï¿½ï¿½ï¿½ï¿½
 //            Vector2 position = new Vector2();
 //            position.x = this.BattleRect.xMax * 0.5f - Const.InitialPosition[curIndex - 1].x;
 //            position.y = Const.InitialPosition[curIndex - 1].y;
@@ -887,7 +913,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 
-//    //ÉñÆ÷¹Ø¿¨bossµÄÌØÊâ´¦Àí YuHaizhi 20190514
+//    //ï¿½ï¿½ï¿½ï¿½ï¿½Ø¿ï¿½bossï¿½ï¿½ï¿½ï¿½ï¿½â´¦ï¿½ï¿½ YuHaizhi 20190514
 //    private Common.Hero CreateMiracBoss(Common.Hero hero, CombatConfigData data)
 //    {
 //        hero.legend = new HeroLegend();
@@ -904,7 +930,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// »ñÈ¡³¡ÉÏ»î×ÅµÄË÷Òýµ½µÄÓ¢ÐÛ
+//    /// ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ï»ï¿½ï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="index"></param>
 //    /// <param name="side"></param>
@@ -918,7 +944,7 @@ public class Logic : MonoSingleton<Logic>
 //        return null;
 //    }
 //    /// <summary>
-//    /// »ñÈ¡Ä³ÕóÓª³¡ÉÏ»î×ÅµÄÓ¢ÐÛ
+//    /// ï¿½ï¿½È¡Ä³ï¿½ï¿½Óªï¿½ï¿½ï¿½Ï»ï¿½ï¿½Åµï¿½Ó¢ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="index"></param>
 //    /// <param name="side"></param>
@@ -961,7 +987,7 @@ public class Logic : MonoSingleton<Logic>
 
 
 //    /// <summary>
-//    /// ÕÙ»½£¨ÕÙ»½ÊÞ£©
+//    /// ï¿½Ù»ï¿½ï¿½ï¿½ï¿½Ù»ï¿½ï¿½Þ£ï¿½
 //    /// </summary>
 //    /// <param name="id"></param>
 //    /// <param name="reverse"></param>
@@ -975,7 +1001,7 @@ public class Logic : MonoSingleton<Logic>
 //        return summon;
 //    }
 //    /// <summary>
-//    /// »ñµÃÕÙ»½ÊÞ
+//    /// ï¿½ï¿½ï¿½ï¿½Ù»ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <returns></returns>
 //    public IEnumerable<Role> GetSommons()
@@ -986,7 +1012,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 
-//    // Õâ¸öº¯ÊýÒÑ¾­ÎÞÐ§£¬²»±»µ÷ÓÃÁË£¨OnEnterFame£©
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½OnEnterFameï¿½ï¿½
 //    private bool checkDoBattleAction()
 //    {
 //        while (this.OpRecords.Count > this.NextOperationIdx)
@@ -1006,13 +1032,13 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //        return false;
 //    }
-//    // Õâ¸öº¯ÊýÒÑ¾­ÎÞÐ§£¬²»±»µ÷ÓÃÁË£¨OnEnterFame£©
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½OnEnterFameï¿½ï¿½
 //    private void saveTempBattle()
 //    {
 //        string logs = Logger.GetLogs(true);
 //        System.IO.File.WriteAllText("Logs/" + DateTime.Now.ToLongTimeString() + ".log", logs);
 //    }
-//    // Õâ¸öº¯ÊýÒÑ¾­ÎÞÐ§£¬²»±»µ÷ÓÃÁË
+//    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    public void OnEnterFame(float dt)
 //    {
 //        if (!this.Running)
@@ -1035,7 +1061,7 @@ public class Logic : MonoSingleton<Logic>
 //            {
 //                if (IsReplayMode || this.checkDoBattleAction())
 //                {
-//                    // -- Ê±¼äµ½ÁË£¬×Ô¶¯½áÊøÕ½¶·
+//                    // -- Ê±ï¿½äµ½ï¿½Ë£ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½
 //                    this._battleState = BATTLE_STAGE_FINISHED;
 //                    this.Running = false;
 //                    BATTLE_RESULT result = BATTLE_RESULT.BATTLE_RESULT_TIMEOUT;
@@ -1047,7 +1073,7 @@ public class Logic : MonoSingleton<Logic>
 
 //                    this._battleState = BATTLE_STAGE_FINISHED;
 //                    this.Running = false;
-//                    // -- Çå³ýÕ½¶·ÌØÐ§
+//                    // -- ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½Ð§
 //                    //todo
 
 //                    this.EndBattle(BATTLE_RESULT.BATTLE_RESULT_DEFEAT);
@@ -1055,13 +1081,13 @@ public class Logic : MonoSingleton<Logic>
 //                return;
 //            }
 
-//            // -- pvpÕ½¶·¿ªÊ¼ºó£¬Òª×Ô¶¯±£´æ½á¹û
+//            // -- pvpÕ½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Òªï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //            if (this.BattleMode == E_BattleMode.Arena)
 //            {
 //                int notCostTimeSec = (int)Math.Floor(beginTime);
 //                if (notCostTimeSec % INTERVAL_SAVE_TEMP_BATTLE == 0 && notCostTimeSec > lastSaveTempBattleTime)
 //                {
-//                    // -- ±£´æÁÙÊ±½á¹û
+//                    // -- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
 //                    lastSaveTempBattleTime = notCostTimeSec;
 //                    this.saveTempBattle();
 //                }
@@ -1081,7 +1107,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ´¦Àí´óÕÐµÄÎ¢²Ù×÷
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½Î¢ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    void ProcessOP()
 //    {
@@ -1104,12 +1130,12 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ´¦ÀíÔª¼þÂß¼­
+//    /// ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½ß¼ï¿½
 //    /// </summary>
 //    /// <param name="dt"></param>
 //    void ProcessEntities(double dt)
 //    {
-//        // ½ÇÉ«ÊµÌåÀà
+//        // ï¿½ï¿½É«Êµï¿½ï¿½ï¿½ï¿½
 //        int roleNum = this.Roles.Count;
 //        for (int i = 0; i < roleNum; i++)
 //        {
@@ -1130,7 +1156,7 @@ public class Logic : MonoSingleton<Logic>
 //            roleNum = this.Roles.Count;
 //        }
 
-//        // ¼¼ÄÜÊµÌåÀàEffect
+//        // ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½Effect
 //        int CastCount = this.CastEffects.Count;
 //        for (int i = 0; i < CastCount; i++)
 //        {
@@ -1141,7 +1167,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //        this.CastEffects.RemoveAll(new Predicate<Element>((x) => { return x.Running == false; }));
 
-//        // ÕÙ»½Îï
+//        // ï¿½Ù»ï¿½ï¿½ï¿½
 //        foreach (Role element in this.Summons)
 //        {
 //            if (!element.IsPause)
@@ -1152,7 +1178,7 @@ public class Logic : MonoSingleton<Logic>
 
 
 //    /// <summary>
-//    ///  ÖØÖÃ³¡ÉÏÓ¢ÐÛ½ÇÉ«Êý¾Ý
+//    ///  ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½Ó¢ï¿½Û½ï¿½É«ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    private void ResetRoles()
 //    {
@@ -1175,7 +1201,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    ///  ÖØÖÃ³¡ÉÏÓ¢ÐÛ´«ÆæÐ§¹û
+//    ///  ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½Ó¢ï¿½Û´ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
 //    /// </summary>
 //    public void ResetLegendRoles()
 //    {
@@ -1192,7 +1218,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// ³õÊ¼»¯¼º·½Ó¢ÐÛ³öÉúÎ»ÖÃ£¿£¿£¿£¿
+//    /// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Û³ï¿½ï¿½ï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    public void InitPlayerAliveRoles()
 //    {
@@ -1200,19 +1226,19 @@ public class Logic : MonoSingleton<Logic>
 //        foreach (Role role in this.AliveRoles[RoleSide.Player])
 //        {
 //            Vector2 position = new Vector2();
-//            position.x = Const.InitialPosition[i].x - this.BattleRect.xMax * 0.5f;//´ÓÕ½³¡×î×ó²àÍâ³öÉú
+//            position.x = Const.InitialPosition[i].x - this.BattleRect.xMax * 0.5f;//ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //            position.y = Const.InitialPosition[i].y;
 //            i++;
 //            role.Joint.Disable = false;
-//            role.Position = position;//ÔÚÕ½¶·ÖÐµÄ¿ªÊ¼Î»ÖÃ
+//            role.Position = position;//ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ÐµÄ¿ï¿½Ê¼Î»ï¿½ï¿½
 //        };
 //    }
 //    /// <summary>
-//    /// ³õÊ¼»¯½øÈëÕ½¶·µÄ¹Ø¿¨Êý¾Ý
+//    /// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½Ä¹Ø¿ï¿½ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    public void InitBattleCore()
 //    {
-//        //ÖØÖÃ¹Ø¿¨Êý¾Ý
+//        //ï¿½ï¿½ï¿½Ã¹Ø¿ï¿½ï¿½ï¿½ï¿½ï¿½
 //        this.Enabled = true;
 //        this.doneFrameCount = 0;
 //        //this.fixedFrameTime = 0.125f;
@@ -1259,13 +1285,13 @@ public class Logic : MonoSingleton<Logic>
 //#endif
 //    }
 //    /// <summary>
-//    /// Õ½¶·³õÊ¼»¯(pveÕ½¶·)
+//    /// Õ½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½(pveÕ½ï¿½ï¿½)
 //    /// </summary>
 //    /// <param name="combat"></param>
 //    /// <param name="extra_list"></param>
 //    public void InitBattle(CombatConfigData combat, Dictionary<int, Common.HeroExtra> ls = null)
 //    {
-//        //³õÊ¼»¯Õ½¶·Êý¾Ý
+//        //ï¿½ï¿½Ê¼ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //        this.CastEffects.Clear();
 //        this.Summons.Clear();
 //        this.DeathPositions.Clear();
@@ -1300,7 +1326,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// Õ½¶·³õÊ¼»¯(pvpÕ½¶·)
+//    /// Õ½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½(pvpÕ½ï¿½ï¿½)
 //    /// </summary>
 //    public void InitPvpBattle(CombatConfigData combat)
 //    {
@@ -1332,12 +1358,12 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ½áÊøÕ½¶·
+//    /// ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="result"></param>
 //    public void EndBattle(Common.BATTLE_RESULT result)
 //    {
-//        //¿Í»§¶Ë´òÓ¡Log
+//        //ï¿½Í»ï¿½ï¿½Ë´ï¿½Ó¡Log
 //        //string allLogs = Logger.GetLogs();
 //        //string logname = "ClientLog" + ".log";
 //        //File.WriteAllText("./" + logname, allLogs);
@@ -1360,7 +1386,7 @@ public class Logic : MonoSingleton<Logic>
 //        this.BattleResult = result;
 
 //        BattleParam.WinReason winReson = result == BATTLE_RESULT.BATTLE_RESULT_VICTORY ? BattleParam.WinReason.Normal : BattleParam.WinReason.None;
-//        // ÍõÕß¾º¼¼³¡+¹«»áÕ½+Õù°ÔÕ½£¨Õ½¶·½á¹ûÅÐ¶Ï--³¬Ê±¡¢´æ»î¡¢ÉËº¦£©
+//        // ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½+ï¿½ï¿½ï¿½ï¿½Õ½+ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½--ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½î¡¢ï¿½Ëºï¿½ï¿½ï¿½
 //        if (this.BattleMode == E_BattleMode.GrandArena ||
 //            this.BattleMode == E_BattleMode.GuildChampion ||
 //            this.BattleMode == E_BattleMode.PersonChampion ||
@@ -1369,10 +1395,10 @@ public class Logic : MonoSingleton<Logic>
 //            )
 //        {
 //            BATTLE_RESULT _result = result;
-//            // ³¬Ê±´¦Àí
+//            // ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
 //            if (result == BATTLE_RESULT.BATTLE_RESULT_TIMEOUT)
 //            {
-//                // ¼º·½Ê£ÓàÓ¢ÐÛÊýÁ¿½ÏÉÙ
+//                // ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                int playerDemonCount = 0;
 //                int enemyDemonCount = 0;
 //                foreach (Role role in this.AliveRoles[RoleSide.Player])
@@ -1394,7 +1420,7 @@ public class Logic : MonoSingleton<Logic>
 //                var playerAlives = AliveCount[RoleSide.Player] - playerDemonCount;
 //                var enemyAlives = AliveCount[RoleSide.Enemy] - enemyDemonCount;
 
-//                // ÖîÉñÕ½¿¼ÂÇÌæ²¹
+//                // ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½æ²¹
 //                if (BattleMode == E_BattleMode.WarOfGods)
 //                {
 //                    playerAlives += SubtituteRoles.FindAll(sub => sub.Side == RoleSide.Player).Count;
@@ -1403,7 +1429,7 @@ public class Logic : MonoSingleton<Logic>
 
 //                if (playerAlives < enemyAlives)
 //                    _result = BATTLE_RESULT.BATTLE_RESULT_DEFEAT;
-//                // ¼º·½Ê£ÓàÓ¢ÐÛÊýÁ¿½Ï¶à
+//                // ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½
 //                else if (playerAlives > enemyAlives)
 //                {
 //                    _result = BATTLE_RESULT.BATTLE_RESULT_VICTORY;
@@ -1411,7 +1437,7 @@ public class Logic : MonoSingleton<Logic>
 //                }
 //                else
 //                {
-//                    // Ê£ÓàÈËÊýÏàÍ¬Ê±£¬×ÜÉËº¦½Ï¶àÕß»ñÊ¤
+//                    // Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ëºï¿½ï¿½Ï¶ï¿½ï¿½ß»ï¿½Ê¤
 //                    float playerDamage = Statistic.GetSideTotalDamage(RoleSide.Player);
 //                    float enemyDamage = Statistic.GetSideTotalDamage(RoleSide.Enemy);
 //                    if (playerDamage < enemyDamage)
@@ -1432,7 +1458,7 @@ public class Logic : MonoSingleton<Logic>
 //            {
 //                if (result != Common.BATTLE_RESULT.BATTLE_RESULT_CANCELED)
 //                {
-//                    // Õ½¶·»Ø·Å½á¹ûÏÔÊ¾£¨TODO:£©
+//                    // Õ½ï¿½ï¿½ï¿½Ø·Å½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½TODO:ï¿½ï¿½
 //                    foreach (Role role in this.GetSurvivors(RoleSide.Enemy))
 //                    {
 //                        if (role.Joint != null)
@@ -1440,18 +1466,18 @@ public class Logic : MonoSingleton<Logic>
 //                    }
 
 //#if !SERVER
-//                    // Ö±²¥Õ½¶·µÄ´¦Àí
+//                    // Ö±ï¿½ï¿½Õ½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 //                    if (this.IsLiveMode == true)
 //                    {
 //                        if (this.BattleMode == E_BattleMode.GuildChampion)
 //                        {
-//                            // ¹«»áÕ½Ö±²¥
+//                            // ï¿½ï¿½ï¿½ï¿½Õ½Ö±ï¿½ï¿½
 //                            if (UIBattleGuildChampion.instance != null)
 //                                UIBattleGuildChampion.instance.StartCoroutine(DelayInvoker.Invoke(UIBattleGuildChampion.instance.EndBattle, 2f));
 //                        }
 //                        else if (this.BattleMode == E_BattleMode.PersonChampion)
 //                        {
-//                            // Õù°ÔÕ½Ö±²¥£¨±¾³¡½áÊø--ÏÔÊ¾1s½á¹û£©
+//                            // ï¿½ï¿½ï¿½ï¿½Õ½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½--ï¿½ï¿½Ê¾1sï¿½ï¿½ï¿½ï¿½ï¿½
 //                            Server.PCSPlusBattleReplay replayInfo = PCSBuffer.BattleLive.Instance.LiveBattleReplayList[PCSBuffer.BattleLive.Instance.LiveBattleInfo.battleIndex - 1];
 //                            GameObject resultUI = (GameObject)MonoBehaviour.Instantiate(ResourcesLoader.Load("UI/prefab/UIPCSLiveBattleResult"));
 //                            resultUI.GetComponent<UIPCSLiveBattleResult>().InitUIData(replayInfo);
@@ -1460,7 +1486,7 @@ public class Logic : MonoSingleton<Logic>
 //                        return;
 //                    }
 
-//                    // ·ÇÖ±²¥Õ½¶·µÄ´¦Àí
+//                    // ï¿½ï¿½Ö±ï¿½ï¿½Õ½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½
 //                    if (BattleMode == E_BattleMode.WorldBoss || BattleMode == E_BattleMode.WorldBossAuto)
 //                    {
 //                        GameObject go = GameObject.Instantiate(ResourcesLoader.Load("UI/prefab/UIWorldBossEnd")) as GameObject;
@@ -1472,7 +1498,7 @@ public class Logic : MonoSingleton<Logic>
 //                            (GameObject)MonoBehaviour.Instantiate(ResourcesLoader.Load("UI/prefab/UIArenaRecord"));
 //                        if (BattleMode == E_BattleMode.GrandArena)
 //                        {
-//                            // ÍõÕß¾º¼¼³¡
+//                            // ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            if (Logic.Instance.TopPvpReplayRecord != null)
 //                            {
 //                                //o.GetComponent<UIArenaRecord>().setRecordData(Logic.Instance.TopPvpReplayRecord, true);
@@ -1482,7 +1508,7 @@ public class Logic : MonoSingleton<Logic>
 //                        }
 //                        else if (BattleMode == E_BattleMode.PersonChampion)
 //                        {
-//                            // Õù°ÔÕ½
+//                            // ï¿½ï¿½ï¿½ï¿½Õ½
 //                            if (Logic.Instance.PersonalChampionRecord != null)
 //                            {
 //                                //o.GetComponent<UIArenaRecord>().setRecordData(Logic.Instance.TopPvpReplayRecord, true);
@@ -1492,7 +1518,7 @@ public class Logic : MonoSingleton<Logic>
 //                        }
 //                        else if (BattleMode == E_BattleMode.HallOfWar)
 //                        {
-//                            // Õ½¶·ÓªµØ
+//                            // Õ½ï¿½ï¿½Óªï¿½ï¿½
 //                            if (Instance.HallOfWarRecord != null)
 //                            {
 //                                //o.GetComponent<UIArenaRecord>().setRecordData(Logic.Instance.TopPvpReplayRecord, true);
@@ -1501,7 +1527,7 @@ public class Logic : MonoSingleton<Logic>
 //                        }
 //                        else if (BattleMode == E_BattleMode.WarOfGods)
 //                        {
-//                            // ÖîÉñÕ½
+//                            // ï¿½ï¿½ï¿½ï¿½Õ½
 //                            if (Instance.WarOfGodsRecord != null)
 //                            {
 //                                o.GetComponent<UIArenaRecord>().DelaySetRecordData(2f, Instance.WarOfGodsRecord, true);
@@ -1509,7 +1535,7 @@ public class Logic : MonoSingleton<Logic>
 //                        }
 //                        else
 //                        {
-//                            // ÆÕÍ¨¾º¼¼³¡
+//                            // ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            if (Logic.Instance.PvpReplayRecord != null)
 //                            {
 //                                //o.GetComponent<UIArenaRecord>().setRecordData(Logic.Instance.PvpReplayRecord, true);
@@ -1522,7 +1548,7 @@ public class Logic : MonoSingleton<Logic>
 //#endif
 //                }
 
-//                // Õ½¶·»Ø·ÅÖ±½Óreturn
+//                // Õ½ï¿½ï¿½ï¿½Ø·ï¿½Ö±ï¿½ï¿½return
 //                return;
 //            }
 
@@ -1532,7 +1558,7 @@ public class Logic : MonoSingleton<Logic>
 //            //
 //            if (result == Common.BATTLE_RESULT.BATTLE_RESULT_VICTORY)
 //            {
-//                //TODO:ÊÂ¼þ´¦Àí
+//                //TODO:ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
 //                if (this.BattleMode != E_BattleMode.Unreal)
 //                {
 //                    this.Scene.CollectLoots(3f);
@@ -1540,30 +1566,30 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //            else if (result == Common.BATTLE_RESULT.BATTLE_RESULT_DEFEAT)
 //            {
-//                //TODO:ÊÂ¼þ´¦Àí
+//                //TODO:ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
 //                foreach (Role role in this.GetSurvivors(RoleSide.Enemy))
 //                {
 //                    if (role.Joint != null)
 //                        role.Joint.Waiting();
 //                }
-//                //×¢²á¹Ø¿¨ÍË³öÊÂ¼þ
+//                //×¢ï¿½ï¿½Ø¿ï¿½ï¿½Ë³ï¿½ï¿½Â¼ï¿½
 //            }
 //            else if (result == Common.BATTLE_RESULT.BATTLE_RESULT_CANCELED)
 //            {
-//                //TODO:ÊÂ¼þ´¦Àí
+//                //TODO:ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
 //            }
 //            else if (result == Common.BATTLE_RESULT.BATTLE_RESULT_TIMEOUT)
 //            {
 //                if (this.BattleMode == E_BattleMode.Crusade || this.BattleMode == E_BattleMode.CrusadeChallenge || this.BattleMode == E_BattleMode.Treasure || this.BattleMode == E_BattleMode.GrandChallenge || this.BattleMode == E_BattleMode.FirstBattle)
 //                {
-//                    //TODO:ÊÂ¼þ´¦Àí
+//                    //TODO:ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
 
 //                }
 //                else if (this.BattleMode == E_BattleMode.GuildInstance || this.BattleMode == E_BattleMode.Outland || this.BattleMode == E_BattleMode.Temple)
 //                {
 //                }
 //                else
-//                {//this.BattleExitProcessÖÐ,ÒÑ´¦ÀíÍË³öÕ½¶·ÏûÏ¢ _ µ¯³öÖØ¸´UI
+//                {//this.BattleExitProcessï¿½ï¿½,ï¿½Ñ´ï¿½ï¿½ï¿½ï¿½Ë³ï¿½Õ½ï¿½ï¿½ï¿½ï¿½Ï¢ _ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½UI
 //                    //                    BattleParam param = new BattleParam(this.LevelData.LevelID, this.BattleMode, this.HeroIDList, this.BattleMode == E_BattleMode.Campaign, false);
 //                    //                    param.LoseReson = "timeout";
 //                    //                    this.Scene.BattleResultProcess(param, DataManager.Numerics[3].Arg);
@@ -1573,31 +1599,31 @@ public class Logic : MonoSingleton<Logic>
 //#else
 //            if (!this.IsReplayMode)
 //            {
-//                // Ë¢ÐÂÉñ¹ê¶·Ê¿´ÎÊý(Ê¤Àû/Ê§°Ü/³¬Ê± ¶¼¼ÆËã´ÎÊý)
+//                // Ë¢ï¿½ï¿½ï¿½ï¿½ê¶·Ê¿ï¿½ï¿½ï¿½ï¿½(Ê¤ï¿½ï¿½/Ê§ï¿½ï¿½/ï¿½ï¿½Ê± ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 //                bool isIn = false;
 //                switch (this.BattleMode)
 //                {
-//                    case E_BattleMode.TimeRift: 	// Ê±¿ÕÁÑ·ì pve
+//                    case E_BattleMode.TimeRift: 	// Ê±ï¿½ï¿½ï¿½Ñ·ï¿½ pve
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.ADVCHAPTER]));
 //                        if (isIn)
 //                        {
-//                            //±ÜÃâ¸úÆÕÍ¨Ã¿ÈÕÈÎÎñÖØ¸´ÀÛ¼Ó
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½Û¼ï¿½
 //                            TaskBuffer.SetTimesFre(1, isIn);
 //                        }
 //                        break;
-//                    case E_BattleMode.HeroTrial: 	// Ó¢ÐÛÑÝÎäÌÃ pve
+//                    case E_BattleMode.HeroTrial: 	// Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ pve
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.ADVCHAPTER]));
 //                        if (isIn)
 //                        {
-//                            //±ÜÃâ¸úÆÕÍ¨Ã¿ÈÕÈÎÎñÖØ¸´ÀÛ¼Ó
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½Û¼ï¿½
 //                            TaskBuffer.SetArmFre(1, isIn);
 //                        }
 //                        break;
-//                    case E_BattleMode.Outland: 	// ÍâÓòÖ®ÃÅ pve
+//                    case E_BattleMode.Outland: 	// ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ pve
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.OUTLAND]));
@@ -1607,7 +1633,7 @@ public class Logic : MonoSingleton<Logic>
 //                        }
 //                        break;
 //                    case E_BattleMode.Crusade:
-//                    case E_BattleMode.CrusadeChallenge: 	// Ô¶Õ÷ pvp
+//                    case E_BattleMode.CrusadeChallenge: 	// Ô¶ï¿½ï¿½ pvp
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.CRUSADESTAGE]));
@@ -1617,7 +1643,7 @@ public class Logic : MonoSingleton<Logic>
 //                        }
 //                        break;
 
-//                    case E_BattleMode.GrandChallenge: 	// áÛ·åÌôÕ½
+//                    case E_BattleMode.GrandChallenge: 	// ï¿½Û·ï¿½ï¿½ï¿½Õ½
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.GRANDCHALLENGE]));
@@ -1626,7 +1652,7 @@ public class Logic : MonoSingleton<Logic>
 //                            TaskBuffer.SetCompleteGrandChallengeStagePre(1, isIn);
 //                        }
 //                        break;
-//                    case E_BattleMode.Treasure: 	// ÃØ±¦ÁúÑ¨
+//                    case E_BattleMode.Treasure: 	// ï¿½Ø±ï¿½ï¿½ï¿½Ñ¨
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.EXCAVATE]));
@@ -1635,7 +1661,7 @@ public class Logic : MonoSingleton<Logic>
 //                            TaskBuffer.SetExcavateBattleFre(1, isIn);
 //                        }
 //                        break;
-//                    case E_BattleMode.WarOfGods: 	// ÖîÉñÕù°Ô
+//                    case E_BattleMode.WarOfGods: 	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                        int heroID = TaskBuffer.GetHeroBattleHeroID(TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.WAROFGODS]);
 //                        if (WarOfGodsManager.Instance.Data.StartWarData != null)
 //                        {
@@ -1658,7 +1684,7 @@ public class Logic : MonoSingleton<Logic>
 //                            TaskBuffer.SetWarOfGodsfre(1, isIn);
 //                        }
 //                        break;
-//                    case E_BattleMode.HallOfWar: 	// Õ½¶ÓÓªµØ
+//                    case E_BattleMode.HallOfWar: 	// Õ½ï¿½ï¿½Óªï¿½ï¿½
 //                        isIn = this.HeroIDList.Contains(
 //                            TaskBuffer.GetHeroBattleHeroID(
 //                                TaskBuffer.heroBattleTypeDict[TaskBuffer.HEROBATTLE_TYPE.CAMPRAID]));
@@ -1669,9 +1695,9 @@ public class Logic : MonoSingleton<Logic>
 //                        break;
 //                }
 //            }
-//            //·¢ËÍ¹Ø¿¨ÍË³öÏûÏ¢,ÕÒµØ·½×¢²á¼àÌý
+//            //ï¿½ï¿½ï¿½Í¹Ø¿ï¿½ï¿½Ë³ï¿½ï¿½ï¿½Ï¢,ï¿½ÒµØ·ï¿½×¢ï¿½ï¿½ï¿½ï¿½ï¿½
 
-//            // ÍõÕß¾º¼¼³¡µÄÌØÊâ´¦Àí£¬added 20150805
+//            // ï¿½ï¿½ï¿½ß¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â´¦ï¿½ï¿½added 20150805
 //            if (this.BattleMode == E_BattleMode.GrandArena)
 //            {
 //                UITopArean2.Instance.AddBattleResult(this.BattleResult);
@@ -1693,7 +1719,7 @@ public class Logic : MonoSingleton<Logic>
 //                }
 
 //            }
-//            else if (BattleMode == E_BattleMode.WarOfGods)//ÖîÉñ
+//            else if (BattleMode == E_BattleMode.WarOfGods)//ï¿½ï¿½ï¿½ï¿½
 //            {
 //                UIBattle.Instance.WarOfGodsRegion.BattlOver();
 //                WarOfGodsManager.Instance.WarOfGodsEndBattleReq(returnData =>
@@ -1703,7 +1729,7 @@ public class Logic : MonoSingleton<Logic>
 //                    Scene.BattleResultProcess(param, DataManager.Numerics[3].Arg);
 //                });
 //            }
-//            else if (BattleMode == E_BattleMode.BraveMelee)//ÓÂÕßÂÒ¶·
+//            else if (BattleMode == E_BattleMode.BraveMelee)//ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½
 //            {
 //                UIBattle.Instance.BaraveMeleeRegion.BattlOver();
 //                bool isWin = false;
@@ -1723,7 +1749,7 @@ public class Logic : MonoSingleton<Logic>
 //                    Scene.BattleResultProcess(param, 1.5f);
 //                });
 //            }
-//            else if (BattleMode == E_BattleMode.Unreal)//ChickenDinner Õ½¶·½áÊøÂß¼­´¦Àí
+//            else if (BattleMode == E_BattleMode.Unreal)//ChickenDinner Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½
 //            {
 //                if (!UnrealTutorailManager.Instance.isNewPlayer)
 //                {
@@ -1732,47 +1758,47 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //            else
 //            {
-//                // Ë¢ÐÂ¹Ø¿¨ÐÅÏ¢
+//                // Ë¢ï¿½Â¹Ø¿ï¿½ï¿½ï¿½Ï¢
 //                if (result == BATTLE_RESULT.BATTLE_RESULT_VICTORY && !this.IsReplayMode)
 //                {
 //                    LevelBuffer.CompleteLevel(this.LevelData.LevelID, this.ResultStars, this.BattleMode);
 
 //                    TaskBuffer.triggerFarmStageTask(this.LevelData.LevelID);
-//                    //¸üÐÂÈÎÎñ×·×ÙÃæ°å
+//                    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
 //                    TaskBuffer.triggerTrackTask("CompleteStage", 1, this.LevelData.LevelID);
 
-//                    // Ë¢ÐÂÃ¿ÈÕÈÎÎñ´ÎÊý
+//                    // Ë¢ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                    switch (this.BattleMode)
 //                    {
-//                        case E_BattleMode.Campaign: 	// ¹Ø¿¨
+//                        case E_BattleMode.Campaign: 	// ï¿½Ø¿ï¿½
 //                            if (LevelBuffer.currentSelectLevel >= LevelBuffer.EliteLevelStarIndex && LevelBuffer.currentSelectLevel <= 20000)
 //                                Player.Instance.SetEliteRecord(LevelBuffer.currentSelectLevel, 1);
 
-//                            //²¹³äÉñÆ÷¹Ø¿¨´ÎÊý YuHaizhi 20190128
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¿ï¿½ï¿½ï¿½ï¿½ï¿½ YuHaizhi 20190128
 //                            else if (LevelBuffer.IsMiracLevel(LevelBuffer.currentSelectLevel))
 //                                Player.Instance.SetMiracRecord(LevelBuffer.currentSelectLevel, 1);
 //                            break;
-//                        case E_BattleMode.TimeRift: 	// Ê±¿ÕÁÑ·ì pve
+//                        case E_BattleMode.TimeRift: 	// Ê±ï¿½ï¿½ï¿½Ñ·ï¿½ pve
 //                            TaskBuffer.SetTimesFre(1);
-//                            //¸üÐÂÈÎÎñ×·×ÙÃæ°å
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            TaskBuffer.triggerTrackTask("FarmChapter102");
 //                            break;
-//                        case E_BattleMode.HeroTrial: 	// Ó¢ÐÛÑÝÎäÌÃ pve
+//                        case E_BattleMode.HeroTrial: 	// Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ pve
 //                            TaskBuffer.SetArmFre(1);
-//                            //¸üÐÂÈÎÎñ×·×ÙÃæ°å
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            TaskBuffer.triggerTrackTask("FarmChapter103");
 //                            break;
-//                        case E_BattleMode.Outland: 		// ÍâÓòÖ®ÃÅ pve
+//                        case E_BattleMode.Outland: 		// ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ pve
 //                            TaskBuffer.SetOutlandFre(1);
-//                            //¸üÐÂÈÎÎñ×·×ÙÃæ°å
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            TaskBuffer.triggerTrackTask("FarmChapter105");
 //                            break;
-//                        case E_BattleMode.Crusade:		// Ô¶Õ÷ pvp
+//                        case E_BattleMode.Crusade:		// Ô¶ï¿½ï¿½ pvp
 //                            TaskBuffer.SetCompleteCrusadeStageFre(1);
-//                            //¸üÐÂÈÎÎñ×·×ÙÃæ°å
+//                            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            TaskBuffer.triggerTrackTask("CompleteCrusadeStage");
 //                            break;
-//                        case E_BattleMode.GrandChallenge:		// áÛ·åÌôÕ½
+//                        case E_BattleMode.GrandChallenge:		// ï¿½Û·ï¿½ï¿½ï¿½Õ½
 //                            TaskBuffer.SetCompleteGrandChallengeStagePre(1);
 //                            break;
 //                        default:
@@ -1817,7 +1843,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// Õ½¶·tick
+//    /// Õ½ï¿½ï¿½tick
 //    /// </summary>
 //    /// <param name="passTime"></param>
 //    public void onTimer(double passTime)
@@ -1825,9 +1851,9 @@ public class Logic : MonoSingleton<Logic>
 //        if (!this.Running)
 //            return;
 
-//        // Ö´ÐÐÎ¢²Ù×ö¼ÇÂ¼
+//        // Ö´ï¿½ï¿½Î¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼
 //        this.ProcessOP();
-//        // Ö´ÐÐÊµÌåÂß¼­+±íÏÖ¸üÐÂ
+//        // Ö´ï¿½ï¿½Êµï¿½ï¿½ï¿½ß¼ï¿½+ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½
 //        this.ProcessEntities(passTime);
 //        this.doneFrameCount++;
 //#if BATTLE_LOG
@@ -1837,7 +1863,7 @@ public class Logic : MonoSingleton<Logic>
 //        ProcessSubstitute(RoleSide.Player);
 //        ProcessSubstitute(RoleSide.Enemy);
 
-//        // Õ½¶·ÊÇ·ñ½áÊøµÄ´¦ÀíÂß¼­
+//        // Õ½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
 //        this.VerifyBattleResult(passTime);
 //    }
 
@@ -1859,7 +1885,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// Ìæ²¹
+//    /// ï¿½æ²¹
 //    /// </summary>
 //    void ProcessSubstitute(RoleSide side)
 //    {
@@ -1883,17 +1909,17 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// Õ½¶·½á¹û´¦Àí
+//    /// Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="dt"></param>
 //    void VerifyBattleResult(double dt)
 //    {
 //        this.LimitTime = this.LimitTime - dt;
-//        //Õ½¶·½áÊøÌõ¼þÅÐ¶Ï
-//        //Ã»ÓÐµÐÈËÁË
+//        //Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
+//        //Ã»ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½
 //        BATTLE_RESULT result = BATTLE_RESULT.BATTLE_RESULT_DEFEAT;
 //        bool resume = true;
-//        // ¼º·½Ê£ÓàÓ¢ÐÛÊýÁ¿½ÏÉÙ
+//        // ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //        int playerDemonCount = 0;
 //        int enemyDemonCount = 0;
 //        foreach (Role role in this.AliveRoles[RoleSide.Player])
@@ -1904,7 +1930,7 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //            if (this.BattleMode == E_BattleMode.Unreal && role.IsUnrealBoss)
 //            {
-//                //Ë®¾§
+//                //Ë®ï¿½ï¿½
 //                playerDemonCount++;
 //            }
 //        }
@@ -1922,11 +1948,11 @@ public class Logic : MonoSingleton<Logic>
 //        else if (this.LimitTime <= 0)
 //        {
 //            this.BattleEnd = true;
-//            // ³¬Ê±ËãÊÇ£ºÍ¬¹éÓÚ¾¡
+//            // ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ç£ï¿½Í¬ï¿½ï¿½ï¿½Ú¾ï¿½
 //            if (this.BattleMode == E_BattleMode.Crusade || this.BattleMode == E_BattleMode.CrusadeChallenge || this.BattleMode == E_BattleMode.Treasure || this.BattleMode == E_BattleMode.HallOfWar || this.BattleMode == E_BattleMode.GrandChallenge)
 //                foreach (Role role in this.Roles)
 //                {
-//                    role.ExParamI3 = 1;         // ±ÜÃâËÀºó¸´»î
+//                    role.ExParamI3 = 1;         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ó¸´»ï¿½
 //                    role.End(null);
 //                }
 //            resume = false;
@@ -1937,7 +1963,7 @@ public class Logic : MonoSingleton<Logic>
 //            this.BattleEnd = true;
 //            if (this.BattleMode == E_BattleMode.Unreal)
 //            {
-//                //´¦ÀíË®¾§±»¹¥»÷
+//                //ï¿½ï¿½ï¿½ï¿½Ë®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                Role unrealBoss = null;
 //                foreach (Role role in this.AliveRoles[RoleSide.Player])
 //                {
@@ -1976,7 +2002,7 @@ public class Logic : MonoSingleton<Logic>
 //                {
 //                    this.Roles[i].ClearAbilities();
 
-//                    // fix:11/29/2016ÇåÀí³¡ÉÏtimerÀàÐÍeffect
+//                    // fix:11/29/2016ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½timerï¿½ï¿½ï¿½ï¿½effect
 //                    RoleExtension roleEx = this.Roles[i] as RoleExtension;
 //                    if (roleEx != null)
 //                    {
@@ -2008,7 +2034,7 @@ public class Logic : MonoSingleton<Logic>
 
 //                if (this.Round < this.LevelData.Rounds)
 //                {
-//                    // ¹«»á¸±±¾£¬Ê±¼äµ½ÁË¼´½ØÖ¹
+//                    // ï¿½ï¿½ï¿½á¸±ï¿½ï¿½ï¿½ï¿½Ê±ï¿½äµ½ï¿½Ë¼ï¿½ï¿½ï¿½Ö¹
 //                    if (BattleMode == E_BattleMode.GuildInstance && LimitTime <= 0)
 //                        Complete();
 //                    else
@@ -2038,7 +2064,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// ÍË³öÕ½¶·ÏûÏ¢´¦Àí
+//    /// ï¿½Ë³ï¿½Õ½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="result"></param>
 //    public void BattleExitProcess(Common.BATTLE_RESULT result, bool error)
@@ -2050,17 +2076,17 @@ public class Logic : MonoSingleton<Logic>
 //        {
 //            if (error)
 //            {
-//                // ·þÎñÆ÷Õ½¶·Ê¤ÀûÑéÖ¤Ê§°Ü
+//                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½ï¿½Ö¤Ê§ï¿½ï¿½
 //                BattleParam param = new BattleParam(this.LevelData.LevelID, this.BattleMode, this.HeroIDList, this.BattleMode == E_BattleMode.Campaign, false);
 //                param.LoseReson = "fail";
 //                this.Scene.BattleResultProcess(param, DataManager.Numerics[3].Arg);
 //            }
 //            else
 //            {
-//                //TODO:²¥·ÅÊ¤ÀûÒôÐ§
+//                //TODO:ï¿½ï¿½ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½ï¿½Ð§
 //                BattleParam param = new BattleParam(this.LevelData.LevelID, this.BattleMode, this.HeroIDList, this.BattleMode == E_BattleMode.Campaign, true);
 //                param.IsReplay = this.IsReplayMode;
-//                this.Scene.BattleResultProcess(param, DataManager.Numerics[10].Arg);//Õ½¶·Ê¤Àû
+//                this.Scene.BattleResultProcess(param, DataManager.Numerics[10].Arg);//Õ½ï¿½ï¿½Ê¤ï¿½ï¿½
 //            }
 //        }
 //        else if (result == Common.BATTLE_RESULT.BATTLE_RESULT_DEFEAT)
@@ -2068,7 +2094,7 @@ public class Logic : MonoSingleton<Logic>
 //            BattleParam param = new BattleParam(this.LevelData.LevelID, this.BattleMode, this.HeroIDList, this.BattleMode == E_BattleMode.Campaign, false);
 //            param.LoseReson = "fail";
 //            this.Scene.BattleResultProcess(param, DataManager.Numerics[3].Arg);
-//            //TODO:ÐÞ¸´¾­Ñé»ñÈ¡
+//            //TODO:ï¿½Þ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡
 //        }
 //        else if (result == BATTLE_RESULT.BATTLE_RESULT_TIMEOUT)
 //        {
@@ -2080,7 +2106,7 @@ public class Logic : MonoSingleton<Logic>
 
 //    private void Proceed()
 //    {
-//        // ÇåÀíÕÙ»½Îï
+//        // ï¿½ï¿½ï¿½ï¿½ï¿½Ù»ï¿½ï¿½ï¿½
 //        foreach (Role role in this.GetSurvivors(RoleSide.Player))
 //        {
 //            if (role.Config.IsDemon)
@@ -2116,7 +2142,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 //    }
 //    /// <summary>
-//    /// ½áÊøÕ½¶·
+//    /// ï¿½ï¿½ï¿½ï¿½Õ½ï¿½ï¿½
 //    /// </summary>
 //    private void Complete()
 //    {
@@ -2126,7 +2152,7 @@ public class Logic : MonoSingleton<Logic>
 //            if (role.Side == RoleSide.Player && role.IsHero && role.Config.IsDemon != true && role.IsDead)
 //                deadNum++;
 //        }
-//        // Õ½¶·½á¹ûµÄÆÀÐÇ£¨¼òµ¥¼ÆËã£©
+//        // Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç£ï¿½ï¿½òµ¥¼ï¿½ï¿½ã£©
 //        this.ResultStars = Mathf.Max(1, 3 - deadNum);
 //#if !SERVER
 //        if (this.BattleMode == E_BattleMode.Crusade && null != CrusadeBuffer.crusadeReply &&
@@ -2246,7 +2272,7 @@ public class Logic : MonoSingleton<Logic>
 
 
 //    /// <summary>
-//    /// Ìî³äÕ½¶·½áÊøÉÏÐÐÏûÏ¢
+//    /// ï¿½ï¿½ï¿½Õ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 //    /// </summary>
 //    /// <param name="result"></param>
 //    /// <returns></returns>
@@ -2436,14 +2462,14 @@ public class Logic : MonoSingleton<Logic>
 //                    msg.guild.instanceEnd = new Client.GuildInstanceEnd();
 //                    msg.guild.instanceEnd.result = result;
 //                    msg.guild.instanceEnd.totemType = TotemDataBuffer.Instance.useType;
-//                    // Í¬Ò»ÕÂÖÐËùÓÐÒÑÍ¨¹ý¹Ø¿¨µÄ×Ü±ÈÖØ
+//                    // Í¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ø¿ï¿½ï¿½ï¿½ï¿½Ü±ï¿½ï¿½ï¿½
 //                    float pastWeight = 0;
 //                    float totalWeight = 0;
-//                    // Í¬Ò»¹ØÖÐÍ¨¹ýµÄ±ÈÖØ
+//                    // Í¬Ò»ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½
 //                    float levelPastWeight = 0;
 //                    float levelTotalWeight = 0;
 
-//                    // ´æ·ÅÓëÕýÔÚ´òµÄ¹Ø¿¨Í¬Ò»ÕÂÖÐµÄËùÓÐ¹Ø¿¨
+//                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½Ä¹Ø¿ï¿½Í¬Ò»ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ð¹Ø¿ï¿½
 //                    Dictionary<int, Dictionary<int, CombatConfigData>> tmpComConfigs = new Dictionary<int, Dictionary<int, CombatConfigData>>();
 //                    foreach (int key in DataManager.Instance.Levels.Keys)
 //                    {
@@ -2457,9 +2483,9 @@ public class Logic : MonoSingleton<Logic>
 //                    {
 //                        foreach (int _key in tmpComConfigs[key].Keys)
 //                        {
-//                            // Ã¿Ò»²¨¹ÖÎï
+//                            // Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                            tmpConfig = tmpComConfigs[key][_key];
-//                            // Ð¡ÓÚµ±Ç°¹Ø¿¨idµÄÎªÒÑ¾­Í¨¹ýµÄ¹Ø¿¨
+//                            // Ð¡ï¿½Úµï¿½Ç°ï¿½Ø¿ï¿½idï¿½ï¿½Îªï¿½Ñ¾ï¿½Í¨ï¿½ï¿½ï¿½Ä¹Ø¿ï¿½
 //                            if (key < CombatConfig.LevelID)
 //                            {
 //                                pastWeight += tmpConfig.RaidWaveWeight;
@@ -2467,7 +2493,7 @@ public class Logic : MonoSingleton<Logic>
 //                            }
 //                            else if (key == CombatConfig.LevelID)
 //                            {
-//                                // µ±Ç°¹Ø¿¨ÖÐÒÑ¾­Í¨¹ýµÄ²¨´Î
+//                                // ï¿½ï¿½Ç°ï¿½Ø¿ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½Í¨ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
 //                                if (CombatConfig.RoundID > tmpConfig.RoundID)
 //                                {
 //                                    pastWeight += tmpConfig.RaidWaveWeight;
@@ -2500,7 +2526,7 @@ public class Logic : MonoSingleton<Logic>
 //                            //msg.guild.instanceEnd.hpinfo.Add((int)Math.Floor(Roles[i].HP / Roles[i].MaxHP * 10000));
 //                            msg.guild.instanceEnd.extraData[Roles[i].MonIdx - 1] = Roles[i].ExParamI3;
 //                        }
-//                        // »ñÈ¡ÉËº¦
+//                        // ï¿½ï¿½È¡ï¿½Ëºï¿½
 //                        totalDamage += Roles[i].IsHero ? Statistic.GetHeroDamage(Roles[i].ID) : 0;
 //                    }
 
@@ -2509,9 +2535,9 @@ public class Logic : MonoSingleton<Logic>
 //                    levelPastWeight += tmpWeight;
 
 
-//                    // ×Ü½ø¶È
+//                    // ï¿½Ü½ï¿½ï¿½ï¿½
 //                    msg.guild.instanceEnd.progress = (int)Math.Floor(pastWeight / totalWeight * 10000);
-//                    // ±¾¹Ø¿¨µÄ½ø¶È
+//                    // ï¿½ï¿½ï¿½Ø¿ï¿½ï¿½Ä½ï¿½ï¿½ï¿½
 //                    msg.guild.instanceEnd.stageProgress = (int)Math.Floor(levelPastWeight / levelTotalWeight * 10000);
 
 //                    msg.guild.instanceEnd.wave = Round;
@@ -2751,13 +2777,13 @@ public class Logic : MonoSingleton<Logic>
 //                    //}
 //                    msg.exitStage.unitBattleData.Clear();
 
-//                    //Íê³É´Ë¹Ø¿¨Ê±¸üÐÂÈÎÎñ½ø¶È YuHaizhi 20190226
+//                    //ï¿½ï¿½É´Ë¹Ø¿ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ YuHaizhi 20190226
 //                    for (int type = 0; type < TaskBuffer.TaskTypes; type++)
 //                    {
 //                        Server.UserTask legendTask_ = TaskBuffer.getWorkingHeroTask(0, type);
 //                        if (legendTask_ != null)
 //                        {
-//                            if (type < 2 && legendTask_.id > 1 || type >= 2)//´«Ææ¡¢ÆÆËéÉñÆ÷µÄµÚÒ»²½ÎªºÏ×°±¸£¬ÍêÃÀÉñÆ÷Îª¸±±¾
+//                            if (type < 2 && legendTask_.id > 1 || type >= 2)//ï¿½ï¿½ï¿½æ¡¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½Ò»ï¿½ï¿½Îªï¿½ï¿½×°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½
 //                            {
 //                                LegendTaskData lData = DataManager.Instance.LegendTasks[legendTask_.line][legendTask_.id];
 //                                int tid_ = lData.HeroID;
@@ -2786,7 +2812,7 @@ public class Logic : MonoSingleton<Logic>
 //                                    }
 
 //                                    msg.exitStage.unitBattleData.Add(uData);
-//                                    break;//°´´«Ææ->ÉñÆ÷µÄÓÅÏÈ¼¶
+//                                    break;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½->ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½
 //                                }
 
 //                            }
@@ -2818,7 +2844,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// Ìí¼ÓÎ»ÖÃÌØÐ§£¨×Óµ¯ÊµÌå£©
+//    /// ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½Óµï¿½Êµï¿½å£©
 //    /// </summary>
 //    /// <param name="effect"></param>
 //    public void AddEffect(Effect effect)
@@ -2853,9 +2879,9 @@ public class Logic : MonoSingleton<Logic>
 //            return;
 //        }
 //        this.PauseSide = RoleSide.None;
-//        // »Ö¸´ËùÓÐÓ¢ÐÛ¶¯×÷
+//        // ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Û¶ï¿½ï¿½ï¿½
 //        this.ResumeAllAnimation();
-//        // »Ö¸´ÆÁÄ»ÑÕÉ«
+//        // ï¿½Ö¸ï¿½ï¿½ï¿½Ä»ï¿½ï¿½É«
 //        if (this.Scene != null)
 //        {
 //            this.Scene.PlayEffect(ScreenEffect.Freeze, 0, 0f);
@@ -2863,7 +2889,7 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ¶³½áËùÓÐÓ¢ÐÛ¶¯×÷
+//    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Û¶ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="needMask"></param>
 //    public void SuspendAllAnimation(bool needMask = true)
@@ -2946,7 +2972,7 @@ public class Logic : MonoSingleton<Logic>
 //#endif
 //#else
 //        return "Logic";
-//        //¿Í»§¶Ë´òÓ¡log
+//        //ï¿½Í»ï¿½ï¿½Ë´ï¿½Ó¡log
 //        /*string s = string.Format("============================================================\nTick {0}\n", this.doneFrameCount);
 //        foreach (Role role in this.Roles)
 //        {
@@ -2995,9 +3021,9 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ²¥·ÅÎ»ÖÃ·½ÏòÌØÐ§£¨DirectEffect£©ÀýÈç´¬³¤µÄ£ººéË®¼¼ÄÜ£¬Ò»¸öË®Öù
-//    /// ·Ç°ó¶¨ÔÚRole½ÇÉ«ÉíÉÏµÄÌØÐ§
-//    /// ÐèÒª´´½¨EffectJointÀ´¿ØÖÆ£¨¸üÐÂÎ»ÖÃ¡¢·½ÏòµÈ£©
+//    /// ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½DirectEffectï¿½ï¿½ï¿½ï¿½ï¿½ç´¬ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ë®ï¿½ï¿½ï¿½Ü£ï¿½Ò»ï¿½ï¿½Ë®ï¿½ï¿½
+//    /// ï¿½Ç°ï¿½ï¿½ï¿½Roleï¿½ï¿½É«ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½Ð§
+//    /// ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½EffectJointï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã¡ï¿½ï¿½ï¿½ï¿½ï¿½È£ï¿½
 //    /// </summary>
 //    /// <param name="effect"></param>
 //    /// <param name="pos"></param>
@@ -3116,7 +3142,7 @@ public class Logic : MonoSingleton<Logic>
 //        }
 
 //        string conditonFaction = string.Empty;
-//        bool factionIdentical = false; // ÅÉÏµÎÇºÏ
+//        bool factionIdentical = false; // ï¿½ï¿½Ïµï¿½Çºï¿½
 //        foreach (string triggerFaction in totem.Condition)
 //        {
 //            string[] condition = triggerFaction.Split(':');
@@ -3128,7 +3154,7 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //        }
 
-//        // ÅÉÏµ²»ÎÇºÏ
+//        // ï¿½ï¿½Ïµï¿½ï¿½ï¿½Çºï¿½
 //        if (!factionIdentical)
 //        {
 //            return;
@@ -3136,7 +3162,7 @@ public class Logic : MonoSingleton<Logic>
 
 //        string totemEffect = Const.GetTotemEffect(conditonFaction);
 
-//        // ÕÒ³ö´óÕÐ´¥·¢µÄÊôÐÔ¼Ó³É
+//        // ï¿½Ò³ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼Ó³ï¿½
 //        Dictionary<int, int> addAttrDict = new Dictionary<int, int>();
 //        Type type = typeof(TotemLevelData);
 
@@ -3189,49 +3215,49 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //        }
 //    }
-//    //»ðÑæÍ¼ÌÚ¼¼ÄÜ  
+//    //ï¿½ï¿½ï¿½ï¿½Í¼ï¿½Ú¼ï¿½ï¿½ï¿½  
 //    public void TriggerFireTotemByActiveTalent(Talent talent, Role from, Role target)
 //    {
 //        TotemLevelData totem = null;
-//        if (from != null && target != null && from.Side == target.Side) //ÅÐ¶ÏÕóÓªÊÇ·ñÏàÍ¬
+//        if (from != null && target != null && from.Side == target.Side) //ï¿½Ð¶ï¿½ï¿½ï¿½Óªï¿½Ç·ï¿½ï¿½ï¿½Í¬
 //            return;
 
 //        totem = GetTotemLevelData(from);
 //        if (totem == null)
 //            return;
 //        string conditonFaction = string.Empty;
-//        bool factionIdentical = false; // ÅÉÏµÎÇºÏ
+//        bool factionIdentical = false; // ï¿½ï¿½Ïµï¿½Çºï¿½
 //        var group = !DataManager.Instance.TalentGroups.ContainsKey(from.Data.ID) ?
 //               null : DataManager.Instance.TalentGroups[from.Data.ID].Where(data => (data.Value.TalentGroupID == talent.Data.TalentGroupID)).Select(data => data.Value).First();
-//        if (group != null && group.TalentTags.Count == 0 && group.ParentID > 0) //ÎªÁË½â¾ö¼¼ÄÜÉËº¦ÊÇÍ¨¹ý×Ó¼¼ÄÜÊµÏÖµÄ
+//        if (group != null && group.TalentTags.Count == 0 && group.ParentID > 0) //Îªï¿½Ë½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëºï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ó¼ï¿½ï¿½ï¿½Êµï¿½Öµï¿½
 //            group = DataManager.Instance.TalentGroups[from.Data.ID].Where(data => (data.Value.TalentGroupID == group.ParentID)).Select(data => data.Value).First();
 //        foreach (string triggerFaction in totem.Condition)
 //        {
 //            string[] condition = triggerFaction.Split(':');
 //            conditonFaction = condition[1];
-//            if (group != null && group.TalentTags.Contains(conditonFaction)) //¼¼ÄÜÊÇ»ðÑæÏµµÄ
+//            if (group != null && group.TalentTags.Contains(conditonFaction)) //ï¿½ï¿½ï¿½ï¿½ï¿½Ç»ï¿½ï¿½ï¿½Ïµï¿½ï¿½
 //            {
 //                factionIdentical = true;
 //                break;
 //            }
 //        }
 
-//        // ÅÉÏµ²»ÎÇºÏ
+//        // ï¿½ï¿½Ïµï¿½ï¿½ï¿½Çºï¿½
 //        if (!factionIdentical)
 //        {
 //            return;
 //        }
 
-//        // »ðÑæ¼¼ÄÜ´¥·¢µÄÊôÐÔ¼Ó³É
+//        // ï¿½ï¿½ï¿½æ¼¼ï¿½Ü´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼Ó³ï¿½
 //        Dictionary<int, int> addAttrDict = ChooseFireTriggerAdd(totem, TotemTriggerType.ActiveTalent);
 //        if (addAttrDict.Count > 0)
 //        {
 //            if (!target.Abilities.Any(ability => ability.AbilityData.ID == totem.InitiativeBuff))
 //            {
-//                target.FireTotemCount = 0; //³õÊ¼»¯µþ¼ÓÊý
+//                target.FireTotemCount = 0; //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //                target.FireTotemTime = (float)this.LimitTime + DataManager.Instance.DNumerics[85].Arg;
 //            }
-//            //ÐÂÐèÇó »ðÑæÍ¼ÌÚµþ²ãÊýÊ±¼ÓÀäÈ´Ê±¼ä 2019-10-9
+//            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Í¼ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½ 2019-10-9
 //            if (target.FireTotemTime - (float)this.LimitTime >= DataManager.Instance.DNumerics[85].Arg)
 //            {
 //                AbilityData abilityData = DataManager.Instance.Abilities[totem.InitiativeBuff].Clone();
@@ -3254,7 +3280,7 @@ public class Logic : MonoSingleton<Logic>
 //            }
 //        }
 //    }
-//    //¶¾ÏµÍ¼ÌÚ¼¼ÄÜ
+//    //ï¿½ï¿½ÏµÍ¼ï¿½Ú¼ï¿½ï¿½ï¿½
 //    public bool TriggerPoisoningTotemByActiveTalent(Role from, AbilityData ability)
 //    {
 //        TotemLevelData totem = null;
@@ -3279,21 +3305,21 @@ public class Logic : MonoSingleton<Logic>
 //        if (totem == null)
 //            return false;
 //        string conditonFaction = string.Empty;
-//        bool factionIdentical = false; // ÅÉÏµÎÇºÏ
+//        bool factionIdentical = false; // ï¿½ï¿½Ïµï¿½Çºï¿½
 //        foreach (string triggerFaction in totem.Condition)
 //        {
 //            string[] condition = triggerFaction.Split(':');
 //            conditonFaction = condition[1];
-//            if (ability != null && ability.AbilityTags != null && ability.AbilityTags.Contains(conditonFaction)) //¼¼ÄÜÊÇ»ðÑæÏµµÄ
+//            if (ability != null && ability.AbilityTags != null && ability.AbilityTags.Contains(conditonFaction)) //ï¿½ï¿½ï¿½ï¿½ï¿½Ç»ï¿½ï¿½ï¿½Ïµï¿½ï¿½
 //            {
 //                factionIdentical = true;
 //                break;
 //            }
 //        }
-//        // ÅÉÏµ²»ÎÇºÏ
+//        // ï¿½ï¿½Ïµï¿½ï¿½ï¿½Çºï¿½
 //        if (!factionIdentical)
 //            return false;
-//        // ¼¼ÄÜ´¥·¢µÄÊôÐÔ¼Ó³É
+//        // ï¿½ï¿½ï¿½Ü´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼Ó³ï¿½
 //        Dictionary<int, int> addAttrDict = ChooseFireTriggerAdd(totem, TotemTriggerType.Poisoming);
 //        if (addAttrDict.Count > 0)
 //        {
@@ -3304,7 +3330,7 @@ public class Logic : MonoSingleton<Logic>
 //        return false;
 //    }
 //    /// <summary>
-//    /// »ñÈ¡ target ÕóÓªµÄÍ¼ÌÚÊý¾Ý
+//    /// ï¿½ï¿½È¡ target ï¿½ï¿½Óªï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    /// </summary>
 //    /// <param name="target"></param>
 //    /// <returns></returns>
@@ -3334,10 +3360,10 @@ public class Logic : MonoSingleton<Logic>
 //    }
 
 //    /// <summary>
-//    /// ÕÒ³öÓÉ _type ´¥·¢µÄÊôÐÔ¼Ó³É
+//    /// ï¿½Ò³ï¿½ï¿½ï¿½ _type ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼Ó³ï¿½
 //    /// </summary>
 //    /// <param name="totem"></param>
-//    /// <param name="_type">´¥·¢Ìõ¼þ</param>
+//    /// <param name="_type">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</param>
 //    /// <returns></returns>
 //    public Dictionary<int, int> ChooseFireTriggerAdd(TotemLevelData totem, TotemTriggerType _type)
 //    {

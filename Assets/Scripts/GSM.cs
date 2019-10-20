@@ -34,6 +34,10 @@ public class GSM : MonoBehaviour
         //    mainCamera.GetComponent<FixedWidthCamera>().width = 11f;
         //    Background.transform.localScale = Vector3.one * 1.1f;
         //}
+
+
+
+
     }
 
     void Start()
@@ -42,6 +46,8 @@ public class GSM : MonoBehaviour
         //this.PrepareData();
         //PauseType = 0;
         //StartCoroutine(DelayPlayMusic());
+        Logic.Instance.CreateEnemiesByLevelData(1,1);
+        Logic.Instance.CreateEnemiesByLevelData(1,2);
     }
 
     void OnDestroy()

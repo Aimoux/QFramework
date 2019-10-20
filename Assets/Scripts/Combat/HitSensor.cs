@@ -2,33 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//°ó¶¨ÓÚÎäÆ÷ÎïÌå£¬¼ì²âÊÇ·ñÃüÖĞ
-//½ÇÉ«²»ĞèÒª¼ì²âÆ÷£¨½ÇÉ«vsÎäÆ÷ ¶şÑ¡Ò»?£©
+//ç»‘å®šäºæ­¦å™¨ç‰©ä½“ï¼Œæ£€æµ‹æ˜¯å¦å‘½ä¸­
+//è§’è‰²ä¸éœ€è¦æ£€æµ‹å™¨ï¼ˆè§’è‰²vsæ­¦å™¨ äºŒé€‰ä¸€?ï¼‰
 public class HitSensor : MonoBehaviour
 {
-    public Weapon wp;//³õÊ¼»¯ÖĞ¸³Öµ
+    public Weapon wp;//åˆå§‹åŒ–ä¸­èµ‹å€¼
     private void OnTriggerEnter(Collider other)
     {
+        if(!wp.Owner.Status.IsWeaponEnable)
+            return;
+
         if (other.gameObject.tag == "")
         {
-            //ÕóÈİÎÊÌâ£ºÍ¬ÕóÈİÃâÉË£¬»ìÕ½ÕóÈİÊıÁ¿³¬¹ı2¸öµÄÇé¿ö
+            //é˜µå®¹é—®é¢˜ï¼šåŒé˜µå®¹å…ä¼¤ï¼Œæ··æˆ˜é˜µå®¹æ•°é‡è¶…è¿‡2ä¸ªçš„æƒ…å†µ
             Role Masochism = GetMasochism();
             if (Masochism != null)
             {
-                wp.OnHit();//ÎäÆ÷×ÔÉíµÄÃüÖĞÌØÊâĞ§¹û
-                wp.Owner.OnSadism(wp, Masochism);//¹¥»÷·½ÊÕÒæ¼ÆËã
-                Masochism.OnMasoch(wp);//ÊÜ»÷·½ËğÊ§¼ÆËã
-                //Ò»¸ö´ò»÷ÊÂ¼şµÄĞÅÏ¢´«µİ
-                //¹¥»÷·½ĞèÒªÖªµÀ×Ô¼ºµÄÄÄÒ»¸öÎäÆ÷£¨ÎäÆ÷×´Ì¬£¬¼ÆËãÉËº¦£©»÷ÖĞÁËÄÄÒ»¸öµĞÈË
-                //ÊÜ»÷·½ĞèÒªÖªµÀÉËº¦£¨Ğ§¹û£©ÊıÖµºÍ¹¥»÷ÕßÊÇË­£¨·´»÷¡¢³ğºŞ×ªÒÆ£©
+                wp.OnHit();//æ­¦å™¨è‡ªèº«çš„å‘½ä¸­ç‰¹æ®Šæ•ˆæœ
+                wp.Owner.OnSadism(wp, Masochism);//æ”»å‡»æ–¹æ”¶ç›Šè®¡ç®—
+                Masochism.OnMasoch(wp);//å—å‡»æ–¹æŸå¤±è®¡ç®—
+                //ä¸€ä¸ªæ‰“å‡»äº‹ä»¶çš„ä¿¡æ¯ä¼ é€’
+                //æ”»å‡»æ–¹éœ€è¦çŸ¥é“è‡ªå·±çš„å“ªä¸€ä¸ªæ­¦å™¨ï¼ˆæ­¦å™¨çŠ¶æ€ï¼Œè®¡ç®—ä¼¤å®³ï¼‰å‡»ä¸­äº†å“ªä¸€ä¸ªæ•Œäºº
+                //å—å‡»æ–¹éœ€è¦çŸ¥é“ä¼¤å®³ï¼ˆæ•ˆæœï¼‰æ•°å€¼å’Œæ”»å‡»è€…æ˜¯è°ï¼ˆåå‡»ã€ä»‡æ¨è½¬ç§»ï¼‰
             }
         }
     }
 
-    //ÕóÈİ¡¢Òş²Ø¡¢ÎŞµĞÅĞ¶¨
-    //role²»¼Ì³Ğmono£¬Î»ÓÚÄÚ´æÖĞ£¬ÈçºÎ»ñÈ¡?? behaviortree.get vaiable value??
-    //Íæ¼ÒÍ¬ÑùÌí¼ÓĞĞÎªÊ÷?? ±ÜÃâµØĞÎ¿¨ËÀ??
-    private Role GetMasochism()
+    //é˜µå®¹ã€éšè—ã€æ— æ•Œåˆ¤å®š
+    //roleä¸ç»§æ‰¿monoï¼Œä½äºå†…å­˜ä¸­ï¼Œå¦‚ä½•è·å–?? behaviortree.get vaiable value??
+    //ç©å®¶åŒæ ·æ·»åŠ è¡Œä¸ºæ ‘?? é¿å…åœ°å½¢å¡æ­»??
+    private Role GetMasochism()// how to get??
     {
 
 

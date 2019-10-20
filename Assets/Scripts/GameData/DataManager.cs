@@ -115,6 +115,19 @@ class DataManager : Singleton<DataManager>
         }
     }
 
+    private Dictionary<int, WeaponFrameData> _WeaponFrames;
+    public Dictionary<int, WeaponFrameData > WeaponFrames
+    {
+        get 
+        {
+            if(_WeaponFrames == null)
+            {
+                Load("Data/WeaponFrames.json", ref _WeaponFrames);
+            }
+            return _WeaponFrames;
+        }
+    }
+
 
     protected DataManager()
     {

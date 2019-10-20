@@ -11,16 +11,16 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         anim = GamingManager.Instance.PlayerAnim;
-        anim.SetInteger(Common.CommonAnim.StateID, (int)Common.ANIMATIONSTATE.WALK);
+        anim.SetInteger(Common.Const.StateID, (int)Common.ANIMATIONSTATE.WALK);
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        float vtc = anim.GetFloat(CommonAnim.Vertical); 
+        float vtc = anim.GetFloat(Const.Vertical); 
         vtc = Mathf.Lerp(vtc, pipt.drMag, 0.5f);
-        anim.SetFloat(CommonAnim.Vertical, vtc);
+        anim.SetFloat(Const.Vertical, vtc);
         anim.transform.forward = Vector3.Slerp(anim.transform.forward, pipt.drVec, 0.3f);  
     }
 

@@ -5,19 +5,19 @@ using UnityEngine.Events;
 using Common;
 using GameData;
 
-//Õ½¶·µÄÈë¿Ú
+//æˆ˜æ–—çš„å…¥å£
 public static class LogicManager 
 {
 
-    //buttonÊÂ¼ş¿ÉÖ±½Óµ÷ÓÃ´Ë´¦
+    //button event calls
     public static void EnterLevel(BATTLEMODE mode, string scene)
     {
 
         UnityAction onLoad = delegate ()
         {
             Logic.Instance.BattleMode = mode;
-            Logic.Instance.InitAllies(new List<Role>());
-            Logic.Instance.InitEnemies(new List<Role>());
+            //Logic.Instance.InitAllies(new List<Role>());
+            //Logic.Instance.InitEnemies(new List<Role>());
             Logic.Instance.InitBattle();
         };
 
@@ -45,7 +45,7 @@ public static class LogicManager
 
 
 
-    /// pveÀà:¹Ø¿¨Õ½¶·Èë¿Ú,ĞèÒª´«Èë LevelData , List<Hero> £¬ isbot£¨ÊÇ·ñÎªµçÄÔ£©
+    /// pveï¿½?:å…³å¡æˆ˜æ–—å…¥å£,éœ€è¦ä¼ ï¿½? LevelData , List<Hero> ï¿½? isbotï¼ˆæ˜¯å¦ä¸ºç”µè„‘ï¿½?
     //public static void EnterLevel(E_BattleMode battleMode, LevelData level, List<Common.Hero> heroes, bool isbot,
     //    int roundId = 1,
     //    List<uint> operations = null,
@@ -69,22 +69,22 @@ public static class LogicManager
     //            }
     //        }
     //        logic.MPBonus = level.MPBonus;
-    //        // ¶ÔÕ½Ë«·½Í¼ÌÚµÈ¼¶
+    //        // å¯¹æˆ˜åŒæ–¹å›¾è…¾ç­‰çº§
     //        logic.playerTotemType = playerTotemType;
     //        logic.playerTotemLevel = playerTotemLevel;
     //        logic.enemyTotemType = enemyTotemType;
     //        logic.enemyTotemLevel = enemyTotemLevel;
 
-    //        //³õÊ¼»¯Ó¢ĞÛ£¬»á¼ÓÔØµÚÒ»´Î   
+    //        //åˆï¿½?ï¿½åŒ–è‹±é›„ï¼Œä¼šåŠ è½½ï¿½?ä¸€ï¿½?   
     //        logic.InitPlayerHeroes(heroes, isbot);
-    //        //³õÊ¼»¯³¡¾°°üÀ¨Ë¢¹Ö
-    //        CombatConfigData data = DataNewManager.Instance.CombatConfigs.Value[level.LevelID][roundId];//ÄÃÕ½¶·Êı¾İ
+    //        //åˆï¿½?ï¿½åŒ–åœºæ™¯åŒ…æ‹¬åˆ·ï¿½?
+    //        CombatConfigData data = DataNewManager.Instance.CombatConfigs.Value[level.LevelID][roundId];//æ‹¿æˆ˜æ–—æ•°ï¿½?
     //        logic.InitBattle(data);
     //    };
     //    Logic.Instance.LoadLevel(level.LevelResource, heroes, level, action);
     //}
 
-    //µÚÒ»´ÎÕ½¶·
+    //ï¿½?ä¸€æ¬¡æˆ˜ï¿½?
 //    public static void Enter5V5(List<Common.Hero> heroes, List<Common.Hero> enemys, Dictionary<int, Common.HeroExtra> myHeroData, Dictionary<int, Common.HeroExtra> enemysHeroData)
 //    {
 //        LevelData level = DataManager.Instance.Levels[-2];
@@ -101,7 +101,7 @@ public static class LogicManager
 //            logic.HeroList = heroes;
 //            logic.Round = 1;
 //            logic.MPBonus = 1;
-//            // ¶ÔÕ½Ë«·½Í¼ÌÚµÈ¼¶
+//            // å¯¹æˆ˜åŒæ–¹å›¾è…¾ç­‰çº§
 //            logic.playerTotemLevel = 0;
 //            logic.enemyTotemLevel = 0;
 
@@ -113,8 +113,8 @@ public static class LogicManager
 //            {
 //                role.Init();
 //            }
-//            CombatConfigData data = DataNewManager.Instance.CombatConfigs.Value[-2][1];//ÄÃÕ½¶·Êı¾İ
-//            //³õÊ¼»¯³¡¾°
+//            CombatConfigData data = DataNewManager.Instance.CombatConfigs.Value[-2][1];//æ‹¿æˆ˜æ–—æ•°ï¿½?
+//            //åˆï¿½?ï¿½åŒ–åœºæ™¯
 //            logic.InitPvpBattle(data);
 //        };
 //        List<Common.Hero> roles = new List<Common.Hero>();

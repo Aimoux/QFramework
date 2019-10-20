@@ -2,25 +2,33 @@
   "1": {
     "BossType": 1, 
     "ID": 1, 
-    "Level": 10, 
+    "Level": 2, 
     "MID": 1, 
     "RatioDPS": 1.0, 
     "RatioHP": 1.0, 
     "RatioMP": 1.0, 
     "RewardEXP": 100, 
     "RewardMoney": 100, 
-    "Scale": 1.0
+    "Scale": 1.0, 
+    "Weapons": {
+      "2": 1, 
+      "2": 1
+    }
   }, 
   "2": {
     "BossType": 0, 
     "ID": 2, 
-    "Level": 10, 
+    "Level": 1, 
     "MID": 2, 
     "RatioDPS": 1.0, 
     "RatioHP": 1.0, 
     "RatioMP": 1.0, 
     "RewardEXP": 100, 
     "RewardMoney": 100, 
-    "Scale": 1.0
+    "Scale": 1.0, 
+    "Weapons": {
+      "1": 1, 
+      "2": 1
+    }
   }
 }

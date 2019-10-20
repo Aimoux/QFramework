@@ -6,20 +6,23 @@ using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
 using Common;
 using GameData;
+using QF.Res;
 
 //deal with unity objetcs
-//ºÏÀíµÄµ÷ÓÃË³Ğò²ã¼¶:BT->Role->Controller??
-//RoleÖĞÊ¹ÓÃGetComponent·½Ê½»ñÈ¡
+//åˆç†çš„è°ƒç”¨é¡ºåºå±‚çº§:BT->Role->Controller??
+//Roleä¸­ä½¿ç”¨GetComponentæ–¹å¼è·å–
 public class RoleController : MonoBehaviour
 {
     public Role role;
-    public Animator anim;//ÔÚÔ¤ÖÆÌåÖĞ°ó¶¨??
-    public NavMeshAgent nav;//Ô¤ÖÆÌåÖĞ°ó¶¨??
-    public bool isGrounded { get { return IsOnGround(); } }//ÂäµØ¼ì²âµÄÓ¦ÓÃ³¡ºÏ??
+    public Animator anim;//åœ¨é¢„åˆ¶ä½“ä¸­ç»‘å®š??
+    public NavMeshAgent nav;//é¢„åˆ¶ä½“ä¸­ç»‘å®š??
+    public bool isGrounded { get { return IsOnGround(); } }//è½åœ°æ£€æµ‹çš„åº”ç”¨åœºåˆ??
     public UIFloatingBar floatingBar;
     public BehaviorTree tree;
 
     public Transform model;
+    public Transform wpPos;
+    public Transform wpModel;
     public Vector3 position
     {
         get
@@ -46,10 +49,47 @@ public class RoleController : MonoBehaviour
     }
 
     private bool navigating = false;
-    private NavMeshPath path = new NavMeshPath();
+    private NavMeshPath path;
     private WalkState walk;
+    public ResLoader loader;
 
+    private void Awake() 
+    {
+        path = new NavMeshPath();
+    }
 
+    private  void Start() 
+    {
+        
+    }
+
+    private void OnDestroy()
+    {
+        loader.Recycle2Cache();
+        loader = null;
+    }
+
+    public void Init()
+    {
+        loader = role.Loader;
+
+        anim.runtimeAnimatorController = loader.LoadSync<RuntimeAnimatorController>(role.CurWeapon.Data.Animator);
+
+        GameObject wpsrc = loader.LoadSync<GameObject>(role.CurWeapon.Data.Model);
+        GameObject wp= GameObject.Instantiate(wpsrc) as GameObject;
+        wpModel = wp.transform;
+        wpModel.SetParent(wpPos);
+        wpModel.localPosition = Vector3.zero;
+        wpModel.localRotation = Quaternion.identity;
+        wpModel.localScale = Vector3.one;
+
+        wpModel.GetComponent<HitSensor>().wp = role.CurWeapon;
+
+//tree at last??
+        tree.ExternalBehavior = loader.LoadSync<ExternalBehavior>(role.Data.Behavior);
+        tree.SetVariableValue(Const.SharedSelf, role);
+
+    }
     public void StartNav(Vector3 pos)
     {
         if (!navigating)
@@ -59,13 +99,14 @@ public class RoleController : MonoBehaviour
             nav.updatePosition = true;
             nav.updateRotation = false;
             navigating = true;
+
         }
 
         if (walk == null)
             walk = new WalkState(role);
 
         if (role.Status != walk)
-            role.PushState(walk);//ÊÜ¿Ø²»ÄÜÒÆ¶¯µÄÂß¼­Î»ÓÚroleµÄ×´Ì¬×ª»»ÖĞ??
+            role.PushState(walk);//å—æ§ä¸èƒ½ç§»åŠ¨çš„é€»è¾‘ä½äºroleçš„çŠ¶æ€è½¬æ¢ä¸­??
 
     }
 
@@ -75,7 +116,7 @@ public class RoleController : MonoBehaviour
         navigating = false;
     }
 
-    //PlayerÒ²¿ÉÒÔÀûÓÃ´Ë´¦??¶àÈËÅö×²ÒÔ¼°¿çÔ½ÕÏ°­??
+    //Playerä¹Ÿå¯ä»¥åˆ©ç”¨æ­¤å¤„??å¤šäººç¢°æ’ä»¥åŠè·¨è¶Šéšœç¢??
     public ResultType MoveToTargetByNav(Vector3 pos)
     {
         if (!NavMesh.CalculatePath(transform.position, pos, NavMesh.AllAreas, path))
@@ -85,26 +126,26 @@ public class RoleController : MonoBehaviour
             return ResultType.Failure;
 
         nav.SetDestination(pos);
-        nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//¸¡¿ÕÅĞ¶Ï??
+        nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//æµ®ç©ºåˆ¤æ–­??
         nav.nextPosition = transform.position;//Animator Apply root motion
         Vector3 targetFWD = nav.desiredVelocity;
         targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
         transform.forward = Vector3.Slerp(transform.forward, targetFWD, 0.8f);
-        //nav.Warp(transform.position);//´ËÓï¾äµ¼ÖÂdesiredVelocity=0£¿£¿   
+        //nav.Warp(transform.position);//æ­¤è¯­å¥å¯¼è‡´desiredVelocity=0ï¼Ÿï¼Ÿ   
 
-        role.Position = transform.position;//·ÇÒÆ¶¯×´Ì¬ÏÂÈçºÎ´«µİÖµ,ÀûÓÃ¶¯»­??
-        role.Forward = transform.forward;//ÊÜ¿Ø/ÖÍ¿Õ Ö±½Ó´«µİÄ£ĞÍµÄ³¯ÏòÎ»ÖÃ??
+        role.Position = transform.position;//éç§»åŠ¨çŠ¶æ€ä¸‹å¦‚ä½•ä¼ é€’å€¼,åˆ©ç”¨åŠ¨ç”»??
+        role.Forward = transform.forward;//å—æ§/æ»ç©º ç›´æ¥ä¼ é€’æ¨¡å‹çš„æœå‘ä½ç½®??
         //transform.forward = anim.deltaRotation * transform.forward;??
 
         return ResultType.Success;
 
-        //¹Ù·½°¸Àı·½°¸
+        //å®˜æ–¹æ¡ˆä¾‹æ–¹æ¡ˆ
         //nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;
-        ////Ê¹´Ë¾äÓĞÒâÒå£¬Ğè¸Ä±äApplyRootMotion£¿£¿
+        ////ä½¿æ­¤å¥æœ‰æ„ä¹‰ï¼Œéœ€æ”¹å˜ApplyRootMotionï¼Ÿï¼Ÿ
         //transform.position = nav.nextPosition;
-        ////È¡ÏûRigidBody¼ş£¿£¿
+        ////å–æ¶ˆRigidBodyä»¶ï¼Ÿï¼Ÿ
         //transform.forward = anim.deltaRotation * transform.forward;
-        ////Ë²ÒÆnav£¬½â¾ö¿¨µØĞÎÎÊÌâ
+        ////ç¬ç§»navï¼Œè§£å†³å¡åœ°å½¢é—®é¢˜
         //nav.Warp(transform.position);
 
     }
@@ -119,7 +160,7 @@ public class RoleController : MonoBehaviour
 
 
 
-    //Ö±½Óµ÷ÓÃBTMove µÄcan see target??
+    //ç›´æ¥è°ƒç”¨BTMove çš„can see target??
     public float AngleToTarget(Vector3 pos)
     {
         Vector2 from = new Vector2(forward.x, forward.z);
@@ -128,12 +169,17 @@ public class RoleController : MonoBehaviour
         return angle;
     }
 
-    //½Ç¶È·¶Î§ÅĞ¶¨
+    //è§’åº¦èŒƒå›´åˆ¤å®š
     public bool WithInAngle (Vector3 pos)
     {
         return AngleToTarget(pos) < DataManager.Instance.GlobalConfig.ViewAngle;
     }
 
-    //
+    public void SetState(AnimState state)
+    {
+        anim.SetInteger(Const.StateID, (int)state.State);
+
+
+    }
 
 }
