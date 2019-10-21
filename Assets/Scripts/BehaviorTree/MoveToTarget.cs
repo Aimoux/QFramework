@@ -18,16 +18,17 @@ public class MoveToTarget : Action
     }
     public override TaskStatus OnUpdate()
     {
-        sdtarget.Value = sdself.Value.FindTarget();
-        if (sdtarget.Value == null)
-        {
-            Debug.Log(this.gameObject.name + " has null target: ");
-            return TaskStatus.Failure;
-        }      
-        else if(sdtarget.Value.Status.State != Common.ANIMATIONSTATE.WALK)       
+        if(sdself.Value.Status.State != Common.ANIMATIONSTATE.WALK)       
             sdself.Value.PushState(walkst);
 
-        return TaskStatus.Success;
+        Common.ResultType ret = sdself.Value.HasReachTarget();
+
+        if(ret == Common.ResultType.Success)
+            return TaskStatus.Success;
+        else if(ret == Common.ResultType.Running)
+            return TaskStatus.Running;
+        else
+            return TaskStatus.Failure;
     }
 
 }

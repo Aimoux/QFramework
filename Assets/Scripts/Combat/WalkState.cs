@@ -20,11 +20,19 @@ public class WalkState : AnimState
 
     }
 
+    public override void OnStateExit()
+    {
+        base.OnStateExit();
+        m_Controller.Controller.StopNav();
+    }
+
     public override void OnStateUpdate()
     {
         base.OnStateUpdate();
         m_Controller.MoveToTarget();        
     }
+
+
 
 
 }

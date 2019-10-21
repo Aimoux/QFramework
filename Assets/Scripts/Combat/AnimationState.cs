@@ -40,12 +40,13 @@ public abstract class AnimState
     public virtual void OnStateEnter()
     {
         CurFrame = FrameCount;
+        m_Controller.Controller.SetState(this);
     }
 
     // 結束
     public virtual void OnStateExit()
     {
-        //CurFrame = FrameCount;//??
+        //CurFrame = FrameCount;//??push idle??
     }
 
     // 更新

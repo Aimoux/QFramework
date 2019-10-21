@@ -33,8 +33,8 @@ namespace Common
         //特技以及中招动作均由TimeLine指定，所以此类状态可归到paralysis??
         //CHARMED =4, //被魅惑
         //DISGUST =4,//被恶心到
-        ATTACKLITE =3,//站立轻击
-        ATTACKHEAVY =4,//站立重击
+        ATTACKLITE =2,//站立轻击
+        ATTACKHEAVY =3,//站立重击
         ATTACKSPECIAL =4,//战技
         ATTACKSPRINT =4,//奔跑攻击
         ULTIMATE1 =4,//特技， npc仅此一个
@@ -57,6 +57,7 @@ namespace Common
         Failure =1,
         SameTick = 2,
         Cooldown = 3,
+        Running = 4,
         Stun = 6,
         Disable = 7,
         Silence = 8,

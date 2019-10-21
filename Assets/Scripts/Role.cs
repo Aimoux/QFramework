@@ -451,7 +451,7 @@ public class Role
 
         foreach(Role role in Logic.Instance.GetAliveEnemies(Faction))
         {
-            Target = role;
+            Target = role;//interface selector??
             return role;
         }
 
@@ -486,18 +486,28 @@ public class Role
 
     public virtual bool MoveToTarget()
     {
-        float dist = SquarePlanarDist(Target);
-        float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
-        if (dist > arriveDist)
+        if(HasReachTarget() == ResultType.Running )
         {
             Controller.StartNav(Target.Position);
             ResultType ret = Controller.MoveToTargetByNav(Target.Position);
             return ret == ResultType.Success;
         }
-        else
+        return false;
+
+    }
+
+    public ResultType HasReachTarget()
+    {
+         float dist = SquarePlanarDist(Target);
+        float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
+        if (dist > arriveDist)
         {
-            return true;
+            return ResultType.Running;
         }
+        else if(dist < 0/3f)//DataManager.Instance.GlobalConfig.MinRange)
+            return ResultType.TooNear;
+
+        return ResultType.Success;
 
     }
 

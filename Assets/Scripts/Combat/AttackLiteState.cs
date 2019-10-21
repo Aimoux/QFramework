@@ -18,24 +18,19 @@ public class AttackLiteState : AnimState
     // 开始
     public override void OnStateEnter()
     {
-        //PBaseDefenseGame.Instance.Initinal();
+        base.OnStateEnter();
+        
     }
 
     // 結束
     public override void OnStateExit()
     {
-        //PBaseDefenseGame.Instance.Release();
+        base.OnStateExit();
     }
 
     // 更新
     public override void OnStateUpdate()
-    {   
-        // 游戏逻辑
-        //PBaseDefenseGame.Instance.Update();
-        // Render由Unity負責
-
-        // 游戏是否结束
-        //if( PBaseDefenseGame.Instance.ThisGameIsOver())
-            //m_Controller.SetState(new WalkState(m_Controller), "MainMenuScene" );
+    {
+        base.OnStateUpdate();
     }
 }
