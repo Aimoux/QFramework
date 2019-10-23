@@ -38,4 +38,26 @@ public class AttackLiteState : AnimState
         //if( PBaseDefenseGame.Instance.ThisGameIsOver())
             //m_Controller.SetState(new WalkState(m_Controller), "MainMenuScene" );
     }
+
+    public override bool CanTransit(AnimState next)
+    {
+        bool can = base.CanTransit(next);
+        switch(next.State)
+        {
+            case Common.ANIMATIONSTATE.IDLE:
+            case Common.ANIMATIONSTATE.WALK://等待补充体力死否受控制??
+                return true;
+
+            case Common.ANIMATIONSTATE.ATTACKLITE:
+                return true;
+
+
+
+
+        }
+
+
+
+        return false;
+    }
 }

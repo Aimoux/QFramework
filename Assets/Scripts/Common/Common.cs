@@ -21,19 +21,22 @@ namespace Common
         //状态是否必须与动画机clip一一对应??
         //是否足够资源单双手切换??
         IDLE =0,
-        WALK =1,
+        WALK =1,//移动\转向用统一的官方动画下半身+原动画上半身混合实现? 为walk 单独设置 layer??
         RUN =2,
         ROLL=5,//翻滚
         JUMP = 4,//跳跃??
+        FALL =5,//下落
         DEATH=4,
         BLOCK =4,//防御
-        STAGGER=4,//摇晃（被击中， avatar mask??上半身）可通过武器表中动态赋值??
-        KNOCKDOWN =4,//被击倒、击飞（none root motion）
+        STAGGER=4,//摇晃（被击中， avatar mask??上半身）可通过武器表中动态赋值?? hit1
+        KNOCKDOWN =4,//被击倒、击飞（none root motion）hit2
         PARALYSIS = 4,//被特技控制
         //特技以及中招动作均由TimeLine指定，所以此类状态可归到paralysis??
         //CHARMED =4, //被魅惑
         //DISGUST =4,//被恶心到
         ATTACKLITE =3,//站立轻击
+        ATTACKLITE1 =3,//轻击第二下combo
+        ATTACKLITE2 =3,//第三下
         ATTACKHEAVY =4,//站立重击
         ATTACKSPECIAL =4,//战技
         ATTACKSPRINT =4,//奔跑攻击
@@ -126,6 +129,35 @@ namespace Common
         public int Amount;
     }
 
+    //决策
+    public class Tactic// tact as interface, combo继承tact??
+    {
+        //针对当前形势的一次应对,在攻击时可以是combo,可以是buff( buff<-combo?),可以是药遁
+        //决策的产生(随机性(可包含延迟斩的随机性?),特定条件下的必然性)
+        //决策的结束(打断) 决策的cd(疯狗无限连 vs 疯狂划水) 
+        //决策间隙(原地愣着?耿直向敌?) 等待也是一种决策?
+        //僵持决策(体力不足,决策cd...)合适的移动??
+        public int Combo;//??random combo?? kneel for mercy?? faker joker??
+        public int ComboRange;//??走近几步接突刺(前跃斩)
+        public Vector3 Destination;//only useful when Combo =0? 撤退需要转身?战术撤退不必转身?
+        public int Action;// for none-combat tact: run to heal, kneel
+
+
+        public static Tactic Generate(int situation)
+        {
+
+
+
+            return new Tactic(situation);
+        }
+
+        public Tactic(int st)
+        {
+
+        }
+
+    }
+
     public class Const :Singleton<Const>
     {
         public const string StateID = "StateID";
@@ -157,6 +189,24 @@ namespace Common
         //    private int idCombatLayer;
         //    private int idMotionLayer;
         //    private int idHitedLayer;
+
+        //所有可能的连击组合 weapon data中配置此处的子集key,combo broken??
+        //push命令以combo为单位, 不同combo之间存在 common cd??
+        public Dictionary<int, List<ANIMATIONSTATE>> Combos = new Dictionary<int, List<ANIMATIONSTATE>>
+        {
+            { 0, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE} },//轻
+            { 1, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKHEAVY} },//重
+            { 2, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKLITE} },//轻+轻
+            { 3, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY} },//轻+重
+            { 4, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY, ANIMATIONSTATE.ATTACKLITE} },//轻+重+轻
+            { 5, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ROLL, ANIMATIONSTATE.ATTACKLITE} },//滚+轻
+            { 6, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ROLL, ANIMATIONSTATE.ATTACKHEAVY} },//滚+重
+            { 7, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.FALL, ANIMATIONSTATE.ATTACKLITE} },//落+轻
+
+        };
+
+
+
 
         protected Const()
         {

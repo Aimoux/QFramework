@@ -83,6 +83,10 @@ public abstract class AnimState
     //为避免过多new，直接为每个state创建实例，之后使用这些实例not new?? 
     public virtual bool CanTransit(AnimState next)
     {
+        //受控\滞空等状态下禁止转换?
+
+
+
         return true;
     }
 

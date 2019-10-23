@@ -530,6 +530,12 @@ public class Role
 
     }
 
+    //特定事件(dying)的统一应对方式
+    public virtual Tactic Generate(string events)
+    {
 
+
+        return null;
+    }
 
 }
