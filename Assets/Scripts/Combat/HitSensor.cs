@@ -9,7 +9,7 @@ public class HitSensor : MonoBehaviour
     public Weapon wp;//初始化中赋值
     private void OnTriggerEnter(Collider other)
     {
-        if(!wp.Owner.Status.IsWeaponEnable)
+        if(!wp.Owner.Status.IsWeaponEnable)//能否确保被打断时此处为false??
             return;
 
         if (other.gameObject.tag == "")
@@ -37,6 +37,7 @@ public class HitSensor : MonoBehaviour
 
         return null;
     }
+
 
 
 

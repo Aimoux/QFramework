@@ -10,6 +10,8 @@ namespace GameData
     {
         public int ViewAngle;
         public float MinRange; // for too near
+        public float AttackLiteImpactRatio;
+        public float AttackHeavyImpactRatio;
 
 
 

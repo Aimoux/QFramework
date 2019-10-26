@@ -10,7 +10,7 @@ public class Expression : MonoBehaviour
     public SkinnedMeshRenderer elRenderer;
     public SkinnedMeshRenderer mthRenderer;
 
-    [Tooltip("²¥·ÅÒ»¸ö±íÇé¶¯»­ËùĞèÊ±¼ä")]
+    [Tooltip("æ’­æ”¾ä¸€ä¸ªè¡¨æƒ…åŠ¨ç”»æ‰€éœ€æ—¶é—´")]
     public float animationDuration = 5;
 
     private float timeElapse = 0;
@@ -74,10 +74,10 @@ public class Expression : MonoBehaviour
         SkinnedMeshRenderer rd = new SkinnedMeshRenderer();
         rd.SetBlendShapeWeight(1, 100);
 
-        //ÉèÖÃblend weight(Ò»Ò»¶ÔÓ¦ÕæÊµ¼¡Èâ)¾Í×ãÒÔÄ£ÄâËùÓĞ±íÇé??
+        //è®¾ç½®blend weight(ä¸€ä¸€å¯¹åº”çœŸå®è‚Œè‚‰)å°±è¶³ä»¥æ¨¡æ‹Ÿæ‰€æœ‰è¡¨æƒ…??
 
         //solution1
-        //×Ô¼ºµ÷Åä±íÇéÊı¾İ£¬´¢´æ½øexcel¡£
+        //è‡ªå·±è°ƒé…è¡¨æƒ…æ•°æ®ï¼Œå‚¨å­˜è¿›excelã€‚
         //enum facial { smile =0, talk =1,...    }
         //expdata = DataManager.Instance.Exps[(int)facial.smile];
         //foreach(var part in expdata)
@@ -86,7 +86,7 @@ public class Expression : MonoBehaviour
         //}
 
         //solution2
-        //×Ô¼ºÖÆ×÷(Â¼ÖÆ)¶¯»­£¨ÄÜ·ñÖØ¶¨Ïò£©?? ÏÂÔØ£¨×ª»»£©±íÇé¶¯»­×ÊÔ´
+        //è‡ªå·±åˆ¶ä½œ(å½•åˆ¶)åŠ¨ç”»ï¼ˆèƒ½å¦é‡å®šå‘ï¼‰?? ä¸‹è½½ï¼ˆè½¬æ¢ï¼‰è¡¨æƒ…åŠ¨ç”»èµ„æº
 
 
     }

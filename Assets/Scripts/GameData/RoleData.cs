@@ -18,6 +18,7 @@ namespace GameData
         public int MaxLevel { get; set; }
         public int MinLevel { get; set; }
         public float Radius { get; set; }
+        public float Steady { get; set; }//基础出手韧性??
 
         public RoleData Clone()
         {

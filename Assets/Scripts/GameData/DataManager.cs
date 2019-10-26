@@ -128,6 +128,17 @@ class DataManager : Singleton<DataManager>
         }
     }
 
+    private Dictionary<int, Dictionary<float, int>> _WeaponImpacts;
+    public Dictionary<int, Dictionary<float, int>> WeaponImpacts//[wptype][atktype]
+    {
+        get 
+        {
+            if(_WeaponImpacts == null)
+                Load("Data/WeaponImpacts.json", ref _WeaponImpacts);
+            return _WeaponImpacts;
+        }
+
+    }
 
     protected DataManager()
     {

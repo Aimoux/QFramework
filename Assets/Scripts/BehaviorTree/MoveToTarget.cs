@@ -23,9 +23,9 @@ public class MoveToTarget : Action
 
         Common.ResultType ret = sdself.Value.HasReachTarget();
 
-        if(ret == Common.ResultType.Success)
+        if(ret == Common.ResultType.SUCCESS)
             return TaskStatus.Success;
-        else if(ret == Common.ResultType.Running)
+        else if(ret == Common.ResultType.RUNNING)
             return TaskStatus.Running;
         else
             return TaskStatus.Failure;

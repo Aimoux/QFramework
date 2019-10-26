@@ -10,7 +10,6 @@ public class WalkState : AnimState
         this.State = Common.ANIMATIONSTATE.WALK;
         GameData.WeaponFrameData data = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID];
         this.FrameCount = data.WalkCount;
-        this.CurFrame = FrameCount;
     }
 
     public override void OnStateEnter()

@@ -9,7 +9,6 @@ public class IdleState : AnimState
         this.State = Common.ANIMATIONSTATE.IDLE;
         GameData.WeaponFrameData data = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID];
         this.FrameCount = data.IdleCount;
-        this.CurFrame = FrameCount;
     }
 
     // 开始

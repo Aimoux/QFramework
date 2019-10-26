@@ -75,8 +75,8 @@ public class Role
 
     public int Mental { get; set; }
 
-    public int Steady { get; set; }
-    //韧性（打断）
+    public float Steady { get; set; }//韧性（打断）
+
     public Vector3 Position
     {
         get
@@ -168,7 +168,7 @@ public class Role
         if (Status != null)
             Status.OnStateUpdate();
 
-        if (Status.CurFrame <= 0)//to add break cur status??
+        if (Status.CurFrame >= Status.FrameCount)//to add break cur status??
         {
             //if cmds 皆不可用（或没有），自动转向idle??
             if (Cmds.Count == 0)
@@ -202,7 +202,7 @@ public class Role
     {
         m_bRunBegin = false;
 
-        Controller.SetState(animState);
+        //Controller.SetState(animState);//移至on state enter 中??
         // 通知前一个State結束
         if (Status != null)
             Status.OnStateExit();
@@ -241,11 +241,6 @@ public class Role
 
 
         }
-
-
-
-
-
         return true;
 
     }
@@ -277,6 +272,7 @@ public class Role
         Strength = Attributes.Strength;
         Dexterity = Attributes.Dexterity;
         Mental = Attributes.Mental;
+        Steady = Data.Steady;
 
     }
 
@@ -355,19 +351,69 @@ public class Role
 
     }
 
+    //计算削韧
+    public virtual float CalculateImpact(Weapon wp)
+    {
+        //受击方韧性
+        if(!Status.IsAttackState)//非攻击状态韧性为0
+        {
+            Steady = 0f;
+        }
+
+        //攻击方削韧
+        AnimState atk = wp.Owner.Status;
+        float force = wp.Data.ImpactDamage *atk.ImpactAtkRatio ;
+
+        //韧性打空后恢复原值
+        //每30s回满一次暂无必要??
+        Steady -= force;
+        if(Steady <= 0)
+        {
+            int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(float)atk.Impact];
+            HitReaction(type);
+        }    
+        return force;
+    }
+
+//受击硬直处理
+    public virtual void HitReaction(int impact)//受击需要分层状态机??
+    {
+        //如果硬直类似亚特大的带有交互性质，考虑用TimeLine??
+        //暂不考虑自身状态对最终硬直的影响??
+        Status.OnStateBreak((ANIMATIONSTATE)impact);
+
+        AnimState BreakState;
+        switch ((ANIMATIONSTATE)impact)//pool?
+        {
+            case ANIMATIONSTATE.BREAKLITE :
+                BreakState = new BreakLiteState(this);
+                break;
+
+            case ANIMATIONSTATE.BREAKHEAVY :
+                BreakState = new BreakHeavyState(this);
+                break;
+
+            default :
+             BreakState = new BreakLiteState(this);
+                break;
+        }
+        SetState(BreakState);//??
+    }
+
     //被击中    
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
         CalculateLostHP(wp.ForceDict);
+        CalculateImpact(wp);//韧性计算
 
         //回魔计算
         float mpGain = Attributes.MPDmgRecovery;
         Remedy(RoleAttribute.MP, mpGain, this);
 
-        //耐力扣除
+        //耐力扣除(仅限防御状态??)
 
-        //韧性计算
+  
 
         //更新仇恨值
         HatredDict[wp.Owner] += 10;
@@ -486,11 +532,11 @@ public class Role
 
     public virtual bool MoveToTarget()
     {
-        if(HasReachTarget() == ResultType.Running )
+        if(HasReachTarget() == ResultType.RUNNING )
         {
             Controller.StartNav(Target.Position);
             ResultType ret = Controller.MoveToTargetByNav(Target.Position);
-            return ret == ResultType.Success;
+            return ret == ResultType.SUCCESS;
         }
         return false;
 
@@ -502,12 +548,12 @@ public class Role
         float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
         if (dist > arriveDist)
         {
-            return ResultType.Running;
+            return ResultType.RUNNING;
         }
         else if(dist < 0/3f)//DataManager.Instance.GlobalConfig.MinRange)
             return ResultType.TooNear;
 
-        return ResultType.Success;
+        return ResultType.SUCCESS;
 
     }
 

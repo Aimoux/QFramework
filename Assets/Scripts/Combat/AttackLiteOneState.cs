@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Common;
 
-public class AttackLiteState : AnimState
-{
-    public AttackLiteState(Role Controller):base(Controller)
+public class AttackLiteOneState :AnimState {
+
+    public AttackLiteOneState(Role Controller):base(Controller)
     {
         this.State = Common.ANIMATIONSTATE.ATTACKLITE;
          GameData.WeaponFrameData data = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID];
@@ -19,23 +19,7 @@ public class AttackLiteState : AnimState
         this.ImpactAtkRatio = 1f;
         this.ImpactDefRatio = 1f;
     }
+   
 
-    // 开始
-    public override void OnStateEnter()
-    {
-        base.OnStateEnter();
-        
-    }
 
-    // 結束
-    public override void OnStateExit()
-    {
-        base.OnStateExit();
-    }
-
-    // 更新
-    public override void OnStateUpdate()
-    {
-        base.OnStateUpdate();
-    }
 }
