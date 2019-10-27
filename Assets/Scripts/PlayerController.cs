@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         anim = GamingManager.Instance.PlayerAnim;
-        anim.SetInteger(Common.Const.StateID, (int)Common.ANIMATIONSTATE.WALK);
+        anim.SetInteger(Common.Const.StateID, (int)Common.ANIMATIONSTATE.WALKFORWARD);
     }
 
     // Update is called once per frame

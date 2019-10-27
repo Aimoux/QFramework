@@ -1,7 +1,7 @@
 {
   "1": {
-    "ID": 1, 
-    "MID": 1, 
+    "AttackHeavyImpactRatio": 1.0, 
+    "AttackLiteImpactRatio": 1.0, 
     "MinRange": 0.1, 
     "ViewAngle": 45
   }

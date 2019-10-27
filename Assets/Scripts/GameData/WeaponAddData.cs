@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GameData
 {
     [System.Serializable]
-    public class WeaponAddData : MonoBehaviour
+    public class WeaponAddData
     {
         public int StrengthAdd { get; set; }//武器伤害的力量修正，代码控制仅对物理类型伤害有效
         public int DexterityAdd { get; set; }//敏捷修正

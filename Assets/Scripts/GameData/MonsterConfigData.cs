@@ -11,7 +11,7 @@ namespace GameData
         public int MID { get; set; }//key
         public int ID { get; set; }//role id
         public int Level { get; set; }
-        public Dictionary <int, int> Weapons { get; set; }//error in convert??
+        public Dictionary <int, int> Weapons { get; set; }//不同个体可以数目不同,转换时会自动排序,不可有重复的key
         public int MainWeapon {get;set;}
         public int MainWeaponLevel {get; set;}
         public float RatioDPS { get; set; }
@@ -21,16 +21,9 @@ namespace GameData
         public int BossType { get; set; }//??
         public int RewardMoney { get; set; }
         public int RewardEXP { get; set; }//??
-        public int RewardItem1 { get; set; }//??掉落概率??
-        public int RewardItem2 { get; set; }//??怪物图鉴系统中查看掉落??
-        public float DropChance1 { get; set; }
-        public float DropChance2 { get; set; }
+        public Dictionary<int, float> Drops { get; set; }//掉落物品及概率
+        public List<int> Equips { get; set; }//同样用字典,每个部位对应一件装备
 
-        public List<int> Items { get; set; }//how to best dec??
-        public List<float> Chances { get; set; }
-        public List<int> Equips { get; set; }
-
-        public List<int> WPLvs { get; set; }
 
     }
 

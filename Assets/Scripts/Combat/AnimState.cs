@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Common;
+using GameData;
 
 public abstract class AnimState
 {
@@ -14,52 +15,61 @@ public abstract class AnimState
 
     // 状态拥有者
     protected Role m_Controller = null;
-    public ANIMATIONTYPE AnimCategory;
+    public AnimationData Data;
     public int FrameCount;//物理帧数fixed delta Time 时长
     public int CurFrame;
+    public bool IsBreak;
 
     #region AttackAnim
     protected int FrameStart;//enable sensor
     protected int FrameEnd;//disable sensor
-    public bool IsAttackState = false;
-    public float DamageRatio = 1f;//招式的伤害因子
-    public float ImpactAtkRatio = 1f;//招式的削韧因子
-    public float ImpactDefRatio = 1f;//招式的受击韧性因子
-    public ImpactType Impact = ImpactType.NONE;//冲击力类型，影响硬直反应
     public bool IsWeaponEnable
     {
         get
         {
-            return IsAttackState && CurFrame >= FrameStart && CurFrame <= FrameEnd ;
+            return Data.AnimationType == (int)ANIMATIONTYPE.ATTACK  && CurFrame >= FrameStart && CurFrame <= FrameEnd ;
         }
     }
     #endregion
 
-
-    // 构造
-    public AnimState(Role Controller)
+    public AnimState(Role Controller, ANIMATIONSTATE state)
     { 
-        m_Controller = Controller; 
-        
+        m_Controller = Controller;
+        State = state;
+        Data = DataManager.Instance.Animations[(int)state];
+        int[] frames = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID][(int)state];
+        FrameCount = frames[0];
+        FrameStart = frames[1];
+        FrameEnd = frames[2];
     }
+
 
     // 开始
     public virtual void OnStateEnter()
     {
         CurFrame = 0;
+        IsBreak = false;
         m_Controller.Controller.SetState(this);
-        if(IsAttackState )
+        if( Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
         {
             //起始到打击检测结束进行出手韧性保护
-            m_Controller.Steady *= m_Controller.CurWeapon.Data.ImpactRatio * ImpactDefRatio;
+            m_Controller.Steady *= m_Controller.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
         }
     }
 
     //当前动作被打断（比如受攻击）
     public virtual void OnStateBreak(ANIMATIONSTATE state)
     {
+        IsBreak = true;
         m_Controller.Steady = m_Controller.Data.Steady;
         OnStateExit();
+        //m_Controller.SetState()//反射创建AnimState类??
+
+    }
+
+    public virtual void OnStateBreak()//walk to target
+    {
+        IsBreak = true;
         //m_Controller.SetState()//反射创建AnimState类??
 
     }
@@ -97,10 +107,10 @@ public abstract class AnimState
     //被打断时，此处是否仍应调用??
     public virtual void OnFrameEnd()//atk frame end
     {
-        if(IsAttackState )
+        if( Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
         {
             //起始到打击检测结束进行出手韧性保护
-            m_Controller.Steady /= (m_Controller.CurWeapon.Data.ImpactRatio * ImpactDefRatio);
+            m_Controller.Steady /= (m_Controller.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio);
         }
 
     }

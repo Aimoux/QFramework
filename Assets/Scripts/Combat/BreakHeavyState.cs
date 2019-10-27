@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Common;
 
 public class BreakHeavyState : AnimState
 {
-    public BreakHeavyState(Role Controller):base(Controller)
+    public BreakHeavyState(Role Controller):base(Controller, ANIMATIONSTATE.BREAKHEAVY)
     {
-        this.State = Common.ANIMATIONSTATE.BREAKHEAVY;
-        this.AnimCategory = Common.ANIMATIONTYPE.HITREACTION;
+
     }
 
     // 开始

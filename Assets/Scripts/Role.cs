@@ -108,6 +108,10 @@ public class Role
 
     public Hero hero;//是否有必要??
     public bool IsPause;
+    public bool OnTactic//是否正在执行决策(决策打断或正常结束时,需要新的策略)
+    {
+        get { return Cmds.Count > 0; }//最后的动作一开始,就可以进行下一个决策??
+    }
 
     //读取存档(队友装备)
     public static Role Create(Hero hero)
@@ -168,12 +172,13 @@ public class Role
         if (Status != null)
             Status.OnStateUpdate();
 
-        if (Status.CurFrame >= Status.FrameCount)//to add break cur status??
+        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)//to add break cur status??
         {
             //if cmds 皆不可用（或没有），自动转向idle??
             if (Cmds.Count == 0)
             {
-                Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
+                //Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
+                GenTactic();
             }
 
             while (Cmds.Count > 0)
@@ -183,7 +188,7 @@ public class Role
                 if (CanTrans(next))
                 {
                     SetState(next);
-                    Cmds.Clear();//生效的只有一个??
+                    //Cmds.Clear();//生效的只有一个??
                     break;
                 }
             }
@@ -205,7 +210,7 @@ public class Role
         //Controller.SetState(animState);//移至on state enter 中??
         // 通知前一个State結束
         if (Status != null)
-            Status.OnStateExit();
+            Status.OnStateExit();//避免重复??
 
         // 设定
         Status = animState;
@@ -222,6 +227,7 @@ public class Role
     //如能设置anystate 的 has exit time，则不需此处
     public bool CanTrans(AnimState next)
     {
+        return true;
         switch (Status.State)//当前
         {
             case Common.ANIMATIONSTATE.ATTACKHEAVY:
@@ -355,21 +361,21 @@ public class Role
     public virtual float CalculateImpact(Weapon wp)
     {
         //受击方韧性
-        if(!Status.IsAttackState)//非攻击状态韧性为0
+        if(Status.Data.AnimationType != (int)ANIMATIONTYPE.ATTACK)//非攻击状态韧性为0
         {
             Steady = 0f;
         }
 
         //攻击方削韧
         AnimState atk = wp.Owner.Status;
-        float force = wp.Data.ImpactDamage *atk.ImpactAtkRatio ;
+        float force = wp.Data.ImpactDamage *atk.Data.AttackImpactRatio ;
 
         //韧性打空后恢复原值
         //每30s回满一次暂无必要??
         Steady -= force;
         if(Steady <= 0)
         {
-            int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(float)atk.Impact];
+            int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(float)atk.State];
             HitReaction(type);
         }    
         return force;
@@ -514,19 +520,23 @@ public class Role
     //override behav for each npc??
 
     //Atk Combo ids
-    public ANIMATIONSTATE[] GenTactic()
+    public virtual void GenTactic()
     {
-        //每把武器的combo不同,读取自weapon配置??
-        ANIMATIONSTATE[] LightCombo = new ANIMATIONSTATE[]
-        { ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKLITE };
+        if(OnTactic)
+            return;
 
-        ANIMATIONSTATE[] HybridCombo = new ANIMATIONSTATE[]
+        //random walkst dir
+        if(Target != null)
         {
-            ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY
-        };
-
-
-        return LightCombo;
+            if(HasReachTarget() == ResultType.RUNNING)
+                Cmds.Push(new WalkState(this));
+            else
+            {
+                Cmds.Push(new AttackLiteState(this));//每把武器的combo不同,读取自weapon配置??
+                Cmds.Push(new AttackHeavyState(this));
+            }
+           
+        }
     }
 
 
@@ -536,9 +546,16 @@ public class Role
         {
             Controller.StartNav(Target.Position);
             ResultType ret = Controller.MoveToTargetByNav(Target.Position);
-            return ret == ResultType.SUCCESS;
+            return false;
+            //return ret == ResultType.SUCCESS;
         }
-        return false;
+        else 
+        {
+            Controller.StopNav();
+        }
+         
+
+        return true;
 
     }
 

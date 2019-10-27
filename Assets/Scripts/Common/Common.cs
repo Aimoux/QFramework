@@ -31,16 +31,31 @@ namespace Common
         //是否足够资源单双手切换??
         #region Motion
         IDLE =0,
-        WALK =101,
-        RUN =102,
-        ROLL=103,//翻滚
+        WALKFORWARD =101,
+        WALKBACK =1011,
+        WALKLEFT =1012,
+        WALKRIGHT =1013,
+        RUNFORWARD =102,
+        RUNBACK = 1021,
+        RUNLEFT = 1022,
+        RUNRIGHT = 1023,
+        ROLLFORWARD=103,//翻滚
+        ROLLBACK =1031,
+        ROLLLEFT = 1032,
+        ROLLRIGHT = 1033,
         JUMP = 104,//跳跃??
         FALL = 105,//坠落
         #endregion
 
         #region Attack
         ATTACKLITE =201,//站立轻击 有无必要设置 attack lite 1??
+        ATTACKLITE2 = 2011,//站立轻击偶数
+        ATTACKLITESPRINT = 2012,//奔跑轻击
+        ATTACKLITEROLL = 2013,//翻滚轻击
         ATTACKHEAVY =202,//站立重击
+        ATTACKHEAVY2 = 2021,//站立重击偶数
+        ATTACKHEAVYSPRINT = 2022,//奔跑重击
+        ATTACKHEAVYROLL = 2023,//翻滚重击 
         ATTACKSPECIAL =203,//战技
         ATTACKSPRINT =204,//奔跑攻击
         ULTIMATE1 =205,//特技， npc仅此一个
@@ -64,17 +79,17 @@ namespace Common
 
     
 //武器冲击力类型，影响受击方的硬直
-    public enum ImpactType
-    {
-        NONE =0,
-        LITE =1,//轻武器奇普攻
-        HEAVY =2,//轻武器重击，重武器偶普攻
-        KNOCKBACK =3,//重武器奇数普攻
-        KNOCKDOWN =4,//常规突刺
-        KNOCKHEAVY =5,//下砸
-        KNOCKUP =6,//上挑
+    // public enum ImpactType
+    // {
+    //     NONE =0,
+    //     LITE =1,//轻武器奇普攻
+    //     HEAVY =2,//轻武器重击，重武器偶普攻
+    //     KNOCKBACK =3,//重武器奇数普攻
+    //     KNOCKDOWN =4,//常规突刺
+    //     KNOCKHEAVY =5,//下砸
+    //     KNOCKUP =6,//上挑
 
-    }
+    // }
 
 
     public enum PERSONALITY

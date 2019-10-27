@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameData;
+using Common;
 
 public class IdleState : AnimState
 {
-    public IdleState(Role  Controller):base(Controller)
+    public IdleState(Role  Controller):base(Controller, ANIMATIONSTATE.IDLE)
     {
-        this.State = Common.ANIMATIONSTATE.IDLE;
-        GameData.WeaponFrameData data = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID];
-        this.FrameCount = data.IdleCount;
+
+
     }
 
     // 开始

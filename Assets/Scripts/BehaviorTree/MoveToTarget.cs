@@ -18,7 +18,7 @@ public class MoveToTarget : Action
     }
     public override TaskStatus OnUpdate()
     {
-        if(sdself.Value.Status.State != Common.ANIMATIONSTATE.WALK)       
+        if(sdself.Value.Status.State != Common.ANIMATIONSTATE.WALKFORWARD)       
             sdself.Value.PushState(walkst);
 
         Common.ResultType ret = sdself.Value.HasReachTarget();

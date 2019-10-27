@@ -32,7 +32,7 @@ public class Weapon
         {
             _ForceDict.Clear();
             foreach (var kv in BaseForceDict)
-                _ForceDict.Add(kv.Key, kv.Value * Owner.Status.DamageRatio);
+                _ForceDict.Add(kv.Key, kv.Value * Owner.Status.Data.AttackDamageRatio);
 
             if (Owner != null)
                 Owner.CalculateForce(this.Data, _ForceDict);//ÊÇ·ñµ¼ÖÂÑ­»·??

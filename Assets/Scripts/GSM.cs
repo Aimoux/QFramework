@@ -35,8 +35,8 @@ public class GSM : MonoBehaviour
         //    Background.transform.localScale = Vector3.one * 1.1f;
         //}
 
-
-
+        // int angle = DataManager.Instance.GlobalConfig.ViewAngle;
+        // Debug.LogError("global angle is: " + angle);
 
     }
 
@@ -47,7 +47,7 @@ public class GSM : MonoBehaviour
         //PauseType = 0;
         //StartCoroutine(DelayPlayMusic());
         Logic.Instance.CreateEnemiesByLevelData(1,1);
-        Logic.Instance.CreateEnemiesByLevelData(1,2);
+        Logic.Instance.CreateEnemiesByLevelData(2,2);
     }
 
     void OnDestroy()

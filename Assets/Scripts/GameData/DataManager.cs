@@ -102,7 +102,7 @@ class DataManager : Singleton<DataManager>
         }
     }
 
-    private GlobalConfigData _GlobalConfig;
+    private Dictionary<int, GlobalConfigData> _GlobalConfig;
     public GlobalConfigData GlobalConfig
     {
         get
@@ -111,12 +111,12 @@ class DataManager : Singleton<DataManager>
             {
                 Load("Data/GlobalConfig.json", ref _GlobalConfig);
             }
-            return _GlobalConfig;
+            return _GlobalConfig[1];
         }
     }
 
-    private Dictionary<int, WeaponFrameData> _WeaponFrames;
-    public Dictionary<int, WeaponFrameData > WeaponFrames
+    private Dictionary<int, Dictionary<float, int[]>> _WeaponFrames;
+    public Dictionary<int, Dictionary<float, int[]>> WeaponFrames
     {
         get 
         {
@@ -138,6 +138,17 @@ class DataManager : Singleton<DataManager>
             return _WeaponImpacts;
         }
 
+    }
+
+    private Dictionary<int, AnimationData> _Animations;
+    public Dictionary<int, AnimationData> Animations
+    {
+        get 
+        {
+            if(_Animations == null)
+                Load("Data/Animations.json", ref _Animations);
+            return _Animations;
+        }
     }
 
     protected DataManager()

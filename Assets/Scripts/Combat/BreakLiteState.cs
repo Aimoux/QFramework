@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Common;
 public class BreakLiteState : AnimState
 {
-    public BreakLiteState(Role Controller):base(Controller)
+    public BreakLiteState(Role Controller):base(Controller, ANIMATIONSTATE.BREAKLITE)
     {
-        this.State = Common.ANIMATIONSTATE.BREAKLITE;
-        this.AnimCategory = Common.ANIMATIONTYPE.HITREACTION;
+
     }
 
     // 开始

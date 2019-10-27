@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Common;
 
 public class WalkState : AnimState
 {
-    public WalkState(Role Controller)
-        : base(Controller)
+    public WalkState(Role Controller, ANIMATIONSTATE state):base (Controller, state)
     {
-        this.State = Common.ANIMATIONSTATE.WALK;
-        GameData.WeaponFrameData data = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID];
-        this.FrameCount = data.WalkCount;
+
+    }
+    public WalkState(Role Controller)
+        : base(Controller, ANIMATIONSTATE.WALKFORWARD)
+    {
+
     }
 
     public override void OnStateEnter()
@@ -28,7 +31,8 @@ public class WalkState : AnimState
     public override void OnStateUpdate()
     {
         base.OnStateUpdate();
-        m_Controller.MoveToTarget();        
+        if(m_Controller.MoveToTarget())
+        OnStateBreak();        
     }
 
 
