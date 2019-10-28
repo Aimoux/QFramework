@@ -30,6 +30,7 @@ public abstract class AnimState
             return Data.AnimationType == (int)ANIMATIONTYPE.ATTACK  && CurFrame >= FrameStart && CurFrame <= FrameEnd ;
         }
     }
+    public int TalentId;//Anim与Talent关联极高,考虑TalentXXXOnFrameStart??
     #endregion
 
     public AnimState(Role Controller, ANIMATIONSTATE state)
@@ -43,6 +44,32 @@ public abstract class AnimState
         FrameEnd = frames[2];
     }
 
+    public static AnimState Create(Role Controller, ANIMATIONSTATE state)
+    {
+        //create instance by name??
+        switch (state)
+        {
+            case ANIMATIONSTATE.IDLE:
+                return new IdleState(Controller);
+            case ANIMATIONSTATE.WALKFORWARD:
+                return new WalkForwardState(Controller);
+            case ANIMATIONSTATE.WALKBACK:
+                return new WalkBackState(Controller);
+
+
+
+
+        }
+
+        System.Activator.CreateInstance(System.Type.GetType("IdleSate"), Controller);
+
+        return new IdleState(Controller);
+    }
+
+    public virtual void Init()//OnStateEnter已替代此功能??
+    {
+        CurFrame = 0;
+    }
 
     // 开始
     public virtual void OnStateEnter()

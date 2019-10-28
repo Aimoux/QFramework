@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Common;
 
-public class MoveForwardState :WalkState
+public class WalkForwardState :WalkState
 {
-    public MoveForwardState (Role Controller):base (Controller, ANIMATIONSTATE.WALKFORWARD)
+    public WalkForwardState (Role Controller):base (Controller, ANIMATIONSTATE.WALKFORWARD)
     {
 
     }
