@@ -102,7 +102,7 @@ public class Role
 
     public WeaponData weapon { get; set; }
     public Weapon CurWeapon { get; set; }
-    private Stack<AnimState> Cmds = new Stack<AnimState>();
+    public Stack<AnimState> Cmds = new Stack<AnimState>();
     private AnimState IdleSt;
     public QF.Res.ResLoader Loader;
 
@@ -175,11 +175,11 @@ public class Role
         if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)//to add break cur status??
         {
             //if cmds 皆不可用（或没有），自动转向idle??
-            if (Cmds.Count == 0)
-            {
-                //Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
-                GenTactic();
-            }
+            // if (Cmds.Count == 0)
+            // {
+            //     //Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
+            //     GenTactic();
+            // }
 
             while (Cmds.Count > 0)
             {

@@ -36,7 +36,7 @@ public class AttackLiteState : AnimState
         switch(next.State)
         {
             case Common.ANIMATIONSTATE.IDLE:
-            case Common.ANIMATIONSTATE.WALK://等待补充体力死否受控制??
+            //case Common.ANIMATIONSTATE.WALK://等待补充体力死否受控制??
                 return true;
 
             case Common.ANIMATIONSTATE.ATTACKLITE:
@@ -47,8 +47,6 @@ public class AttackLiteState : AnimState
 
         }
 
-
-
-        return false;
+        return true;
     }
 }

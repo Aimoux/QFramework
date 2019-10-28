@@ -55,13 +55,14 @@ public abstract class AnimState
                 return new WalkForwardState(Controller);
             case ANIMATIONSTATE.WALKBACK:
                 return new WalkBackState(Controller);
-
-
-
+            case ANIMATIONSTATE.ATTACKLITE:
+                return new AttackLiteState(Controller);
+            case ANIMATIONSTATE.ATTACKHEAVY:
+                return new AttackHeavyState(Controller);
 
         }
 
-        System.Activator.CreateInstance(System.Type.GetType("IdleSate"), Controller);
+        // System.Activator.CreateInstance(System.Type.GetType("IdleSate"), Controller);
 
         return new IdleState(Controller);
     }
@@ -87,16 +88,18 @@ public abstract class AnimState
     //当前动作被打断（比如受攻击）
     public virtual void OnStateBreak(ANIMATIONSTATE state)
     {
-        IsBreak = true;
-        m_Controller.Steady = m_Controller.Data.Steady;
-        OnStateExit();
-        //m_Controller.SetState()//反射创建AnimState类??
+
+
+        OnStateBreak();
 
     }
 
     public virtual void OnStateBreak()//walk to target
     {
+        m_Controller.Cmds.Clear();//??打断一个,整个策略放弃??
         IsBreak = true;
+        m_Controller.Steady = m_Controller.Data.Steady;
+        OnStateExit();
         //m_Controller.SetState()//反射创建AnimState类??
 
     }

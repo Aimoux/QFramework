@@ -31,8 +31,9 @@ public class WalkState : AnimState
     public override void OnStateUpdate()
     {
         base.OnStateUpdate();
-        if(m_Controller.MoveToTarget())
-        OnStateBreak();        
+        m_Controller.MoveToTarget();
+        // if(m_Controller.MoveToTarget())
+        // OnStateBreak();        
     }
 
 
