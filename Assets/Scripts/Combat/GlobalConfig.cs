@@ -6,11 +6,10 @@ using UnityEngine;
 namespace GameData
 {
     [Serializable]
-    public class GlobalConfigData : MonoBehaviour
+    public class GlobalConfigData 
     {
         public int ViewAngle;
         public float MinRange; // for too near
-
 
 
 

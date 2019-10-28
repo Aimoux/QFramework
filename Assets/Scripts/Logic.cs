@@ -63,9 +63,6 @@ public class Logic : MonoSingleton<Logic>
                 Surviors[role.FactOrg].Add(role);
         }
 
-        //测试专用
-        role.Position += Vector3.forward * role.Index * 5;
-
     }
 
     public void RoleDead(Role role)
@@ -83,24 +80,34 @@ public class Logic : MonoSingleton<Logic>
     public void CreateEnemiesByLevelData(int Level, int side = 1)
     {
         //first round only for now
-        LevelMonsterData data = DataManager.Instance.LevelMonsters[Level][1];
+        LevelMonsterData data = DataManager.Instance.LevelMonsters[Level][1];//1为第一轮
 
+        int pos = 0;
         foreach (int mid in data.Monsters)
         {
-            CreateMonsterByID(mid, side);
+            Role monster = CreateMonsterByID(mid, side);
+            if(monster != null)
+            {
+                monster.Position = new Vector3(data.Positions[pos], data.Positions [pos+1],data.Positions [pos+2]);
+                pos += 3;
+            }
         }
 
 
     }
 
-    private void CreateMonsterByID(int mid, int side)
+    private Role CreateMonsterByID(int mid, int side)
     {
+        if(mid == 0)//excel数组的个数必须相等?0表示空位
+            return null;
+
         MonsterConfigData data = DataManager.Instance.MonsterConfigs[mid];
         Hero hero = new Hero(data.ID, data.Level, data.Weapons);
         Role role = Role.Create(hero);
         role.Faction = side;//??
         role.FactOrg = side;
         AddRole(role);
+        return role;
     }
 
 

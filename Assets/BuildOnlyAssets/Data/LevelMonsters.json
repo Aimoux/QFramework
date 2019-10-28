@@ -4,7 +4,16 @@
       "Level": 1, 
       "Monsters": [
         1, 
-        2
+        0
+      ], 
+      "Path": "Resources/Levels/LevelBase", 
+      "Positions": [
+        5.0, 
+        0.0, 
+        5.0, 
+        0.0, 
+        0.0, 
+        0.0
       ], 
       "Round": 1
     }, 
@@ -14,6 +23,15 @@
         1, 
         2
       ], 
+      "Path": "Resources/Levels/LevelBase", 
+      "Positions": [
+        5.0, 
+        0.0, 
+        5.0, 
+        0.0, 
+        0.0, 
+        0.0
+      ], 
       "Round": 2
     }, 
     "3.0": {
@@ -21,6 +39,15 @@
       "Monsters": [
         1, 
         2
+      ], 
+      "Path": "Resources/Levels/LevelBase", 
+      "Positions": [
+        5.0, 
+        0.0, 
+        5.0, 
+        0.0, 
+        0.0, 
+        0.0
       ], 
       "Round": 3
     }
@@ -29,8 +56,17 @@
     "1.0": {
       "Level": 2, 
       "Monsters": [
-        1, 
-        2
+        2, 
+        0
+      ], 
+      "Path": "Resources/Levels/LevelBase", 
+      "Positions": [
+        -5.0, 
+        5.0, 
+        -5.0, 
+        0.0, 
+        0.0, 
+        0.0
       ], 
       "Round": 1
     }, 
@@ -40,6 +76,15 @@
         1, 
         2
       ], 
+      "Path": "Resources/Levels/LevelBase", 
+      "Positions": [
+        5.0, 
+        0.0, 
+        5.0, 
+        0.0, 
+        0.0, 
+        0.0
+      ], 
       "Round": 2
     }, 
     "3.0": {
@@ -47,6 +92,15 @@
       "Monsters": [
         1, 
         2
+      ], 
+      "Path": "Resources/Levels/LevelBase", 
+      "Positions": [
+        5.0, 
+        0.0, 
+        5.0, 
+        0.0, 
+        0.0, 
+        0.0
       ], 
       "Round": 3
     }

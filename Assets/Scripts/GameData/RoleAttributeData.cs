@@ -9,13 +9,13 @@ namespace GameData
     {
         public int Level { get; set; }
         public int HP { get; set; }
-        public int Stamina { get; set; }//²»ÏÔÊ¾
-        public int MP { get; set; }//×î´óĞË·ÜÖµMP£¬ÑªÌõÏÂÏÔÊ¾£¿
-        public int Strength { get; set; }//ÎäÆ÷ĞèÇó£¬ÉËº¦ĞŞÕı
-        public int Dexterity { get; set; }//ÎäÆ÷ĞèÇó£¬ÉËº¦ĞŞÕı£¬à¾Ò©ËÙ¶È??
-        public int Mental { get; set; }//ÌØ¼¼ĞèÇó£¬ÌØ¼¼µÖ¿¹ÅĞ¶¨£¬ÔªËØÉËº¦ĞŞÕı??
-        public int MPAtkRecovery { get; set; }//¹¥»÷±ğÈËÊ±»Ø¸´MP(aoe¹¥»÷Ó¦Ö»ËãÒ»´Î,²¢Éè¶¨ÉÏÏŞ?)
-        public int MPDmgRecovery { get; set; }//±»¹¥»÷Ê±»Ø¸´MP
+        public int Stamina { get; set; }//ä¸æ˜¾ç¤º
+        public int MP { get; set; }//æœ€å¤§å…´å¥‹å€¼MPï¼Œè¡€æ¡ä¸‹æ˜¾ç¤ºï¼Ÿ
+        public int Strength { get; set; }//æ­¦å™¨éœ€æ±‚ï¼Œä¼¤å®³ä¿®æ­£
+        public int Dexterity { get; set; }//æ­¦å™¨éœ€æ±‚ï¼Œä¼¤å®³ä¿®æ­£ï¼Œå—‘è¯é€Ÿåº¦??
+        public int Mental { get; set; }//ç‰¹æŠ€éœ€æ±‚ï¼Œç‰¹æŠ€æŠµæŠ—åˆ¤å®šï¼Œå…ƒç´ ä¼¤å®³ä¿®æ­£??
+        public int MPAtkRecovery { get; set; }//æ”»å‡»åˆ«äººæ—¶å›å¤MP(aoeæ”»å‡»åº”åªç®—ä¸€æ¬¡,å¹¶è®¾å®šä¸Šé™?)
+        public int MPDmgRecovery { get; set; }//è¢«æ”»å‡»æ—¶å›å¤MP
         public int Armor { get; set; }
         public int FireResistance { get; set; }
         public int IceResistance { get; set; }
@@ -50,7 +50,7 @@ namespace GameData
         public RoleAttributeData Clone()
         {
             RoleAttributeData clone = this.MemberwiseClone() as RoleAttributeData;
-            //clone.Values = (float[])this.Values.Clone();//¼Ì³Ğ×ÔGameDataBase
+            //clone.Values = (float[])this.Values.Clone();//ç»§æ‰¿è‡ªGameDataBase
             return clone;
         }
 

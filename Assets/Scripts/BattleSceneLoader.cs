@@ -8,9 +8,6 @@ using GameData;
 
 public class BattleSceneLoader : MonoSingleton<BattleSceneLoader>
 {
-
-
-
     public void LoadLevel(BATTLEMODE mode, string scene, UnityAction onLoad)
     {
 

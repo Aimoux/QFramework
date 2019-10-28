@@ -8,9 +8,9 @@ namespace GameData
     [System.Serializable]
     public class WeaponAttributeData 
     {
-        //ÈÍĞÔÏà¹Ø²»±ä??ĞË·ÜÖµ²»±ä??
+        //éŸ§æ€§ç›¸å…³ä¸å˜??å…´å¥‹å€¼ä¸å˜??
         public int Level { get; set; }
-        public int DamageBlunt { get; set; }//Éı¼¶ºóÉËº¦±ä»¯
+        public int DamageBlunt { get; set; }//å‡çº§åä¼¤å®³å˜åŒ–
         public int DamageSlash { get; set; }
         public int DamagePierce { get; set; }
         public int DamageMagic { get; set; }
@@ -20,7 +20,7 @@ namespace GameData
 
         //SLASH = 0,
         //PIERCE =1,
-        //BLUNT =1,//??¶ÛÆ÷
+        //BLUNT =1,//??é’å™¨
         //MAGIC =2,
         //FIRE =3,
         //ICE =4,

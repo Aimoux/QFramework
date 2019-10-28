@@ -5,11 +5,11 @@ using UnityEngine;
 namespace GameData
 {
     [System.Serializable]
-    public class WeaponAddData : MonoBehaviour
+    public class WeaponAddData
     {
-        public int StrengthAdd { get; set; }//ÎäÆ÷ÉËº¦µÄÁ¦Á¿ĞŞÕı£¬´úÂë¿ØÖÆ½ö¶ÔÎïÀíÀàĞÍÉËº¦ÓĞĞ§
-        public int DexterityAdd { get; set; }//Ãô½İĞŞÕı
-        public int MentalAdd { get; set; }//´úÂë¿ØÖÆ¶Ô·ÇÎïÀíĞÔÉËº¦ÉúĞ§
+        public int StrengthAdd { get; set; }//æ­¦å™¨ä¼¤å®³çš„åŠ›é‡ä¿®æ­£ï¼Œä»£ç æ§åˆ¶ä»…å¯¹ç‰©ç†ç±»å‹ä¼¤å®³æœ‰æ•ˆ
+        public int DexterityAdd { get; set; }//æ•æ·ä¿®æ­£
+        public int MentalAdd { get; set; }//ä»£ç æ§åˆ¶å¯¹éç‰©ç†æ€§ä¼¤å®³ç”Ÿæ•ˆ
 
     }
 }

@@ -1,24 +1,66 @@
 {
   "1": {
-    "AttackHeavyCount": 30, 
-    "AttackHeavyEnd": 15, 
-    "AttackHeavyStart": 10, 
-    "AttackLiteCount": 30, 
-    "AttackLiteEnd": 15, 
-    "AttackLiteStart": 10, 
-    "ID": 1, 
-    "IdleCount": 30, 
-    "WalkCount": 30
+    "0.0": [
+      30, 
+      0, 
+      0
+    ], 
+    "101.0": [
+      30, 
+      0, 
+      0
+    ], 
+    "201.0": [
+      30, 
+      10, 
+      15
+    ], 
+    "202.0": [
+      30, 
+      10, 
+      15
+    ], 
+    "301.0": [
+      30, 
+      0, 
+      0
+    ], 
+    "302.0": [
+      30, 
+      0, 
+      0
+    ]
   }, 
   "2": {
-    "AttackHeavyCount": 30, 
-    "AttackHeavyEnd": 15, 
-    "AttackHeavyStart": 10, 
-    "AttackLiteCount": 30, 
-    "AttackLiteEnd": 15, 
-    "AttackLiteStart": 10, 
-    "ID": 2, 
-    "IdleCount": 30, 
-    "WalkCount": 30
+    "0.0": [
+      30, 
+      0, 
+      0
+    ], 
+    "101.0": [
+      30, 
+      0, 
+      0
+    ], 
+    "201.0": [
+      30, 
+      10, 
+      15
+    ], 
+    "202.0": [
+      30, 
+      10, 
+      15
+    ], 
+    "301.0": [
+      30, 
+      0, 
+      0
+    ], 
+    "302.0": [
+      30, 
+      0, 
+      0
+    ]
   }
 }

@@ -75,8 +75,8 @@ public class Role
 
     public int Mental { get; set; }
 
-    public int Steady { get; set; }
-    //韧性（打断）
+    public float Steady { get; set; }//韧性（打断）
+
     public Vector3 Position
     {
         get
@@ -108,6 +108,10 @@ public class Role
 
     public Hero hero;//是否有必要??
     public bool IsPause;
+    public bool OnTactic//是否正在执行决策(决策打断或正常结束时,需要新的策略)
+    {
+        get { return Cmds.Count > 0; }//最后的动作一开始,就可以进行下一个决策??
+    }
 
     //读取存档(队友装备)
     public static Role Create(Hero hero)
@@ -168,12 +172,13 @@ public class Role
         if (Status != null)
             Status.OnStateUpdate();
 
-        if (Status.CurFrame <= 0)//to add break cur status??
+        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)//to add break cur status??
         {
             //if cmds 皆不可用（或没有），自动转向idle??
             if (Cmds.Count == 0)
             {
-                Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
+                //Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
+                GenTactic();
             }
 
             while (Cmds.Count > 0)
@@ -183,7 +188,7 @@ public class Role
                 if (CanTrans(next))
                 {
                     SetState(next);
-                    Cmds.Clear();//生效的只有一个??
+                    //Cmds.Clear();//生效的只有一个??
                     break;
                 }
             }
@@ -202,10 +207,10 @@ public class Role
     {
         m_bRunBegin = false;
 
-        Controller.SetState(animState);
+        //Controller.SetState(animState);//移至on state enter 中??
         // 通知前一个State結束
         if (Status != null)
-            Status.OnStateExit();
+            Status.OnStateExit();//避免重复??
 
         // 设定
         Status = animState;
@@ -222,6 +227,7 @@ public class Role
     //如能设置anystate 的 has exit time，则不需此处
     public bool CanTrans(AnimState next)
     {
+        return true;
         switch (Status.State)//当前
         {
             case Common.ANIMATIONSTATE.ATTACKHEAVY:
@@ -241,11 +247,6 @@ public class Role
 
 
         }
-
-
-
-
-
         return true;
 
     }
@@ -277,6 +278,7 @@ public class Role
         Strength = Attributes.Strength;
         Dexterity = Attributes.Dexterity;
         Mental = Attributes.Mental;
+        Steady = Data.Steady;
 
     }
 
@@ -355,19 +357,69 @@ public class Role
 
     }
 
+    //计算削韧
+    public virtual float CalculateImpact(Weapon wp)
+    {
+        //受击方韧性
+        if(Status.Data.AnimationType != (int)ANIMATIONTYPE.ATTACK)//非攻击状态韧性为0
+        {
+            Steady = 0f;
+        }
+
+        //攻击方削韧
+        AnimState atk = wp.Owner.Status;
+        float force = wp.Data.ImpactDamage *atk.Data.AttackImpactRatio ;
+
+        //韧性打空后恢复原值
+        //每30s回满一次暂无必要??
+        Steady -= force;
+        if(Steady <= 0)
+        {
+            int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(float)atk.State];
+            HitReaction(type);
+        }    
+        return force;
+    }
+
+//受击硬直处理
+    public virtual void HitReaction(int impact)//受击需要分层状态机??
+    {
+        //如果硬直类似亚特大的带有交互性质，考虑用TimeLine??
+        //暂不考虑自身状态对最终硬直的影响??
+        Status.OnStateBreak((ANIMATIONSTATE)impact);
+
+        AnimState BreakState;
+        switch ((ANIMATIONSTATE)impact)//pool?
+        {
+            case ANIMATIONSTATE.BREAKLITE :
+                BreakState = new BreakLiteState(this);
+                break;
+
+            case ANIMATIONSTATE.BREAKHEAVY :
+                BreakState = new BreakHeavyState(this);
+                break;
+
+            default :
+             BreakState = new BreakLiteState(this);
+                break;
+        }
+        SetState(BreakState);//??
+    }
+
     //被击中    
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
         CalculateLostHP(wp.ForceDict);
+        CalculateImpact(wp);//韧性计算
 
         //回魔计算
         float mpGain = Attributes.MPDmgRecovery;
         Remedy(RoleAttribute.MP, mpGain, this);
 
-        //耐力扣除
+        //耐力扣除(仅限防御状态??)
 
-        //韧性计算
+  
 
         //更新仇恨值
         HatredDict[wp.Owner] += 10;
@@ -451,7 +503,7 @@ public class Role
 
         foreach(Role role in Logic.Instance.GetAliveEnemies(Faction))
         {
-            Target = role;
+            Target = role;//interface selector??
             return role;
         }
 
@@ -468,36 +520,57 @@ public class Role
     //override behav for each npc??
 
     //Atk Combo ids
-    public ANIMATIONSTATE[] GenTactic()
+    public virtual void GenTactic()
     {
-        //每把武器的combo不同,读取自weapon配置??
-        ANIMATIONSTATE[] LightCombo = new ANIMATIONSTATE[]
-        { ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKLITE };
+        if(OnTactic)
+            return;
 
-        ANIMATIONSTATE[] HybridCombo = new ANIMATIONSTATE[]
+        //random walkst dir
+        if(Target != null)
         {
-            ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY
-        };
-
-
-        return LightCombo;
+            if(HasReachTarget() == ResultType.RUNNING)
+                Cmds.Push(new WalkState(this));
+            else
+            {
+                Cmds.Push(new AttackLiteState(this));//每把武器的combo不同,读取自weapon配置??
+                Cmds.Push(new AttackHeavyState(this));
+            }
+           
+        }
     }
 
 
     public virtual bool MoveToTarget()
     {
-        float dist = SquarePlanarDist(Target);
-        float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
-        if (dist > arriveDist)
+        if(HasReachTarget() == ResultType.RUNNING )
         {
             Controller.StartNav(Target.Position);
             ResultType ret = Controller.MoveToTargetByNav(Target.Position);
-            return ret == ResultType.Success;
+            return false;
+            //return ret == ResultType.SUCCESS;
         }
-        else
+        else 
         {
-            return true;
+            Controller.StopNav();
         }
+         
+
+        return true;
+
+    }
+
+    public ResultType HasReachTarget()
+    {
+         float dist = SquarePlanarDist(Target);
+        float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
+        if (dist > arriveDist)
+        {
+            return ResultType.RUNNING;
+        }
+        else if(dist < 0/3f)//DataManager.Instance.GlobalConfig.MinRange)
+            return ResultType.TooNear;
+
+        return ResultType.SUCCESS;
 
     }
 

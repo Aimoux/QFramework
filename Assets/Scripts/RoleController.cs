@@ -120,10 +120,10 @@ public class RoleController : MonoBehaviour
     public ResultType MoveToTargetByNav(Vector3 pos)
     {
         if (!NavMesh.CalculatePath(transform.position, pos, NavMesh.AllAreas, path))
-            return ResultType.Failure;
+            return ResultType.FAILURE;
 
         if (path.status != NavMeshPathStatus.PathComplete)
-            return ResultType.Failure;
+            return ResultType.FAILURE;
 
         nav.SetDestination(pos);
         nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//浮空判断??
@@ -137,7 +137,7 @@ public class RoleController : MonoBehaviour
         role.Forward = transform.forward;//受控/滞空 直接传递模型的朝向位置??
         //transform.forward = anim.deltaRotation * transform.forward;??
 
-        return ResultType.Success;
+        return ResultType.SUCCESS;
 
         //官方案例方案
         //nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;
@@ -178,8 +178,6 @@ public class RoleController : MonoBehaviour
     public void SetState(AnimState state)
     {
         anim.SetInteger(Const.StateID, (int)state.State);
-
-
     }
 
 }

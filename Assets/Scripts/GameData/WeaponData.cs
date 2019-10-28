@@ -5,11 +5,11 @@ using UnityEngine;
 namespace GameData
 {
     [System.Serializable]
-    public class WeaponData
+    public class WeaponData //不随武器升级而增长
     {
         public int ID { get; set; }
         public string Name { get; set; }
-        public int Category { get; set; }
+        public int Category { get; set; }//影响冲击力
         public string Icon { get; set; }
         public string Model { get; set; }
         public string Animator { get; set; }
@@ -23,13 +23,9 @@ namespace GameData
         public int AddStrLv { get; set; }//力量修正等级 SABCDE
         public int AddDexLv { get; set; }//敏捷修正等级
         public int AddMntLv { get; set; }//意志修正等级
-        public int MPAtkRecovery { get; set; }//不随武器升级而增长
-
-
-
-
-        public int SteadyEx { get; set; }//出手韧性??
-        public int SteadyDmg { get; set; }//韧性削减
+        public float MPAtkRecovery { get; set; }//命中回魔
+        public float ImpactRatio { get; set; }//出手保护韧性因子与招式保护因子共同作用
+        public float ImpactDamage { get; set; }//基础韧性削减与招式削韧因子共同作用
         public int StaminaCost { get; set; }//基础体力消耗，重击倍数
 
 

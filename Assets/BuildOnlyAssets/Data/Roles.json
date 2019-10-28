@@ -10,7 +10,8 @@
     "Personality": 1, 
     "Picture": "LilyBody", 
     "Portrait": "LilyPorn", 
-    "Radius": 1.0
+    "Radius": 1.0, 
+    "Steady": 100.0
   }, 
   "2": {
     "Behavior": "Resources/Behaviors/Rookie", 
@@ -19,10 +20,11 @@
     "MaxLevel": 3, 
     "MinLevel": 1, 
     "Model": "Resources/Prefabs/C002", 
-    "Name": "Circle", 
+    "Name": "ChenXiaoYuan", 
     "Personality": 1, 
     "Picture": "CirBdy", 
     "Portrait": "Circle", 
-    "Radius": 1.0
+    "Radius": 1.0, 
+    "Steady": 100.0
   }
 }

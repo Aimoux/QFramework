@@ -1,0 +1,106 @@
+{
+  "0": {
+    "AnimationType": 0, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 0, 
+    "Name": "Idle"
+  }, 
+  "101": {
+    "AnimationType": 0, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 101, 
+    "Name": "Walk"
+  }, 
+  "102": {
+    "AnimationType": 0, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 102, 
+    "Name": "Run"
+  }, 
+  "103": {
+    "AnimationType": 0, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 103, 
+    "Name": "Roll"
+  }, 
+  "104": {
+    "AnimationType": 0, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 104, 
+    "Name": "Jump"
+  }, 
+  "105": {
+    "AnimationType": 0, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 105, 
+    "Name": "Fall"
+  }, 
+  "201": {
+    "AnimationType": 1, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 201, 
+    "Name": "AttackLite"
+  }, 
+  "202": {
+    "AnimationType": 1, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 202, 
+    "Name": "AttackHeavy"
+  }, 
+  "203": {
+    "AnimationType": 1, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 203, 
+    "Name": "AttackSpecial"
+  }, 
+  "301": {
+    "AnimationType": 2, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 301, 
+    "Name": "BreakLite"
+  }, 
+  "302": {
+    "AnimationType": 2, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 302, 
+    "Name": "BreakHeavy"
+  }, 
+  "303": {
+    "AnimationType": 2, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 303, 
+    "Name": "KonckDown"
+  }, 
+  "304": {
+    "AnimationType": 2, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 304, 
+    "Name": "KnockUp"
+  }
+}
