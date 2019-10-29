@@ -27,6 +27,7 @@ namespace GameData
         public float ImpactRatio { get; set; }//出手保护韧性因子与招式保护因子共同作用
         public float ImpactDamage { get; set; }//基础韧性削减与招式削韧因子共同作用
         public int StaminaCost { get; set; }//基础体力消耗，重击倍数
+        public Dictionary<int, string> Combos { get; set; }//可用组合招式
 
 
         }

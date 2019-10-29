@@ -32,7 +32,7 @@ public class BasicTactic : Action
 
 	public override TaskStatus OnUpdate()
 	{
-		if(sdself.Value.Cmds.Count == 0)
+		if(!sdself.Value.OnTactic)
 		{
  			int key = Random.Range(0, All.Count);
         	// int[] combos = new int[] { };
@@ -46,5 +46,6 @@ public class BasicTactic : Action
        
         return TaskStatus.Success;
 	}
+
 
 }

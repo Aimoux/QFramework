@@ -10,6 +10,7 @@ public class Weapon
     public WeaponData Data;
     public WeaponAttributeData Attrs;
     public Role Owner;
+    public List<List<AnimState>> ComboLists;
 
     public Enchantium curEnchant;
 
@@ -45,9 +46,6 @@ public class Weapon
     public Weapon(int id, int level, Role owner)
     {
         Data = DataManager.Instance.Weapons[id];
-        if (!DataManager.Instance.Weapons.TryGetValue(id, out Data))
-            Debug.LogError("wrong weapon id: " + id);
-
         Attrs = DataManager.Instance.WeaponAttributes[id][level];
 
         BaseForceDict[DamageType.BLUNT] = Attrs.DamageBlunt;
@@ -59,12 +57,43 @@ public class Weapon
         BaseForceDict[DamageType.SLASH] = Attrs.DamageSlash;
 
         this.Owner = owner;
+        GetCombos();
 
     }
 
     ~Weapon()
     {
         this.OnDestroy();
+    }
+
+    //avail combos for each weapon
+    private void GetCombos()
+    {
+        //lite+lite1作为一个combo,实际战斗中能否区别于single lite combo + single lite1 combo??
+        //{ 1,"AttackLite,AttackHeavy,LeapAttack" }
+        //{ 2,"AttackLite+AttackHeavy,AttackLite+AttackLite" }     
+        for (int i = 1; i <= Data.Combos.Count; i++)
+        {
+            string[] combos = Data.Combos[i].Split(',');
+            foreach (string combo in combos)
+            {
+                List<AnimState> ComboCmd = new List<AnimState>();
+                string[] states = combo.Split('+');                
+                foreach (string state in states)
+                {
+                    AnimState anst = CreateAnimStByName(state);
+                    ComboCmd.Add(anst);
+                }
+                //ComboCmd.Add(new IdleState(Owner));//combo必须以Idle作为结束??
+                ComboLists.Add(ComboCmd);
+            }
+        }
+
+    }
+
+    public AnimState CreateAnimStByName(string state)
+    {
+        return null;
     }
 
     public virtual void Enchant(Enchantium encho)//唯一附魔，后者会取代前者
