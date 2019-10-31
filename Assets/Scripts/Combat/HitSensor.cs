@@ -12,33 +12,34 @@ public class HitSensor : MonoBehaviour
         if(!wp.Owner.Status.IsWeaponEnable)//能否确保被打断时此处为false??
             return;
 
-        if (other.gameObject.tag == "")
+        Role Masochism = GetMasochism(other);
+        if (Masochism != null)
         {
             //阵容问题：同阵容免伤，混战阵容数量超过2个的情况
-            Role Masochism = GetMasochism();
-            if (Masochism != null)
-            {
-                wp.OnHit();//武器自身的命中特殊效果
-                wp.Owner.OnSadism(wp, Masochism);//攻击方收益计算
-                Masochism.OnMasoch(wp);//受击方损失计算
-                //一个打击事件的信息传递
-                //攻击方需要知道自己的哪一个武器（武器状态，计算伤害）击中了哪一个敌人
-                //受击方需要知道伤害（效果）数值和攻击者是谁（反击、仇恨转移）
-            }
+            //一个打击事件的信息传递
+            //攻击方需要知道自己的哪一个武器（武器状态，计算伤害）击中了哪一个敌人
+            //受击方需要知道伤害（效果）数值和攻击者是谁（反击、仇恨转移）
+            wp.OnHit(Masochism);//武器自身的命中特殊效果
+            wp.Owner.OnSadism(wp, Masochism);//攻击方收益计算
+            Masochism.OnMasoch(wp);//受击方损失计算                                 
         }
     }
 
     //阵容、隐藏、无敌判定
     //role不继承mono，位于内存中，如何获取?? behaviortree.get vaiable value??
     //玩家同样添加行为树?? 避免地形卡死??
-    private Role GetMasochism()// how to get??
+    private Role GetMasochism(Collider other)// how to get??
     {
-
+        Detector victimSensor = other.GetComponent<Detector>();
+        if (victimSensor != null)
+            return victimSensor.role;
 
         return null;
     }
+}
 
 
-
-
+public class Detector : MonoBehaviour 
+{
+    public Role role;
 }

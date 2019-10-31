@@ -210,7 +210,7 @@ namespace Common
     {
         public int ID;
         public int Level;
-        public List<int> gears = new List<int>();
+        public List<int> gears = new List<int>();//已装备物品,背包物品位于Player
         public int Exp;//是否固定与玩家相等,或是必须带动升级??
 
         public Dictionary<int, int> Weapons = new Dictionary<int, int>();//id and lv

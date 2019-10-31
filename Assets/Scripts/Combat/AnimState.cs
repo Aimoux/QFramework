@@ -6,6 +6,10 @@ using GameData;
 
 public abstract class AnimState
 {
+    //考虑多层级继承? AttackLite: AttackState: AnimState, WalkForWard: Walk: AnimState?? 
+
+
+
     private  ANIMATIONSTATE m_State = ANIMATIONSTATE.IDLE; // 状态
     public ANIMATIONSTATE State
     {
@@ -96,9 +100,9 @@ public abstract class AnimState
 
     public virtual void OnStateBreak()//walk to target
     {
-        m_Controller.Cmds.Clear();//??打断一个,整个策略放弃??
         IsBreak = true;
-        m_Controller.Steady = m_Controller.Data.Steady;
+        //m_Controller.Cmds.Clear();//??打断一个,整个策略放弃??
+        //m_Controller.Steady = m_Controller.Data.Steady;
         OnStateExit();
         //m_Controller.SetState()//反射创建AnimState类??
 

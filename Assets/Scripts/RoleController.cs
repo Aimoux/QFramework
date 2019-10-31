@@ -75,6 +75,8 @@ public class RoleController : MonoBehaviour
 
         anim.runtimeAnimatorController = loader.LoadSync<RuntimeAnimatorController>(role.CurWeapon.Data.Animator);
 
+        model.GetComponent<Detector>().role = role;
+
         GameObject wpsrc = loader.LoadSync<GameObject>(role.CurWeapon.Data.Model);
         GameObject wp= GameObject.Instantiate(wpsrc) as GameObject;
         wpModel = wp.transform;

@@ -35,8 +35,7 @@ public class Weapon
             foreach (var kv in BaseForceDict)
                 _ForceDict.Add(kv.Key, kv.Value * Owner.Status.Data.AttackDamageRatio);
 
-            if (Owner != null)
-                Owner.CalculateForce(this.Data, _ForceDict);//是否导致循环??
+            Owner.CalculateForce(this.Data, _ForceDict);//是否导致循环??
             return _ForceDict;
         }
     }
@@ -134,9 +133,10 @@ public class Weapon
     //武器到手之后根据力量加成计算真实伤害??
     //buff系统，暂时增加力量、直接增加伤害、改变伤害类型
     //weapon 类似hc的 talent
-
-    public virtual void OnHit()//命中特效
+    //单次攻击可能打到多人,故不宜为Weapon设置Masoch缓存??
+    public virtual void OnHit(Role Masoch)//命中特效
     {
+
 
 
     }

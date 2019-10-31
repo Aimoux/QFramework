@@ -77,10 +77,10 @@ public class Logic : MonoSingleton<Logic>
     }
 
     //read config data
-    public void CreateEnemiesByLevelData(int Level, int side = 1)
+    public void CreateEnemiesByLevelData(int Level, int round, int side = 1)
     {
         //first round only for now
-        LevelMonsterData data = DataManager.Instance.LevelMonsters[Level][1];//1为第一轮
+        LevelMonsterData data = DataManager.Instance.LevelMonsters[Level][round];//1为第一轮
 
         int pos = 0;
         foreach (int mid in data.Monsters)

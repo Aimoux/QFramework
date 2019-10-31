@@ -113,6 +113,17 @@ public class Role
         get { return Cmds.Count > 0; }//最后的动作一开始,就可以进行下一个决策??
     }
 
+    public Dictionary<Role, float> Hates = new Dictionary<Role, float>();//此人的仇恨表
+    public List<Role> Hated = new List<Role>();//仇恨此人的列表
+    //仇恨来源:初见\伤害(anst or weapon 固有+lostHP)\第三方辅助\
+    //仇恨清除,仇恨转移:
+
+    //4、“目标更换事件”触发条件一：一旦怪物的仇恨表中开始有数据存在（即不为空），就会触发一次“目标更换事件”；
+    //5、“目标更换事件”触发条件二：如果怪物或NPC仇恨列表中“当前战斗目标”和“当前最大仇恨值目标”不同，且“当前第一、第二仇恨值比值”>110%，则会触发“目标更换事件”；
+    //6、“目标更换事件”触发条件三：一旦怪物或NPC仇恨列表中有一个目标仇恨值达到仇恨上限，即65535时，则会触发“目标更换事件”（注意：该事件会在“极限衰减”过程之前完成）；
+    //7、“目标更换事件”触发条件四：怪物或NPC仇恨列表中，“当前战斗目标”的仇恨值发生衰减或清除事件（不管是因为什么原因），都会触发“目标更换事件”；
+    //8、“目标更换事件”触发条件五：怪物或NPC在响应“呼救”和“召集”技能或者怪物在受到“愤怒嘲讽”技能时，会立刻触发一次“目标更换事件”（可以通过让技能携带一个具有“目标更换事件”触发功能的脚本来实现）。
+
     //读取存档(队友装备)
     public static Role Create(Hero hero)
     {
@@ -376,17 +387,21 @@ public class Role
         if(Steady <= 0)
         {
             int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(float)atk.State];
-            HitReaction(type);
+            OnStatusBreak(type);
         }    
         return force;
     }
 
 //受击硬直处理
-    public virtual void HitReaction(int impact)//受击需要分层状态机??
+    public virtual void OnStatusBreak(int impact)//受击需要分层状态机??
     {
         //如果硬直类似亚特大的带有交互性质，考虑用TimeLine??
         //暂不考虑自身状态对最终硬直的影响??
         Status.OnStateBreak((ANIMATIONSTATE)impact);
+
+        //打断之后,立即clear cmd,但是gen tact应在break state结束时进行?
+        Cmds.Clear();//??打断一个,整个策略放弃??
+        Steady = Data.Steady;//重置韧性
 
         AnimState BreakState;
         switch ((ANIMATIONSTATE)impact)//pool?
@@ -503,12 +518,23 @@ public class Role
 
         foreach(Role role in Logic.Instance.GetAliveEnemies(Faction))
         {
-            Target = role;//interface selector??
+            Target = role;//interface selector??  vs hatred? 加权?
             return role;
         }
 
         return null;
+
+
+        //仇恨值系统,距离,对己伤害,目标状态(血量,体力)
+
+
+
+
+
+
     }
+
+
 
     //if(idle or move) ->FindTarget ->Move(Rotate) ->Atk {atk1, atk2, atk3}{gen random avail comb sets and push}
     //if(out range) ->Find->Move()->...cycle
