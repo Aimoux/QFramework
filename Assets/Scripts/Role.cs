@@ -114,7 +114,7 @@ public class Role
     }
 
     public Dictionary<Role, float> Hates = new Dictionary<Role, float>();//此人的仇恨表
-    public List<Role> Hated = new List<Role>();//仇恨此人的列表
+    public List<Role> HatedBy = new List<Role>();//仇恨此人的列表
     //仇恨来源:初见\伤害(anst or weapon 固有+lostHP)\第三方辅助\
     //仇恨清除,仇恨转移:
 
@@ -425,7 +425,7 @@ public class Role
     public virtual void OnMasoch(Weapon wp)
     {
         //Pop HUD "How Dare You!"
-        CalculateLostHP(wp.ForceDict);
+        float lost  = CalculateLostHP(wp.ForceDict);
         CalculateImpact(wp);//韧性计算
 
         //回魔计算
@@ -434,10 +434,8 @@ public class Role
 
         //耐力扣除(仅限防御状态??)
 
-  
-
         //更新仇恨值
-        HatredDict[wp.Owner] += 10;
+        Hates[wp.Owner] += lost;
     }
 
     //受自身姿态影响：防御/背刺
@@ -497,10 +495,11 @@ public class Role
         return 0f;
     }
 
-    private Dictionary<Role, int> HatredDict = new Dictionary<Role, int>();
-
     //被行为树调用
     //开场、受攻击、上个目标丢失
+    //仇恨值系统,距离,对己伤害,目标状态(血量,体力)
+    //角色状态:距离\血量\体力,具象化为定量的仇恨值,或是与仇恨值平级的存在??
+    //寻找目标:按AnimStateExtension配置的TargetType(默认为最近?),仇恨值仅用于转移攻击目标判定?
     public virtual Role FindTarget()
     {
         // Role target = null;
@@ -525,45 +524,49 @@ public class Role
         return null;
 
 
-        //仇恨值系统,距离,对己伤害,目标状态(血量,体力)
-
-
+     
 
 
 
 
     }
 
-
-
     //if(idle or move) ->FindTarget ->Move(Rotate) ->Atk {atk1, atk2, atk3}{gen random avail comb sets and push}
     //if(out range) ->Find->Move()->...cycle
     //can not rotate in atk motion(other than attached in anim clip)
-
     //behaviour pattern gen and select( supported by sufficient anim combo)
 
     //virtual behavior
     //override behav for each npc??
 
     //Atk Combo ids
-    public virtual void GenTactic()
-    {
-        if(OnTactic)
-            return;
+    //public virtual void GenTactic()
+    //{
+    //    if(OnTactic)
+    //        return;
 
-        //random walkst dir
-        if(Target != null)
-        {
-            if(HasReachTarget() == ResultType.RUNNING)
-                Cmds.Push(new WalkState(this));
-            else
-            {
-                Cmds.Push(new AttackLiteState(this));//每把武器的combo不同,读取自weapon配置??
-                Cmds.Push(new AttackHeavyState(this));
-            }
-           
-        }
-    }
+    //    //random walkst dir
+    //    if(Target != null)
+    //    {
+    //        if(HasReachTarget() == ResultType.RUNNING)
+    //            Cmds.Push(new WalkState(this));
+    //        else
+    //        {
+    //            Cmds.Push(new AttackLiteState(this));//每把武器的combo不同,读取自weapon配置??
+    //            Cmds.Push(new AttackHeavyState(this));
+    //        }
+
+    //    }
+    //}
+
+
+    //特定事件(dying)的统一应对方式
+    //public virtual Tactic Generate(string events)
+    //{
+
+
+    //    return null;
+    //}
 
 
     public virtual bool MoveToTarget()
@@ -614,12 +617,6 @@ public class Role
         return dist;
     }
 
-    public virtual Role GetMostHated()
-    {
-
-        return null;
-    }
-
     public virtual void End(Role attacker)
     {
 
@@ -627,14 +624,6 @@ public class Role
         Logic.Instance.RoleDead(this);
 
 
-    }
-
-    //特定事件(dying)的统一应对方式
-    public virtual Tactic Generate(string events)
-    {
-
-
-        return null;
     }
 
 }

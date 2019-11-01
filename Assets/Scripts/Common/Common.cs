@@ -204,6 +204,31 @@ namespace Common
         ELECTRIC =6,
 
     }
+
+    //武器的特殊动作效果目标:群嘲\随机嘲\最远嘲
+    public enum TargetType
+    {
+        None = 0,
+        Self = 1,
+        Target = 2,
+        Random = 3,
+        All = 4,
+        DeadBody = 5,
+        Nearest = 10,
+        Farthest = 11,
+        Weakest = 12,
+        MaxHP = 13,
+        MinHP = 14,
+        MaxMP = 15,
+        MinMP = 16,
+        MaxStrength = 17,
+        MaxAgility = 18,
+        MaxIntelligence = 19,
+        MaxAttackDamage = 20,
+        MaxAbilityPower = 21,
+        NearestSummon = 101
+    }
+
     //确有必要??
     [Serializable]
     public class Hero
