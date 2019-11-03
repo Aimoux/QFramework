@@ -19,8 +19,9 @@ namespace Common
 
     public enum ANIMATIONTYPE
     {
-        MOTION =0,//移动
-        ATTACK =1,//攻击
+        IDLE =0,
+        MOTION =1,//移动
+        ATTACK =2,//攻击
         HITREACTION =2,//受击
 
 
@@ -31,51 +32,60 @@ namespace Common
         //状态是否必须与动画机clip一一对应??
         //是否足够资源单双手切换??
         #region Motion
-        IDLE =0,
-        WALKFORWARD =101,
-        WALKBACK =1011,
-        WALKLEFT =1012,
-        WALKRIGHT =1013,
-        RUNFORWARD =102,
-        RUNBACK = 1021,
-        RUNLEFT = 1022,
-        RUNRIGHT = 1023,
-        ROLLFORWARD=103,//翻滚
-        ROLLBACK =1031,
-        ROLLLEFT = 1032,
-        ROLLRIGHT = 1033,
+        IDLE = 0,//两种idle，一种为只有一帧长度，另一种帧数作为common cd，transit同普攻??
+        WALKFORWARD = 1011,
+        WALKBACK = 1012,
+        WALKLEFT = 1013,
+        WALKRIGHT = 1014,
+        RUNFORWARD = 1021,
+        RUNBACK = 1022,
+        RUNLEFT = 1023,
+        RUNRIGHT = 1024,
+        ROLLFORWARD = 1031,//翻滚
+        ROLLBACK = 1032,
+        ROLLLEFT = 1033,
+        ROLLRIGHT = 1034,
         JUMP = 104,//跳跃??
         FALL = 105,//坠落
         #endregion
 
         #region Attack
-        ATTACKLITE =201,//站立轻击 有无必要设置 attack lite 1??
-        ATTACKLITE2 = 2011,//站立轻击偶数
-        ATTACKLITESPRINT = 2012,//奔跑轻击
-        ATTACKLITEROLL = 2013,//翻滚轻击
-        ATTACKHEAVY =202,//站立重击
-        ATTACKHEAVY2 = 2021,//站立重击偶数
-        ATTACKHEAVYSPRINT = 2022,//奔跑重击
-        ATTACKHEAVYROLL = 2023,//翻滚重击 
-        ATTACKSPECIAL =203,//战技
-        ATTACKSPRINT =204,//奔跑攻击
-        ULTIMATE1 =205,//特技， npc仅此一个
-        ULTIMATE2 =206,//
-        ULTIMATE3 =207,//暂定主角最多三个
+        SINGLEATK1 = 2011,//基础轻击
+        SINGLEATK2 = 2012,//基础重击
+        SINGLEATK3 = 2013,
+        SINGLEATK4 = 2014,
+        SINGLEATK5 = 2015,
+        TWOCOMBO1PART1 = 20211,//二连击一段
+        TWOCOMBO1PART2 = 20212,//二连击二段
+        TWOCOMBO2PART1 = 20221,
+        TWOCOMBO2PART2 = 20222,
+        TWOCOMBO3PART1 = 20231,
+        TWOCOMBO3PART2 = 20232,
+        THREECOMBO1PART1 = 20311,//三连击一段
+        THREECOMBO1PART2 = 20312,//三连击二段
+        THREECOMBO1PART3 = 20313,//三连击三段
+        THREECOMBO2PART1 = 20321,
+        THREECOMBO2PART2 = 20322,
+        THREECOMBO2PART3 = 20323,
+        KICKATK1 = 2041,
+        KICKATK2 = 2042,
+        JUMPATK1 = 2051,
+        JUMPATK2 = 2052,
+
         #endregion
 
         #region HitReaction
         BREAKLITE = 301,//轻击
-        BREAKHEAVY =302,//重击，击退?
+        BREAKHEAVY = 302,//重击，击退?
         KNOCKDOWN = 303,//击倒
         KNOCKUP = 304,//击飞??
-        //特技以及中招动作均由TimeLine指定，所以此类状态可归到paralysis??
-        //CHARMED =4, //被魅惑
-        //DISGUST =4,//被恶心到
+                      //特技以及中招动作均由TimeLine指定，所以此类状态可归到paralysis??
+                      //CHARMED =4, //被魅惑
+                      //DISGUST =4,//被恶心到
         #endregion
-        
-        DEATH=4,
-        BLOCK =4,//防御
+
+        DEATH = 4,
+        BLOCK = 4,//防御
     }
 
     //由一个或多个AnimState组成
@@ -91,47 +101,6 @@ namespace Common
         public int Action;// for none-combat tact: run to heal, kneel
                           //所有可能的连击组合 weapon data中配置此处的子集key,combo broken??
                           //push命令以combo为单位, 不同combo之间存在 common cd??
-        public Dictionary<int, List<ANIMATIONSTATE>> Combos = new Dictionary<int, List<ANIMATIONSTATE>>
-        {
-            { 0, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE} },//轻
-            { 1, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKHEAVY} },//重
-            { 2, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKLITE} },//轻+轻
-            { 3, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY} },//轻+重
-            { 4, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ATTACKLITE, ANIMATIONSTATE.ATTACKHEAVY, ANIMATIONSTATE.ATTACKLITE} },//轻+重+轻
-            { 5, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ROLLFORWARD, ANIMATIONSTATE.ATTACKLITE} },//滚+轻
-            { 6, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.ROLLFORWARD, ANIMATIONSTATE.ATTACKHEAVY} },//滚+重
-            { 7, new List<ANIMATIONSTATE>{ ANIMATIONSTATE.FALL, ANIMATIONSTATE.ATTACKLITE} },//落+轻
-
-        };
-
-        public static Tactic Generate(int situation)
-        {
-
-
-
-            return new Tactic(situation);
-        }
-
-        public Tactic(int st)
-        {
-
-        }
-
-        public void GenTactic()
-        {
-            Stack<ANIMATIONSTATE> cmds = new Stack<ANIMATIONSTATE>();
-            ANIMATIONSTATE[] Walks = new ANIMATIONSTATE[] { ANIMATIONSTATE.WALKFORWARD, ANIMATIONSTATE.WALKBACK,
-            ANIMATIONSTATE.WALKLEFT, ANIMATIONSTATE.WALKRIGHT};
-
-            int dir = UnityEngine.Random.Range(0, 4);
-            cmds.Push(Walks[dir]);
-
-            int act = UnityEngine.Random.Range(0, Combos.Count);
-            foreach (ANIMATIONSTATE state in Combos[act])
-                cmds.Push(state);
-
-
-        }
 
 
     }
@@ -274,6 +243,8 @@ namespace Common
 
         public const string SharedSelf ="SharedSelf";
         public const string SharedTarget = "SharedTarget";
+        public const float DeltaFrame = 0.033333f;//1/30 30Hz帧率
+        public const float ZeroFloat = 0.0000001f;
 
         //private int idVertical = Animator.StringToHash("Vertical");
         //    private int idJump = Animator.StringToHash("Jump");

@@ -30,16 +30,11 @@ public class HitSensor : MonoBehaviour
     //玩家同样添加行为树?? 避免地形卡死??
     private Role GetMasochism(Collider other)// how to get??
     {
-        Detector victimSensor = other.GetComponent<Detector>();
+        RoleSensor victimSensor = other.GetComponent<RoleSensor>();
         if (victimSensor != null)
-            return victimSensor.role;
+            return victimSensor.Self;
 
         return null;
     }
 }
 
-
-public class Detector : MonoBehaviour 
-{
-    public Role role;
-}

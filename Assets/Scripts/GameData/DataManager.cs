@@ -151,6 +151,17 @@ class DataManager : Singleton<DataManager>
         }
     }
 
+    private Dictionary<int, Dictionary<float, int>> _Transits;
+    public Dictionary<int, Dictionary<float, int>> Transits
+    {
+        get 
+        {
+            if(_Transits == null)
+                Load("Data/Transits.json", ref _Transits);
+            return _Transits;
+        }
+    }
+
     protected DataManager()
     {
 

@@ -10,7 +10,7 @@ public class Weapon
     public WeaponData Data;
     public WeaponAttributeData Attrs;
     public Role Owner;
-    public List<List<AnimState>> ComboLists;
+    public List<List<AnimState>> ComboLists = new List<List<AnimState>>();
 
     public Enchantium curEnchant;
 
@@ -56,7 +56,6 @@ public class Weapon
         BaseForceDict[DamageType.SLASH] = Attrs.DamageSlash;
 
         this.Owner = owner;
-        GetCombos();
 
     }
 
@@ -66,25 +65,31 @@ public class Weapon
     }
 
     //avail combos for each weapon
-    private void GetCombos()
+    public void GetCombos()
     {
-        //lite+lite1作为一个combo,实际战斗中能否区别于single lite combo + single lite1 combo??
-        //{ 1,"AttackLite,AttackHeavy,LeapAttack" }
-        //{ 2,"AttackLite+AttackHeavy,AttackLite+AttackLite" }     
+        AnimState IdleSt = new AnimStateExtension(Owner, 0);
         for (int i = 1; i <= Data.Combos.Count; i++)
         {
-            string[] combos = Data.Combos[i].Split(',');
+            string[] combos = Data.Combos[i].Split('-');//移除头尾的符号、/
             foreach (string combo in combos)
             {
                 List<AnimState> ComboCmd = new List<AnimState>();
-                string[] states = combo.Split('+');                
+                string fixedcomb = combo.Replace("\"", "");
+                fixedcomb = fixedcomb.Replace("/","");
+                string[] states = fixedcomb.Split('+');      
+
+                if(states.Length >1)//测试专用??
+                    continue;
+
                 foreach (string state in states)
                 {
-                    AnimState anst = CreateAnimStByName(state);
+                    int id = System.Convert.ToInt32(state);
+                    AnimState anst = new AnimStateExtension(Owner, id);
                     ComboCmd.Add(anst);
                 }
-                //ComboCmd.Add(new IdleState(Owner));//combo必须以Idle作为结束??
-                ComboLists.Add(ComboCmd);
+                ComboCmd.Add(IdleSt);//combo必须以Idle作为结束??
+                ComboCmd.Reverse();
+                ComboLists.Add(ComboCmd);//顺序颠倒了??
             }
         }
 

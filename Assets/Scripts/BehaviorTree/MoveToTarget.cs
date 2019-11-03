@@ -10,18 +10,17 @@ public class MoveToTarget : Action
     public SharedRole sdtarget;
     public SharedRole sdself;
     //public ResultType ret;
-    private WalkState walkst;//避免过多的new
+    private AnimStateExtension walkst;//避免过多的new
 
     public override void OnStart()
     {
-        walkst = new WalkState(sdself.Value );
+        walkst = new AnimStateExtension(sdself.Value, (int)ANIMATIONSTATE.WALKFORWARD);
     }
     public override TaskStatus OnUpdate()
     {
-        if(sdself.Value.Status.State != Common.ANIMATIONSTATE.WALKFORWARD)       
-            sdself.Value.PushState(walkst);
-
         Common.ResultType ret = sdself.Value.HasReachTarget();
+        if(sdself.Value.Status.State == Common.ANIMATIONSTATE.IDLE)// || (sdself.Value.Status.State == Common.ANIMATIONSTATE.WALKFORWARD && ret == Common.ResultType.RUNNING))       
+            sdself.Value.PushState(walkst);        
 
         if(ret == Common.ResultType.SUCCESS)
             return TaskStatus.Success;

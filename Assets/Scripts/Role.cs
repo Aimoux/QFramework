@@ -100,10 +100,8 @@ public class Role
         }
     }
 
-    public WeaponData weapon { get; set; }
     public Weapon CurWeapon { get; set; }
     public Stack<AnimState> Cmds = new Stack<AnimState>();
-    private AnimState IdleSt;
     public QF.Res.ResLoader Loader;
 
     public Hero hero;//是否有必要??
@@ -140,8 +138,7 @@ public class Role
         int wpid = hero.Weapons.First().Key;
         int wplv = hero.Weapons.First().Value;
         CurWeapon = new Weapon(wpid, wplv, this);
-        IdleSt = new IdleState(this);
-        Status = IdleSt;
+        
 
         Loader = QF.Res.ResLoader.Allocate();
         //use preload async in manager to ensure sync here ??
@@ -165,6 +162,7 @@ public class Role
     public delegate void DisableSnesor();
     //动画机逻辑处理（攻击、条件）位于此处??
     public AnimState Status { get; private set; }
+    private AnimState IdleSt;
     //状态设计模式
     private bool m_bRunBegin = false;//OnXXEnter的触发判定
 
@@ -182,27 +180,49 @@ public class Role
 
         if (Status != null)
             Status.OnStateUpdate();
-
-        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)//to add break cur status??
+        
+        if(Cmds.Count > 0)
+        {
+            AnimState next = Cmds.Peek();
+            if(Status.CanTransit(next) == 2)//无需完整播放当前动作片段
+            {
+                SetState(Cmds.Pop());
+                return;
+            }
+        }
+        
+        //不需要完整播放完的动画（idle，walk）设置其framecount为1??
+        //can transit=2, 可以去掉break?
+        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)
         {
             //if cmds 皆不可用（或没有），自动转向idle??
-            // if (Cmds.Count == 0)
-            // {
-            //     //Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
-            //     GenTactic();
-            // }
+            if (Cmds.Count == 0)
+            {
+                Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
+            }
 
             while (Cmds.Count > 0)
             {
                 //有无必要lock??
                 AnimState next = Cmds.Pop();
-                if (CanTrans(next))
+                if (Status.CanTransit(next) > 0)
                 {
                     SetState(next);
-                    //Cmds.Clear();//生效的只有一个??
                     break;
                 }
             }
+
+            // if (Cmds.Count > 0)
+            // {
+            //     //有无必要lock??
+            //     AnimState next = Cmds.Pop();
+            //     if (Status.CanTransit(next))
+            //     {
+            //         SetState(next);
+            //     }
+            //     else
+            //         Cmds.Clear();//首条命令无效，后续命令全部清空??
+            // }
         }
 
     }
@@ -227,48 +247,10 @@ public class Role
         Status = animState;
     }
 
-
-    //边走边嗑药、表情会运用到layer以及AvatarMask
-    //嗑药动作放在UpBody层，表情放在Head层
-    //为避免过度复杂，anim.SetLayerWeight(lyId, wgt), lerp。实际上可以在编辑器中直接指定Up及Head的weight为1??
-
-    //手敲状态机??状态模式??
-    //Idle, Move(?)到其他状态的转换不需要等待
-    //非Idle到其他状态的转换大多需要等待
-    //如能设置anystate 的 has exit time，则不需此处
-    public bool CanTrans(AnimState next)
-    {
-        return true;
-        switch (Status.State)//当前
-        {
-            case Common.ANIMATIONSTATE.ATTACKHEAVY:
-
-                switch (next.State)
-                {
-                    case Common.ANIMATIONSTATE.ATTACKHEAVY:
-                        return false;
-
-                    default:
-                        return false;
-
-                }
-
-
-
-
-
-        }
-        return true;
-
-    }
-
     //初始化属性
     //获取武器??
     //初始化状态
     //LoadScene->EnterLevel->Logic.InitHeroes->Role.Init
-
-
-
     public virtual void Init()
     {
         InitAttributes();
@@ -303,6 +285,9 @@ public class Role
 
     protected void InitWeapon()//
     {
+        CurWeapon.GetCombos();
+        IdleSt = new AnimStateExtension(this, 0);
+        Status = IdleSt;
 
 
 
@@ -403,21 +388,21 @@ public class Role
         Cmds.Clear();//??打断一个,整个策略放弃??
         Steady = Data.Steady;//重置韧性
 
-        AnimState BreakState;
-        switch ((ANIMATIONSTATE)impact)//pool?
-        {
-            case ANIMATIONSTATE.BREAKLITE :
-                BreakState = new BreakLiteState(this);
-                break;
+        AnimState BreakState = null;
+        // switch ((ANIMATIONSTATE)impact)//pool?
+        // {
+        //     case ANIMATIONSTATE.BREAKLITE :
+        //         BreakState = new BreakLiteState(this);
+        //         break;
 
-            case ANIMATIONSTATE.BREAKHEAVY :
-                BreakState = new BreakHeavyState(this);
-                break;
+        //     case ANIMATIONSTATE.BREAKHEAVY :
+        //         BreakState = new BreakHeavyState(this);
+        //         break;
 
-            default :
-             BreakState = new BreakLiteState(this);
-                break;
-        }
+        //     default :
+        //      BreakState = new BreakLiteState(this);
+        //         break;
+        // }
         SetState(BreakState);//??
     }
 
@@ -581,9 +566,7 @@ public class Role
         else 
         {
             Controller.StopNav();
-        }
-         
-
+        }       
         return true;
 
     }

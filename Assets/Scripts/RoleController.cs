@@ -50,7 +50,7 @@ public class RoleController : MonoBehaviour
 
     private bool navigating = false;
     private NavMeshPath path;
-    private WalkState walk;
+    //private WalkState walk;
     public ResLoader loader;
 
     private void Awake() 
@@ -75,11 +75,15 @@ public class RoleController : MonoBehaviour
 
         anim.runtimeAnimatorController = loader.LoadSync<RuntimeAnimatorController>(role.CurWeapon.Data.Animator);
 
-        model.GetComponent<Detector>().role = role;
+        model.GetComponent<RoleSensor>().Self = role;
 
-        GameObject wpsrc = loader.LoadSync<GameObject>(role.CurWeapon.Data.Model);
-        GameObject wp= GameObject.Instantiate(wpsrc) as GameObject;
-        wpModel = wp.transform;
+        if(wpModel == null)
+        {
+            GameObject wpsrc = loader.LoadSync<GameObject>(role.CurWeapon.Data.Model);
+            GameObject wp= GameObject.Instantiate(wpsrc) as GameObject;          
+            wpModel = wp.transform;
+        }
+
         wpModel.SetParent(wpPos);
         wpModel.localPosition = Vector3.zero;
         wpModel.localRotation = Quaternion.identity;
@@ -104,11 +108,11 @@ public class RoleController : MonoBehaviour
 
         }
 
-        if (walk == null)
-            walk = new WalkState(role);
+        // if (walk == null)
+        //     walk = new WalkState(role);
 
-        if (role.Status != walk)
-            role.PushState(walk);//受控不能移动的逻辑位于role的状态转换中??
+        // if (role.Status != walk)
+        //     role.PushState(walk);//受控不能移动的逻辑位于role的状态转换中??
 
     }
 
@@ -179,6 +183,7 @@ public class RoleController : MonoBehaviour
 
     public void SetState(AnimState state)
     {
+        //stateId equal + trigger，可解决anystate，trans to self的问题??
         anim.SetInteger(Const.StateID, (int)state.State);
     }
 
