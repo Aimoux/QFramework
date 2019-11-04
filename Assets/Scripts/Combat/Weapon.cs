@@ -10,7 +10,7 @@ public class Weapon
     public WeaponData Data;
     public WeaponAttributeData Attrs;
     public Role Owner;
-    public List<List<AnimState>> ComboLists = new List<List<AnimState>>();
+    public List<List<int>> ComboLists = new List<List<int>>();
 
     public Enchantium curEnchant;
 
@@ -67,13 +67,12 @@ public class Weapon
     //avail combos for each weapon
     public void GetCombos()
     {
-        AnimState IdleSt = new AnimStateExtension(Owner, 0);
         for (int i = 1; i <= Data.Combos.Count; i++)
         {
             string[] combos = Data.Combos[i].Split('-');//移除头尾的符号、/
             foreach (string combo in combos)
             {
-                List<AnimState> ComboCmd = new List<AnimState>();
+                List<int> ComboCmd = new List<int>();
                 string fixedcomb = combo.Replace("\"", "");
                 fixedcomb = fixedcomb.Replace("/","");
                 string[] states = fixedcomb.Split('+');      
@@ -84,12 +83,11 @@ public class Weapon
                 foreach (string state in states)
                 {
                     int id = System.Convert.ToInt32(state);
-                    AnimState anst = new AnimStateExtension(Owner, id);
-                    ComboCmd.Add(anst);
+                    ComboCmd.Add(id);
                 }
-                ComboCmd.Add(IdleSt);//combo必须以Idle作为结束??
-                ComboCmd.Reverse();
-                ComboLists.Add(ComboCmd);//顺序颠倒了??
+                ComboCmd.Add(0);//combo必须以Idle作为结束??
+                ComboCmd.Reverse();//堆栈逆序
+                ComboLists.Add(ComboCmd);
             }
         }
 

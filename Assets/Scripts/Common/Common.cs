@@ -37,10 +37,14 @@ namespace Common
         WALKBACK = 1012,
         WALKLEFT = 1013,
         WALKRIGHT = 1014,
+        WALKTURNLEFT = 1015,
+        WALKTURNRIGHT = 1016,
         RUNFORWARD = 1021,
         RUNBACK = 1022,
         RUNLEFT = 1023,
         RUNRIGHT = 1024,
+        RUNTURNLEFT = 1025,
+        RUNTURNRIGHT = 1026,
         ROLLFORWARD = 1031,//翻滚
         ROLLBACK = 1032,
         ROLLLEFT = 1033,
@@ -133,24 +137,29 @@ namespace Common
     {
         SUCCESS =0,//寻路
         FAILURE =1,
-        SAMETICK = 2,
-        COOLDOWN = 3,
-        RUNNING = 4,
-        STUN = 6,
-        DISABLE = 7,
-        SILENCE = 8,
-        NOTARGET = 9,
-        Untargetable = 10,
-        TooFar = 12,
-        TooNear = 13,//确有必要??
-        OutOfScreen = 14,
-        TalentCastring = 15,
-        HasAbility = 16,
-        CantUseInInstance = 17,
-        MindChain = 18,
-        OnlyNormalAttack = 19,
-        UnHeal = 20,
-        UnMove = 21
+        LEFTSIDE =2,
+        RIGHTSIDE =3,
+        TOOFAR = 4,
+        TOONEAR = 5,//模型碰到一起,与技能距离判定共用此结果??
+        RUNNING = 6,
+        NOTARGET = 7,
+        //SAMETICK = 999,
+        //COOLDOWN = 999,
+
+        //STUN = 999,
+        //DISABLE = 999,
+        //SILENCE = 999,
+
+        //Untargetable = 10,
+
+        //OutOfScreen = 14,
+        //TalentCastring = 15,
+        //HasAbility = 16,
+        //CantUseInInstance = 17,
+        //MindChain = 18,
+        //OnlyNormalAttack = 19,
+        //UnHeal = 20,
+        //UnMove = 21
 
     }
 
@@ -245,6 +254,8 @@ namespace Common
         public const string SharedTarget = "SharedTarget";
         public const float DeltaFrame = 0.033333f;//1/30 30Hz帧率
         public const float ZeroFloat = 0.0000001f;
+        public const float CollisionRadius = 1f;
+        public const float ErrorAngle = 10f;//角度, 太大会跑偏(但下个步伐中会被修正)?太小会一直旋转?
 
         //private int idVertical = Animator.StringToHash("Vertical");
         //    private int idJump = Animator.StringToHash("Jump");

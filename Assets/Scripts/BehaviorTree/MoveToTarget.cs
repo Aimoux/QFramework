@@ -10,17 +10,42 @@ public class MoveToTarget : Action
     public SharedRole sdtarget;
     public SharedRole sdself;
     //public ResultType ret;
-    private AnimStateExtension walkst;//避免过多的new
 
     public override void OnStart()
     {
-        walkst = new AnimStateExtension(sdself.Value, (int)ANIMATIONSTATE.WALKFORWARD);
+
+
     }
+
+    //walk idle loop pose VS on frame end push again VS check nav each frame VS check nav only at end/start
     public override TaskStatus OnUpdate()
     {
-        Common.ResultType ret = sdself.Value.HasReachTarget();
-        if(sdself.Value.Status.State == Common.ANIMATIONSTATE.IDLE)// || (sdself.Value.Status.State == Common.ANIMATIONSTATE.WALKFORWARD && ret == Common.ResultType.RUNNING))       
-            sdself.Value.PushState(walkst);        
+        Common.ResultType ret = sdself.Value.HasReachTarget( );
+        if (sdself.Value.Status.State == Common.ANIMATIONSTATE.IDLE)// || (sdself.Value.Status.State == Common.ANIMATIONSTATE.WALKFORWARD && ret == Common.ResultType.RUNNING))       
+        {
+            switch (ret)
+            {
+                case ResultType.LEFTSIDE:
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNLEFT);//if too larget speed then run turn?
+                    //if only one turnleft. pre turn and later turn has same vec value is dangerous??
+
+
+                    break;
+
+                case ResultType.RIGHTSIDE:
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNRIGHT);
+                    break;
+
+                case ResultType.RUNNING:
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKFORWARD);
+                    break;
+
+                case ResultType.TOONEAR:
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKBACK);
+                    break;
+            }
+
+        }
 
         if(ret == Common.ResultType.SUCCESS)
             return TaskStatus.Success;

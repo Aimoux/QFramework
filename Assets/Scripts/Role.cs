@@ -100,8 +100,19 @@ public class Role
         }
     }
 
+    public delegate void EnableSensor();//事件，指定帧触发检测。模型上的trigger始终勾选，但利用此处设置的bool值??
+    public delegate void DisableSnesor();
+    //动画机逻辑处理（攻击、条件）位于此处??
+    public AnimState Status { get; private set; }
+    private AnimState IdleSt;
+    //状态设计模式
+    private bool m_bRunBegin = false;//OnXXEnter的触发判定
+
+    public Role Target;
+
     public Weapon CurWeapon { get; set; }
     public Stack<AnimState> Cmds = new Stack<AnimState>();
+    private Dictionary<int, AnimState> States = new Dictionary<int, AnimState>();
     public QF.Res.ResLoader Loader;
 
     public Hero hero;//是否有必要??
@@ -149,104 +160,6 @@ public class Role
         Init();
     }
 
-    //同样使用状态模式来更换武器、服装??
-    //WeaponState
-    //ClothState
-    public void SetWeapon(Weapon wp)
-    {
-        CurWeapon = wp;//create instance by name
-
-    }
-
-    public delegate void EnableSensor();//事件，指定帧触发检测。模型上的trigger始终勾选，但利用此处设置的bool值??
-    public delegate void DisableSnesor();
-    //动画机逻辑处理（攻击、条件）位于此处??
-    public AnimState Status { get; private set; }
-    private AnimState IdleSt;
-    //状态设计模式
-    private bool m_bRunBegin = false;//OnXXEnter的触发判定
-
-    public Role Target;
-
-    //每个Tick被调用，入口尚未添加??
-    private void StateUpdate()
-    {
-        // 通知新的State開始
-        if (Status != null && m_bRunBegin == false)
-        {
-            Status.OnStateEnter();
-            m_bRunBegin = true;
-        }
-
-        if (Status != null)
-            Status.OnStateUpdate();
-        
-        if(Cmds.Count > 0)
-        {
-            AnimState next = Cmds.Peek();
-            if(Status.CanTransit(next) == 2)//无需完整播放当前动作片段
-            {
-                SetState(Cmds.Pop());
-                return;
-            }
-        }
-        
-        //不需要完整播放完的动画（idle，walk）设置其framecount为1??
-        //can transit=2, 可以去掉break?
-        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)
-        {
-            //if cmds 皆不可用（或没有），自动转向idle??
-            if (Cmds.Count == 0)
-            {
-                Cmds.Push(IdleSt);//Idle可合并入walk(vertical =0)??
-            }
-
-            while (Cmds.Count > 0)
-            {
-                //有无必要lock??
-                AnimState next = Cmds.Pop();
-                if (Status.CanTransit(next) > 0)
-                {
-                    SetState(next);
-                    break;
-                }
-            }
-
-            // if (Cmds.Count > 0)
-            // {
-            //     //有无必要lock??
-            //     AnimState next = Cmds.Pop();
-            //     if (Status.CanTransit(next))
-            //     {
-            //         SetState(next);
-            //     }
-            //     else
-            //         Cmds.Clear();//首条命令无效，后续命令全部清空??
-            // }
-        }
-
-    }
-
-        //操作缓存
-    public void PushState(AnimState animState)
-    {
-        Cmds.Push(animState);
-    }
-
-    // 设定状态，缓存状态堆栈，转换判定?? 连击判定??
-    public void SetState(AnimState animState)
-    {
-        m_bRunBegin = false;
-
-        //Controller.SetState(animState);//移至on state enter 中??
-        // 通知前一个State結束
-        if (Status != null)
-            Status.OnStateExit();//避免重复??
-
-        // 设定
-        Status = animState;
-    }
-
     //初始化属性
     //获取武器??
     //初始化状态
@@ -285,14 +198,37 @@ public class Role
 
     protected void InitWeapon()//
     {
+        Status = PushState(0);
         CurWeapon.GetCombos();
-        IdleSt = new AnimStateExtension(this, 0);
-        Status = IdleSt;
+    }
 
 
+    //同样使用状态模式来更换武器、服装??
+    //WeaponState
+    //ClothState
+    public void SetWeapon(Weapon wp)
+    {
+        CurWeapon = wp;//create instance by name
 
+    }
 
+    //always no null??
+    public AnimStateExtension GetAnimStateById(int id)
+    {
+        AnimState st;
+        if (!States.TryGetValue(id, out st))
+        {
+            st = new AnimStateExtension(this, id);
+            States[id] = st;
+        }
+        return (AnimStateExtension)st;
+    }
 
+    public AnimStateExtension PushState(int id)
+    {
+        AnimStateExtension st = GetAnimStateById(id);
+        Cmds.Push(st);
+        return st;
     }
 
 //role驱动行为树更合适，行为树仅提供决策，大部分逻辑仍在role中完成??
@@ -300,9 +236,81 @@ public class Role
     {
         StateUpdate();
         CurWeapon.Update(dt);
-        //决策放在逻辑帧的最后??
-        BehaviorDesigner.Runtime.BehaviorManager.instance.Tick(Controller.tree);
+        BehaviorDesigner.Runtime.BehaviorManager.instance.Tick(Controller.tree);//决策放在逻辑帧的最后??
 
+    }
+
+    //每个Tick被调用，入口尚未添加??
+    private void StateUpdate()
+    {
+        // 通知新的State開始
+        if (Status != null && m_bRunBegin == false)
+        {
+            Status.OnStateEnter();
+            m_bRunBegin = true;
+        }
+
+        if (Status != null)
+            Status.OnStateUpdate();
+
+        if (Cmds.Count > 0)
+        {
+            AnimState next = Cmds.Peek();
+            if (Status.CanTransit(next) == 2)//无需完整播放当前动作片段
+            {
+                SetState(Cmds.Pop());
+                return;
+            }
+        }
+
+        //不需要完整播放完的动画（idle，walk）设置其framecount为1??
+        //can transit=2, 可以去掉break?
+        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)
+        {
+            //if cmds 皆不可用（或没有），自动转向idle??
+            if (Cmds.Count == 0)
+            {
+                PushState(0);//Idle可合并入walk(vertical =0)??
+            }
+
+            while (Cmds.Count > 0)
+            {
+                //有无必要lock??
+                AnimState next = Cmds.Pop();
+                if (Status.CanTransit(next) > 0)
+                {
+                    SetState(next);
+                    break;
+                }
+            }
+
+            // if (Cmds.Count > 0)
+            // {
+            //     //有无必要lock??
+            //     AnimState next = Cmds.Pop();
+            //     if (Status.CanTransit(next))
+            //     {
+            //         SetState(next);
+            //     }
+            //     else
+            //         Cmds.Clear();//首条命令无效，后续命令全部清空??
+            // }
+        }
+
+    }
+
+    // 设定状态，缓存状态堆栈，转换判定?? 连击判定??
+    public void SetState(AnimState animState)
+    {
+        m_bRunBegin = false;
+
+        //Controller.SetState(animState);//移至on state enter 中??
+        // 通知前一个State結束
+        if (Status != null)
+            Status.OnStateExit();//避免重复??
+
+        // 设定
+        Status = animState;
     }
 
     public virtual void OnSadism(Weapon wp, Role Masoch)//打到别人
@@ -377,7 +385,7 @@ public class Role
         return force;
     }
 
-//受击硬直处理
+    //受击硬直处理
     public virtual void OnStatusBreak(int impact)//受击需要分层状态机??
     {
         //如果硬直类似亚特大的带有交互性质，考虑用TimeLine??
@@ -553,12 +561,12 @@ public class Role
     //    return null;
     //}
 
-
+    //返回ret,好在行走中修正方向??
     public virtual bool MoveToTarget()
     {
         if(HasReachTarget() == ResultType.RUNNING )
         {
-            Controller.StartNav(Target.Position);
+            Controller.StartNav();
             ResultType ret = Controller.MoveToTargetByNav(Target.Position);
             return false;
             //return ret == ResultType.SUCCESS;
@@ -571,19 +579,47 @@ public class Role
 
     }
 
+    //碰撞检定优先于朝向检定优先于距离检定
     public ResultType HasReachTarget()
     {
-         float dist = SquarePlanarDist(Target);
+        float dist = SquarePlanarDist(Target);
         float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
-        if (dist > arriveDist)
-        {
+
+        Vector2 from = new Vector2(Forward.x, Forward.z);
+        
+        //to 应由nav.desiredV 决定??多人拥挤场景 nav视其他agent为障碍物?
+        Vector2 to = new Vector2(Target.Position.x - Position.x, Target.Position.z - Position.z);
+        float angle = Vector2.SignedAngle(from, to);
+
+        if (dist < Const.CollisionRadius)//add shovespeed to evade collision, collison check in update??
+            return ResultType.TOONEAR;
+        else if (angle > Const.ErrorAngle)
+            return ResultType.LEFTSIDE;
+        else if (angle < -Const.ErrorAngle)
+            return ResultType.RIGHTSIDE;
+        else if (dist > arriveDist)
             return ResultType.RUNNING;
-        }
-        else if(dist < 0/3f)//DataManager.Instance.GlobalConfig.MinRange)
-            return ResultType.TooNear;
+        else
+            return ResultType.SUCCESS;
+    }
 
-        return ResultType.SUCCESS;
+    //to 应由nav.desiredV 决定??多人拥挤场景 nav视其他agent为障碍物?
+    public ResultType HasReachTarget(Role target, Vector2 targetDir, float nearDistSqr, float angleError, float arriveDistSqr)
+    {
+        float dist = SquarePlanarDist(target);
+        Vector2 from = new Vector2(Forward.x, Forward.z);
+        float angle = Vector2.SignedAngle(from, targetDir);
 
+        if (dist < nearDistSqr)
+            return ResultType.TOONEAR;
+        else if (angle > angleError)
+            return ResultType.LEFTSIDE;
+        else if (angle < -angleError)
+            return ResultType.RIGHTSIDE;
+        else if (dist > arriveDistSqr)
+            return ResultType.RUNNING;
+        else
+            return ResultType.SUCCESS;
     }
 
     private float SquarePlanarDist(Role target)

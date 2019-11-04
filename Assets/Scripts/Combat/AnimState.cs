@@ -32,6 +32,7 @@ public abstract class AnimState
         }
     }
     public int TalentId;//Anim与Talent关联极高,考虑TalentXXXOnFrameStart??
+    public Role Target;//可以与Controller.Target不同
     #endregion
 
     public AnimState(Role Controller, int id)
@@ -71,6 +72,8 @@ public abstract class AnimState
         CurFrame = 0;
         IsBreak = false;
         m_Controller.Controller.SetState(this);
+        FindTarget();//??
+
         if( Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
         {
             //起始到打击检测结束进行出手韧性保护
@@ -184,6 +187,9 @@ public abstract class AnimState
     //寻找目标:按AnimStateExtension配置的TargetType(默认为最近?),仇恨值仅用于转移攻击目标判定?
     public virtual Role FindTarget()
     {
+        Target = m_Controller.Target;
+        return Target;
+
         // Role target = null;
         // int hate = 0;
         // foreach (var kv in HatredDict)
@@ -202,10 +208,6 @@ public abstract class AnimState
         //    Target = role;//interface selector??  vs hatred? 加权?
         //    return role;
         //}
-
-        return null;
-
-
 
         //if (this.Data.TargetType == TargetType.Target || (this.Caster.AbilityEffects.Taunt && (RoleSide)this.Data.AffectedSide == RoleSide.Enemy))
         //{

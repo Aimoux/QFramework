@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Common;
 using GameData;
+using System;
 using System.Reflection;
+using System.Collections;
+using System.Collections.Generic;
 
 public class AnimStateExtension : AnimState 
 {
@@ -26,9 +27,56 @@ public class AnimStateExtension : AnimState
     }
     public AnimStateExtension(Role Controller, int ID) : base(Controller, ID)
     {
-
+        //onChangeDirection = InitMethod(typeof(Action), "Role" + RoleID + "ChangeDirection") as Action;
+        //onEnterFrame = InitMethod(typeof(Action<double>), "Role" + RoleID + "OnEnterFrame") as Action<double>;
+        //onUseTalent = InitMethod(typeof(Action<Talent, Role>), "Role" + RoleID + "UseTalent") as Action<Talent, Role>;
+        //onFindTarget = InitMethod(typeof(CALL_FINDTARGET), "Role" + RoleID + "FindTarget") as CALL_FINDTARGET;
 
     }
+
+    //private Action<Role> onStart = null;
+    //private Action<float, double> onEnterFramePrefixT = null;
+    //private Action<double> onEnterFramePrefixA = null;
+    //private Action onHitFrame = null;
+    //void InitAllMethod()
+    //{
+    //    onStart = InitMethod(typeof(Action<Role>), PrefixT + name + "Start") as Action<Role>;
+    //    onEnterFramePrefixT = InitMethod(typeof(Action<float, double>), PrefixT + name + "OnEnterFrame") as Action<float, double>;
+    //    onEnterFramePrefixA = InitMethod(typeof(Action<double>), PrefixA + name + "OnEnterFrame") as Action<double>;
+    //    onHitFrame = InitMethod(typeof(Action), PrefixT + name + "OnHitFrame") as Action;
+    //}
+
+    public static Delegate InitMethod(Type funcType, string funcName, Dictionary<string, MethodInfo> MethodMap, object firstArgv)
+    {
+        MethodInfo func = null;
+        if (MethodMap.TryGetValue(funcName, out func))
+        {
+            return Delegate.CreateDelegate(funcType, firstArgv, func);
+        }
+
+        return null;
+    }
+
+
+    //public override void OnHitFrame()
+    //{
+    //    //string funcName = PrefixT + name + "OnHitFrame";
+    //    //if (MethodMap.ContainsKey(funcName))
+    //    //{
+    //    //    MethodInfo func = MethodMap[funcName];
+    //    //    func.Invoke(this, new object[] { });
+    //    //}
+    //    if (onHitFrame != null)
+    //    {
+    //        onHitFrame();
+    //    }
+    //    else
+    //    {
+    //        base.OnHitFrame();
+    //    }
+    //}
+
+    //public Vector2 ExDirection = Vector2.zero;//转向每帧判定,不再需要,零向量与其他向量夹角恒为90??
 
     public override void OnStateEnter()
     {
@@ -115,7 +163,68 @@ public class AnimStateExtension : AnimState
         m_Controller.Controller.StopNav();
     }
 
-    #endregion 
+    #endregion
+
+    #region Turn
+    public void OnStateUpdate1015()//walk turn left
+    {
+        //reach angle early exit
+        //no rotate in walk f/bl/r
+        //rotate in turn
+        //rotate yes in atk/jump/  turn back if ahead of target
+        //rotate no need to involve nav 
+        //turn rotate no need to nav cal dirdection
+
+        //need nav desired v to know turn to what dir and then move
+        //matched with move to target bt task
+
+        /// if state finish but dang still too large
+        /// push another turn 
+
+        //默认位移\朝向由动作驱动
+        TurningUpdate(ResultType.LEFTSIDE);
+
+    }
+
+    public void OnStateExit1015()
+    {
+        m_Controller.Controller.StopNav();
+        base.OnStateExit();
+    }
+
+    public void OnStateUpdate1016()
+    {
+        TurningUpdate(ResultType.RIGHTSIDE);
+    }
+
+    public void OnStateExit1016()
+    {
+        m_Controller.Controller.StopNav();
+        base.OnStateExit();
+    }
+
+    public void TurningUpdate(ResultType condition)
+    {
+        Vector2 dir = m_Controller.Controller.GetDirToPosbyNav(Target.Position, false);
+        float arriveDist = Data.AttackRange * Data.AttackRange;
+        ResultType ret = m_Controller.HasReachTarget(Target, dir, Const.CollisionRadius, Const.ErrorAngle, arriveDist);
+
+        if (ret != condition)
+            OnStateBreak();
+    }
+
+    //public void OnStateUpdate1025()
+    //{
+    //    TurningUpdate(ResultType.LEFTSIDE);
+    //}
+
+    //public void OnStateUpdate1026()
+    //{
+    //    TurningUpdate(ResultType.LEFTSIDE);
+    //}
+
+
+    #endregion
 
     #region Transit 改用n*n配表的方法实现??如何应用体力限制??
     // public bool CanTransit2011(AnimState next)//单攻一

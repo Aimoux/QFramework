@@ -10,13 +10,10 @@ public class BasicTactic : Action
 {
 	public SharedRole sdtarget;
     public SharedRole sdself;
-	private Stack<AnimState> acts = new Stack<AnimState> ();
 	public override void OnStart()
 	{
         //把移动st移除,改用行为树前置task的方式实现(比较聪明的AI,可直接在树中去掉此节点)
         //生成移动\等待类行动指令时,可灵活设置其帧数?
-		
-
 
 	}
 
@@ -25,15 +22,11 @@ public class BasicTactic : Action
 		if(!sdself.Value.OnTactic)
 		{
  			int rand = Random.Range(0, sdself.Value.CurWeapon.ComboLists.Count);
-        	// int[] combos = new int[] { };
-        	// int dir = UnityEngine.Random.Range(0, 4);
-        	// cmds.Push(Walks[dir]);
-			foreach(AnimState anst in sdself.Value.CurWeapon.ComboLists[rand])
+			foreach(int st in sdself.Value.CurWeapon.ComboLists[rand])
 			{
-            	sdself.Value.Cmds.Push(anst);
+            	sdself.Value.PushState(st);
         	}
-		}
-       
+		}       
         return TaskStatus.Success;
     }
 

@@ -96,7 +96,7 @@ public class RoleController : MonoBehaviour
         tree.SetVariableValue(Const.SharedSelf, role);
 
     }
-    public void StartNav(Vector3 pos)
+    public void StartNav()
     {
         if (!navigating)
         {
@@ -105,21 +105,30 @@ public class RoleController : MonoBehaviour
             nav.updatePosition = true;
             nav.updateRotation = false;
             navigating = true;
-
         }
-
-        // if (walk == null)
-        //     walk = new WalkState(role);
-
-        // if (role.Status != walk)
-        //     role.PushState(walk);//受控不能移动的逻辑位于role的状态转换中??
-
     }
 
     public void StopNav()
     {
         nav.isStopped = true;
         navigating = false;
+    }
+
+    public Vector2 GetDirToPosbyNav(Vector3 pos, bool stop = true)
+    {    
+        Vector2 dir = Vector2.zero;
+        if (!NavMesh.CalculatePath(transform.position, pos, NavMesh.AllAreas, path) 
+            || path.status != NavMeshPathStatus.PathComplete)//与nav stop与否无关??
+            return dir;//没有路径时返回何值合适??
+
+        StartNav();//是否必要??
+        nav.SetDestination(pos);
+        dir = new Vector2(nav.desiredVelocity.x, nav.desiredVelocity.z).normalized;
+
+        if (stop)
+            StopNav();
+
+        return dir;
     }
 
     //Player也可以利用此处??多人碰撞以及跨越障碍??
@@ -135,8 +144,8 @@ public class RoleController : MonoBehaviour
         nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//浮空判断??
         nav.nextPosition = transform.position;//Animator Apply root motion
         Vector3 targetFWD = nav.desiredVelocity;
-        targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
-        transform.forward = Vector3.Slerp(transform.forward, targetFWD, 0.8f);
+        ////targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
+        ////transform.forward = Vector3.Slerp(transform.forward, targetFWD, 0.8f);
         //nav.Warp(transform.position);//此语句导致desiredVelocity=0？？   
 
         role.Position = transform.position;//非移动状态下如何传递值,利用动画??
