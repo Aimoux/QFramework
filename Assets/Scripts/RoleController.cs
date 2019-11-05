@@ -132,7 +132,8 @@ public class RoleController : MonoBehaviour
     }
 
     //Player也可以利用此处??多人碰撞以及跨越障碍??
-    public ResultType MoveToTargetByNav(Vector3 pos)
+    //nav仅用于朝向修正,真实位移\朝向完全由动画决定ApplyRootMotion??
+    public ResultType MoveToPosByNav(Vector3 pos)
     {
         if (!NavMesh.CalculatePath(transform.position, pos, NavMesh.AllAreas, path))
             return ResultType.FAILURE;
@@ -144,13 +145,15 @@ public class RoleController : MonoBehaviour
         nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//浮空判断??
         nav.nextPosition = transform.position;//Animator Apply root motion
         Vector3 targetFWD = nav.desiredVelocity;
-        ////targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
-        ////transform.forward = Vector3.Slerp(transform.forward, targetFWD, 0.8f);
+        targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
+        //transform.forward = Vector3.Slerp(transform.forward, targetFWD, 0.8f);//lookrotate?
         //nav.Warp(transform.position);//此语句导致desiredVelocity=0？？   
 
-        role.Position = transform.position;//非移动状态下如何传递值,利用动画??
-        role.Forward = transform.forward;//受控/滞空 直接传递模型的朝向位置??
-        //transform.forward = anim.deltaRotation * transform.forward;??
+        //apply root motion下,仍然可以代码控制pos,rote,二者共同作用
+        //跑动中确有必要修正模型朝向(前进动画中朝向不变,但目标速度可能有垂直于追方朝向的分量)
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(targetFWD, Vector3.up), Const.MaxRoteAngDelta);
+        //role.Position = transform.position;//非移动状态下如何传递值,利用动画??
+        //role.Forward = transform.forward;//受控/滞空 直接传递模型的朝向位置??
 
         return ResultType.SUCCESS;
 

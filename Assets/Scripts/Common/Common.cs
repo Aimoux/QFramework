@@ -256,6 +256,7 @@ namespace Common
         public const float ZeroFloat = 0.0000001f;
         public const float CollisionRadius = 1f;
         public const float ErrorAngle = 10f;//角度, 太大会跑偏(但下个步伐中会被修正)?太小会一直旋转?
+        public const float MaxRoteAngDelta = 5f;//单帧旋转最大角度
 
         //private int idVertical = Animator.StringToHash("Vertical");
         //    private int idJump = Animator.StringToHash("Jump");

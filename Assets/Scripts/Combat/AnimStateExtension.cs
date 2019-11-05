@@ -27,54 +27,9 @@ public class AnimStateExtension : AnimState
     }
     public AnimStateExtension(Role Controller, int ID) : base(Controller, ID)
     {
-        //onChangeDirection = InitMethod(typeof(Action), "Role" + RoleID + "ChangeDirection") as Action;
-        //onEnterFrame = InitMethod(typeof(Action<double>), "Role" + RoleID + "OnEnterFrame") as Action<double>;
-        //onUseTalent = InitMethod(typeof(Action<Talent, Role>), "Role" + RoleID + "UseTalent") as Action<Talent, Role>;
-        //onFindTarget = InitMethod(typeof(CALL_FINDTARGET), "Role" + RoleID + "FindTarget") as CALL_FINDTARGET;
+
 
     }
-
-    //private Action<Role> onStart = null;
-    //private Action<float, double> onEnterFramePrefixT = null;
-    //private Action<double> onEnterFramePrefixA = null;
-    //private Action onHitFrame = null;
-    //void InitAllMethod()
-    //{
-    //    onStart = InitMethod(typeof(Action<Role>), PrefixT + name + "Start") as Action<Role>;
-    //    onEnterFramePrefixT = InitMethod(typeof(Action<float, double>), PrefixT + name + "OnEnterFrame") as Action<float, double>;
-    //    onEnterFramePrefixA = InitMethod(typeof(Action<double>), PrefixA + name + "OnEnterFrame") as Action<double>;
-    //    onHitFrame = InitMethod(typeof(Action), PrefixT + name + "OnHitFrame") as Action;
-    //}
-
-    public static Delegate InitMethod(Type funcType, string funcName, Dictionary<string, MethodInfo> MethodMap, object firstArgv)
-    {
-        MethodInfo func = null;
-        if (MethodMap.TryGetValue(funcName, out func))
-        {
-            return Delegate.CreateDelegate(funcType, firstArgv, func);
-        }
-
-        return null;
-    }
-
-
-    //public override void OnHitFrame()
-    //{
-    //    //string funcName = PrefixT + name + "OnHitFrame";
-    //    //if (MethodMap.ContainsKey(funcName))
-    //    //{
-    //    //    MethodInfo func = MethodMap[funcName];
-    //    //    func.Invoke(this, new object[] { });
-    //    //}
-    //    if (onHitFrame != null)
-    //    {
-    //        onHitFrame();
-    //    }
-    //    else
-    //    {
-    //        base.OnHitFrame();
-    //    }
-    //}
 
     //public Vector2 ExDirection = Vector2.zero;//转向每帧判定,不再需要,零向量与其他向量夹角恒为90??
 
@@ -94,6 +49,7 @@ public class AnimStateExtension : AnimState
         }
         else
             base.OnStateEnter();
+
     }
 
      public override void OnStateUpdate()
@@ -206,6 +162,9 @@ public class AnimStateExtension : AnimState
     public void TurningUpdate(ResultType condition)
     {
         Vector2 dir = m_Controller.Controller.GetDirToPosbyNav(Target.Position, false);
+        if (dir == Vector2.zero)
+            OnStateBreak();
+
         float arriveDist = Data.AttackRange * Data.AttackRange;
         ResultType ret = m_Controller.HasReachTarget(Target, dir, Const.CollisionRadius, Const.ErrorAngle, arriveDist);
 
@@ -332,4 +291,84 @@ public class AnimStateExtension : AnimState
 
 
 }
+
+//really necessary??
+//reference tactic tree build??
+//core design is avoid damage by move\evade\block\counter,(do damage safely) otherwise two bots will keep beating to death like fool 
+//self status analysis before target status analysis...(personality related aggressive or conservative)
+public class Assult
+{
+    public Role Target;
+    public Role Caster;
+
+    public Role FindTarget(Role defaultTarget)
+    {
+
+
+
+        return null;
+    }
+
+    public void Start()
+    {
+
+    }
+
+    //不走cd,基本无用
+    //public void Update()
+    //{
+       
+
+
+    //}
+
+    //move this logic to bt tree task??
+    //行为中的移动模块将达到目标作为可以使用assult的前提
+    //private bool PreReached;
+    //public void PreMove()//若一直无法移动到预定位置,应放弃此决策
+    //{
+    //    //pre move && post move
+    //    ResultType ret = CheckPosition(Target.Position);
+    //    switch (ret)
+    //    {
+    //        //case ResultType.TOOFAR:
+    //    }
+    //}
+
+    ResultType CheckPosition(Vector3 pos)
+    {
+
+        return ResultType.SUCCESS;
+    }
+
+
+    public void Break()
+    {
+
+
+    }
+
+    public void End()
+    {
+
+
+    }
+}
+
+public class AssaultData
+{
+    public int ID;
+    public float MaxRange;//行为树节点中完成此条件
+    public float MinRange;
+    public float MaxAngle;
+    public int TargetType;
+    public int CastType;
+    public List<int> Acts;
+    public string Actions;
+
+
+
+}
+
+
 

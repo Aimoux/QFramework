@@ -567,7 +567,7 @@ public class Role
         if(HasReachTarget() == ResultType.RUNNING )
         {
             Controller.StartNav();
-            ResultType ret = Controller.MoveToTargetByNav(Target.Position);
+            ResultType ret = Controller.MoveToPosByNav(Target.Position);
             return false;
             //return ret == ResultType.SUCCESS;
         }
