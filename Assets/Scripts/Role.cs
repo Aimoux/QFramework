@@ -104,7 +104,6 @@ public class Role
     public delegate void DisableSnesor();
     //动画机逻辑处理（攻击、条件）位于此处??
     public AnimState Status { get; private set; }
-    private AnimState IdleSt;
     //状态设计模式
     private bool m_bRunBegin = false;//OnXXEnter的触发判定
 
@@ -113,6 +112,8 @@ public class Role
     public Weapon CurWeapon { get; set; }
     public Stack<AnimState> Cmds = new Stack<AnimState>();
     private Dictionary<int, AnimState> States = new Dictionary<int, AnimState>();
+    public Dictionary<int, Assault> Assaults = new Dictionary<int, Assault>();//talents
+    public Assault CurAssault;
     public QF.Res.ResLoader Loader;
 
     public Hero hero;//是否有必要??
@@ -202,6 +203,37 @@ public class Role
         CurWeapon.GetCombos();
     }
 
+    public void InitAssault()
+    {
+        Assaults.Clear();
+
+
+
+    }
+
+    public void InitAssault(int id)
+    {
+        AssaultExtension assault = new AssaultExtension(id, this);
+        Assaults[id] = assault;
+
+    }
+
+    public AssaultExtension GetAssaultById(int id)
+    {
+        Assault ast;
+        if (!Assaults.TryGetValue(id, out ast))
+        {
+            Debug.LogError("has no assault: " + id);
+        }
+        return (AssaultExtension)ast;
+    }
+
+    public void UseAssault(Assault ast, Role target)
+    {
+        Cmds.Clear();
+        ast.Start(target);
+        CurAssault = ast;
+    }
 
     //同样使用状态模式来更换武器、服装??
     //WeaponState
@@ -283,18 +315,6 @@ public class Role
                     break;
                 }
             }
-
-            // if (Cmds.Count > 0)
-            // {
-            //     //有无必要lock??
-            //     AnimState next = Cmds.Pop();
-            //     if (Status.CanTransit(next))
-            //     {
-            //         SetState(next);
-            //     }
-            //     else
-            //         Cmds.Clear();//首条命令无效，后续命令全部清空??
-            // }
         }
 
     }
@@ -483,8 +503,6 @@ public class Role
         {
 
         }
-
-
         return 0f;
     }
 
@@ -514,13 +532,7 @@ public class Role
             return role;
         }
 
-        return null;
-
-
-     
-
-
-
+        return null; 
 
     }
 
@@ -552,74 +564,80 @@ public class Role
     //    }
     //}
 
-
-    //特定事件(dying)的统一应对方式
-    //public virtual Tactic Generate(string events)
-    //{
-
-
-    //    return null;
-    //}
-
-    //返回ret,好在行走中修正方向??
-    public virtual bool MoveToTarget()
+    //碰撞检定优先于朝向检定优先于距离检定
+    //Dist为最短距离,非两圆心距离
+    public ResultType IsTargetWithinRange(float MaxRange, float MinRange, float Angle)//可用于技能攻击长度范围,以及角度范围
     {
-        if(HasReachTarget() == ResultType.RUNNING )
-        {
-            Controller.StartNav();
-            ResultType ret = Controller.MoveToPosByNav(Target.Position);
-            return false;
-            //return ret == ResultType.SUCCESS;
-        }
-        else 
-        {
-            Controller.StopNav();
-        }       
-        return true;
+        float dist = SquarePlanarDist(Target);//质心距离
+        float arriveDist = (Data.Radius + MaxRange + Target.Data.Radius) * (Data.Radius + MaxRange + Target.Data.Radius);
+
+        Vector2 from = RoleUtil.To2DPlanarUnit(Forward);
+        Vector2 to = new Vector2(Target.Position.x - Position.x, Target.Position.z - Position.z);//招式角度范围,与nav无关
+        float angle = Vector2.SignedAngle(from, to);
+
+        if (dist < MinRange * MinRange)//圆心距离
+            return ResultType.TOONEAR;
+        else if (angle > Angle * 0.5f)
+            return ResultType.LEFTSIDE;
+        else if (angle < -Angle * 0.5f)
+            return ResultType.RIGHTSIDE;
+        else if (dist > arriveDist)
+            return ResultType.TOOFAR;
+        else
+            return ResultType.SUCCESS;
+    }
+
+    public ResultType MoveToTarget(Vector3 pos)
+    {
+        Controller.StartNav();
+        return Controller.MoveToPosByNav(pos);// later check path
+    }
+
+    public void WalkBack()//check if back is blocked??
+    {
+
 
     }
 
-    //碰撞检定优先于朝向检定优先于距离检定
-    public ResultType HasReachTarget()
+    public void WalkTurnLeft()
     {
-        float dist = SquarePlanarDist(Target);
-        float arriveDist = (Data.Radius + Target.Data.Radius) * (Data.Radius + Target.Data.Radius);
+
+    }
+
+    public void WalkTurnRight()
+    {
+
+    }
+
+    public void StopNav()
+    {
+        Controller.StopNav();
+    }
+
+    //注意避免过头转身??过犹不及
+    //tgtDir由nav给出,路线原因,并不一定是dest-position??
+    //前往某地不可作为前往某物的子方法,二者有根本的区别.
+    public ResultType MoveToPosition(Vector3 dest)
+    {
+        Vector3 targetDir = Controller.GetDirToPosbyNav(dest, false);
+        if (targetDir == Vector3.zero)
+            return ResultType.FAILURE;
+
+        Vector3 todest = RoleUtil.To3DPlan(dest - Position);
+        float dist = Vector3.Dot(todest, todest);
 
         Vector2 from = new Vector2(Forward.x, Forward.z);
-        
-        //to 应由nav.desiredV 决定??多人拥挤场景 nav视其他agent为障碍物?
-        Vector2 to = new Vector2(Target.Position.x - Position.x, Target.Position.z - Position.z);
-        float angle = Vector2.SignedAngle(from, to);
+        float angle = Vector2.SignedAngle(from, targetDir);
 
-        if (dist < Const.CollisionRadius)//add shovespeed to evade collision, collison check in update??
-            return ResultType.TOONEAR;
+        //出口优先
+        if (dist <= Const.ErrorArrive * Const.ErrorArrive)
+            return ResultType.SUCCESS;
         else if (angle > Const.ErrorAngle)
             return ResultType.LEFTSIDE;
         else if (angle < -Const.ErrorAngle)
             return ResultType.RIGHTSIDE;
-        else if (dist > arriveDist)
-            return ResultType.RUNNING;
         else
-            return ResultType.SUCCESS;
-    }
-
-    //to 应由nav.desiredV 决定??多人拥挤场景 nav视其他agent为障碍物?
-    public ResultType HasReachTarget(Role target, Vector2 targetDir, float nearDistSqr, float angleError, float arriveDistSqr)
-    {
-        float dist = SquarePlanarDist(target);
-        Vector2 from = new Vector2(Forward.x, Forward.z);
-        float angle = Vector2.SignedAngle(from, targetDir);
-
-        if (dist < nearDistSqr)
-            return ResultType.TOONEAR;
-        else if (angle > angleError)
-            return ResultType.LEFTSIDE;
-        else if (angle < -angleError)
-            return ResultType.RIGHTSIDE;
-        else if (dist > arriveDistSqr)
-            return ResultType.RUNNING;
-        else
-            return ResultType.SUCCESS;
+            return ResultType.TOOFAR;
     }
 
     private float SquarePlanarDist(Role target)
@@ -630,18 +648,15 @@ public class Role
             return 0f;
         }
 
-        float dist = (target.Position.x - Position.x) * (target.Position.x - Position.x) +
-            (target.Position.z - Position.z) * (target.Position.z - Position.z);
-
+        Vector3 todest = RoleUtil.To3DPlan(target.Position - Position);
+        float dist = Vector3.Dot(todest, todest);
         return dist;
     }
 
-    public virtual void End(Role attacker)
+    public virtual void End(Role Murder)
     {
-
         this.Status = null;//应移植controller??
         Logic.Instance.RoleDead(this);
-
 
     }
 

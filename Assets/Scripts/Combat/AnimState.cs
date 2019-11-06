@@ -15,7 +15,7 @@ public abstract class AnimState
     public int ID;
 
     // 状态拥有者
-    protected Role m_Controller = null;
+    protected Role Caster = null;
     public AnimationData Data;
     public int FrameCount;//物理帧数fixed delta Time 时长
     public int CurFrame;
@@ -37,7 +37,7 @@ public abstract class AnimState
 
     public AnimState(Role Controller, int id)
     { 
-        m_Controller = Controller;
+        Caster = Controller;
         ID = id;
         Data = DataManager.Instance.Animations[ID];
         State = (ANIMATIONSTATE)Data.State;
@@ -71,26 +71,33 @@ public abstract class AnimState
     {
         CurFrame = 0;
         IsBreak = false;
-        m_Controller.Controller.SetState(this);
+        Caster.Controller.SetState(this);
         FindTarget();//??
 
         if( Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
         {
             //起始到打击检测结束进行出手韧性保护
-            m_Controller.Steady *= m_Controller.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
+            Caster.Steady *= Caster.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
         }
 
-        if(m_Controller.ID == 2)
-            Debug.LogError(m_Controller.ID + " enter state: " + State);
+        if(Caster.ID == 2)
+            Debug.LogError(Caster.ID + " enter state: " + State);
     }
 
     //当前动作被打断（比如受攻击）
-    public virtual void OnStateBreak(ANIMATIONSTATE state)
+    //比较当前动作与state的优先级
+    //默认attack可以打断walk, Walk不可打断HitReaction??
+    //与transit 0,1,2的关联??
+    //不应包含push
+    public virtual bool OnStateBreak(ANIMATIONSTATE state, bool forceBreak = false)
     {
-
-
-        OnStateBreak();
-
+        bool can = true;
+        if(can)
+        {
+            OnStateBreak();
+            Caster.PushState((int)state);
+        }
+        return can;
     }
 
     public virtual void OnStateBreak()//walk to target
@@ -114,8 +121,8 @@ public abstract class AnimState
     // 更新
     public virtual void OnStateUpdate()
     {
-        if(m_Controller.ID == 2)
-            Debug.LogError(m_Controller.ID + " " + State + " " + CurFrame);
+        if(Caster.ID == 2)
+            Debug.LogError(Caster.ID + " " + State + " " + CurFrame);
 
         CurFrame++;
         CurFrame = CurFrame > FrameCount ? FrameCount : CurFrame;
@@ -143,7 +150,7 @@ public abstract class AnimState
         if( Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
         {
             //起始到打击检测结束进行出手韧性保护
-            m_Controller.Steady /= (m_Controller.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio);
+            Caster.Steady /= (Caster.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio);
         }
 
     }
@@ -187,7 +194,7 @@ public abstract class AnimState
     //寻找目标:按AnimStateExtension配置的TargetType(默认为最近?),仇恨值仅用于转移攻击目标判定?
     public virtual Role FindTarget()
     {
-        Target = m_Controller.Target;
+        Target = Caster.Target;
         return Target;
 
         // Role target = null;

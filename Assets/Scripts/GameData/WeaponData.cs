@@ -28,6 +28,7 @@ namespace GameData
         public float ImpactDamage { get; set; }//基础韧性削减与招式削韧因子共同作用
         public int StaminaCost { get; set; }//基础体力消耗，重击倍数
         public Dictionary<int, string> Combos { get; set; }//可用组合招式
+        public Dictionary<int, int> Actions { get; set; }//atk + assaultID
 
 
         }

@@ -162,6 +162,18 @@ class DataManager : Singleton<DataManager>
         }
     }
 
+    private Dictionary<int, AssaultData> _Assaults;
+    public Dictionary<int, AssaultData> Assaults
+    {
+        get
+        {
+            if (_Assaults == null)
+                Load("Data/Assaults.json", ref _Assaults);
+            return _Assaults;
+        }
+    }
+
+
     protected DataManager()
     {
 

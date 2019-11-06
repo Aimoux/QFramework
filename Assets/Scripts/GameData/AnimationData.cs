@@ -19,19 +19,5 @@ namespace GameData
 
     }
 
-    [System.Serializable]
-    public class WeaponTacticData
-    {
-        public int ID { get; set; }
-        public int Sect { get; set; }//
-        public List<int> Combo { get; set; }//equal num annoying
-        public string Comboo { get; set; }
-        public float MaxRange { get; set; }
-        public float MinRange { get; set; }
-        public int TargetType { get; set; }
-
-
-
-    }
 }
 

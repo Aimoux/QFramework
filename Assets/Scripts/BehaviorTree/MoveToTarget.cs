@@ -5,175 +5,189 @@ using BehaviorDesigner.Runtime.Tasks;
 using GameData;
 using Common;
 
+
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+
+
+
+
 public class MoveToTarget : Action
 {
     public SharedRole sdtarget;
     public SharedRole sdself;
-    //public ResultType ret;
+    public float MaxRange = Const.DefaultWeaponRange;//默认攻击距离,战斗模块设置为技能伤害半径
+    public float MinRange = Const.CollisionRadius;//默认碰撞,需要根据模型半径修正??特殊战斗招式用(太近了打不到)
+    public float MaxAngle = Const.ErrorAngle;//默认角度差,战斗模块设置为技能伤害角度
+    public int Attempt;
 
     public override void OnStart()
     {
-
+        //累计失败次数,放弃决策??
+        Attempt = 0;
 
     }
 
-    //walk idle loop pose VS on frame end push again VS check nav each frame VS check nav only at end/start
     public override TaskStatus OnUpdate()
     {
-        Common.ResultType ret = sdself.Value.HasReachTarget( );
-        if (sdself.Value.Status.State == Common.ANIMATIONSTATE.IDLE)// || (sdself.Value.Status.State == Common.ANIMATIONSTATE.WALKFORWARD && ret == Common.ResultType.RUNNING))       
+        ResultType ret = sdself.Value.IsTargetWithinRange(MaxRange, MinRange, MaxAngle);
+        switch (ret)
         {
-            switch (ret)
-            {
-                case ResultType.LEFTSIDE:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNLEFT);//if too larget speed then run turn?
-                    //if only one turnleft. pre turn and later turn has same vec value is dangerous??
+            case ResultType.TOOFAR:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKFORWARD)
+                {
+                    //here better than WalkAnstUpdate??(walk to tar vs walk straight forward)
+                    ResultType hasPth = sdself.Value.MoveToTarget(sdtarget.Value.Position);
+                    if (hasPth != ResultType.SUCCESS)
+                        sdself.Value.Status.OnStateBreak();
+                }
+                else
+                {
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);//此处已实现打断walk turn??
+                    Attempt++;//when to quit tactic
+                }
+                break;
 
+            case ResultType.TOONEAR:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKBACK)
+                {
+                    sdself.Value.WalkBack();
+                }
+                else
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKBACK);
+                break;
 
-                    break;
+            case ResultType.LEFTSIDE:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKTURNLEFT)
+                {
+                    sdself.Value.WalkTurnLeft();
+                }
+                else
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
+                break;
 
-                case ResultType.RIGHTSIDE:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNRIGHT);
-                    break;
+            case ResultType.RIGHTSIDE:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKTURNRIGHT)
+                {
+                    sdself.Value.WalkTurnRight();
+                }
+                else
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
+                break;
 
-                case ResultType.RUNNING:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKFORWARD);
-                    break;
-
-                case ResultType.TOONEAR:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKBACK);
-                    break;
-            }
-
+            case ResultType.SUCCESS:
+                sdself.Value.StopNav();
+                break;
         }
 
-        if(ret == Common.ResultType.SUCCESS)
+        if (ret == Common.ResultType.SUCCESS)
             return TaskStatus.Success;
-        else if(ret == Common.ResultType.RUNNING)
-            return TaskStatus.Running;
         else
             return TaskStatus.Failure;
-    }
-
-}
-
-public class MoveToTargetsss : Action
-{
-    public SharedRole sdtarget;
-    public SharedRole sdself;
-    public MoveToPosition move;
-    public float distance;
-
-    public override TaskStatus OnUpdate()
-    {
-        MoveToTargetDist();
-        return TaskStatus.Failure;
-    }
-
-    private void MoveToTargetDist()
-    {
-        Vector3 dir = sdtarget.Value.Position - sdself.Value.Position;
-        dir = new Vector3(dir.x, 0f, dir.z);
-        if (Vector3.Dot(dir, dir) > distance)
-            return;
-
-        dir = dir.normalized;
-        Vector3 pos = sdtarget.Value.Position + distance * dir;
-        move.targetpos = pos;
-
-    }
-
-}
-
-public class EvadeTarget : Action
-{
-    public SharedRole sdtarget;
-    public SharedRole sdself;
-    public MoveToPosition move;
-    public float distance;
-
-    public override TaskStatus OnUpdate()
-    {
-        EvadeTargetDist();
-        return TaskStatus.Failure;
-    }
-
-    private void EvadeTargetDist()
-    {
-        Vector3 dir = sdself.Value.Position - sdtarget.Value.Position;
-        dir = new Vector3(dir.x, 0f, dir.z);
-        if (Vector3.Dot(dir, dir) > distance)
-            return;
-
-        dir = dir.normalized;
-        Vector3 pos = sdtarget.Value.Position + distance * dir;
-        move.targetpos = pos;
     }
 }
 
 //二人转 = LookAt+WalkLeft/Right??
-public class MoveToPosition: Action 
+public class MoveToPosition : Action
 {
     public Vector3 targetpos;
     public SharedRole sdself;
 
     public override TaskStatus OnUpdate()
     {
-
-        return TaskStatus.Failure;
-    }
-
-    //look into standard asset to find solution
-    private TaskStatus MoveToPos()
-    {
-        sdself.Value.Controller.MoveToPosByNav(targetpos);
-
-        Common.ResultType ret = sdself.Value.HasReachTarget();
-        if (sdself.Value.Status.State == Common.ANIMATIONSTATE.IDLE)// || (sdself.Value.Status.State == Common.ANIMATIONSTATE.WALKFORWARD && ret == Common.ResultType.RUNNING))       
+        ResultType ret = sdself.Value.MoveToPosition(targetpos);
+        switch (ret)
         {
-            switch (ret)
-            {
-                case ResultType.LEFTSIDE:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNLEFT);//if too larget speed then run turn?
-                    //if only one turnleft. pre turn and later turn has same vec value is dangerous??
-                    break;
+            case ResultType.TOOFAR:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKFORWARD)
+                {
+                    ResultType hasPath = sdself.Value.MoveToTarget(targetpos);
+                    if (hasPath != ResultType.SUCCESS)
+                        sdself.Value.Status.OnStateBreak();
+                }
+                else
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);
+                break;
 
-                case ResultType.RIGHTSIDE:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNRIGHT);
-                    break;
+            case ResultType.LEFTSIDE:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKTURNLEFT)
+                {
+                    sdself.Value.WalkTurnLeft();
+                }
+                else
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
+                break;
 
-                case ResultType.RUNNING:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKFORWARD);
-                    break;
+            case ResultType.RIGHTSIDE:
+                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKTURNRIGHT)
+                {
+                    sdself.Value.WalkTurnRight();
+                }
+                else
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
+                break;
 
-                case ResultType.TOONEAR:
-                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKBACK);
-                    break;
-            }
+            case ResultType.SUCCESS:
+                sdself.Value.StopNav();
+                break;
 
+            case ResultType.FAILURE://no path??
+                sdself.Value.Status.OnStateBreak();
+                break;
         }
 
         if (ret == Common.ResultType.SUCCESS)
             return TaskStatus.Success;
-        else if (ret == Common.ResultType.RUNNING)
-            return TaskStatus.Running;
         else
             return TaskStatus.Failure;
-
-
     }
 
-    public void RotateTo(Vector3 pos)
+}
+
+public class FindAssaultTarget : Action
+{
+    public SharedRole sdtarget;
+    public SharedRole sdself;
+    public override void OnStart()
     {
-        Vector3 v1 = pos - transform.position;
-        v1.y = 0;
-        float angle = Vector3.Angle(transform.forward, v1);
-        if (angle < 0.1)
-        {
-            return;
-        }
-        Vector3 cross = Vector3.Cross(transform.forward, v1);
-        //transform.Rotate(cross, Mathf.Min(turnSpeed, Mathf.Abs(angle)));
+
     }
+
+    public override TaskStatus OnUpdate()
+    {
+
+        return TaskStatus.Success;
+    }
+}
+
+
+
+public class LaunchAssault: Action
+{
+    public SharedRole sdtarget;
+    public SharedRole sdself;
+    private List<int> asds;
+
+    public override void OnStart()
+    {
+        asds = sdself.Value.Assaults.Keys.ToList();
+        int id = Random.Range(0, asds.Count);
+        AssaultExtension ast = sdself.Value.GetAssaultById(asds[id]);
+        sdself.Value.UseAssault(ast, sdtarget.Value);      
+
+    }
+
+    public override TaskStatus OnUpdate()
+    {
+
+
+
+        return TaskStatus.Success;
+    }
+
+
+
 
 }

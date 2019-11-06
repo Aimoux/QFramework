@@ -92,6 +92,27 @@ namespace Common
         BLOCK = 4,//防御
     }
 
+    public enum AssaultType
+    {
+        SINGLEATK1 = 1,//基础轻击
+        SINGLEATK2 = 2,//基础重击
+        SINGLEATK3 = 3,
+        SINGLEATK4 = 4,
+        SINGLEATK5 = 5,
+        TWOCOMBO1 = 6,//二连击一段
+        TWOCOMBO2 = 7,
+        TWOCOMBO3 = 8,
+        THREECOMBO1 = 9,//三连击一段
+        THREECOMBO2 = 10,
+
+        KICKATK1 = 2041,
+        KICKATK2 = 2042,
+        JUMPATK1 = 2051,
+        JUMPATK2 = 2052,
+
+
+    }
+
     //由一个或多个AnimState组成
     //执行中\中断\完成
     //将目标或自身状态作为决策参数(可选)
@@ -254,8 +275,10 @@ namespace Common
         public const string SharedTarget = "SharedTarget";
         public const float DeltaFrame = 0.033333f;//1/30 30Hz帧率
         public const float ZeroFloat = 0.0000001f;
-        public const float CollisionRadius = 1f;
-        public const float ErrorAngle = 10f;//角度, 太大会跑偏(但下个步伐中会被修正)?太小会一直旋转?
+        public const float DefaultWeaponRange = 1f;
+        public const float CollisionRadius = 1f;//质心距离小于此数值认为发生碰撞
+        public const float ErrorAngle = 10f;//当前朝向与目标方向夹角小于此数值,可认为已正面之
+        public const float ErrorArrive = 0.5f;//与某点距离小于此数值,可认为已到达
         public const float MaxRoteAngDelta = 5f;//单帧旋转最大角度
 
         //private int idVertical = Animator.StringToHash("Vertical");
@@ -279,8 +302,37 @@ namespace Common
         {
         }
 
+        
+
     }
 
+    public class RoleUtil
+    {
+
+        public static Vector3 To3DPlan(Vector3 offset)
+        {
+            Vector3 off = new Vector3(offset.x, 0f,offset.z);
+            return off;
+        }
+
+        public static Vector3 To3DPlanUnit(Vector3 direction)
+        {
+            Vector3 dir = new Vector3(direction.x, 0f, direction.z).normalized;
+            return dir;
+        }
+
+        public static Vector2 To2DPlanar(Vector3 Offset)
+        {
+            Vector2 off = new Vector2(Offset.x, Offset.z);
+            return off;
+        }
+
+        public static Vector2 To2DPlanarUnit(Vector3 direction)
+        {
+            Vector2 dir = new Vector2(direction.x, direction.z).normalized;
+            return dir;
+        }
+    }
    
 
 }
