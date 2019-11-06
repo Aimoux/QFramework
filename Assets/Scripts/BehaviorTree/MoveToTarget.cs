@@ -5,33 +5,29 @@ using BehaviorDesigner.Runtime.Tasks;
 using GameData;
 using Common;
 
-
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
-
-
-
-
 public class MoveToTarget : Action
 {
     public SharedRole sdtarget;
     public SharedRole sdself;
-    public float MaxRange = Const.DefaultWeaponRange;//Ä¬ÈÏ¹¥»÷¾àÀë,Õ½¶·Ä£¿éÉèÖÃÎª¼¼ÄÜÉËº¦°ë¾¶
-    public float MinRange = Const.CollisionRadius;//Ä¬ÈÏÅö×²,ĞèÒª¸ù¾İÄ£ĞÍ°ë¾¶ĞŞÕı??ÌØÊâÕ½¶·ÕĞÊ½ÓÃ(Ì«½üÁË´ò²»µ½)
-    public float MaxAngle = Const.ErrorAngle;//Ä¬ÈÏ½Ç¶È²î,Õ½¶·Ä£¿éÉèÖÃÎª¼¼ÄÜÉËº¦½Ç¶È
+    public float MaxRange = Const.DefaultWeaponRange;//é»˜è®¤æ”»å‡»è·ç¦»,æˆ˜æ–—æ¨¡å—è®¾ç½®ä¸ºæŠ€èƒ½ä¼¤å®³åŠå¾„
+    public float MinRange = Const.CollisionRadius;//é»˜è®¤ç¢°æ’,éœ€è¦æ ¹æ®æ¨¡å‹åŠå¾„ä¿®æ­£??ç‰¹æ®Šæˆ˜æ–—æ‹›å¼ç”¨(å¤ªè¿‘äº†æ‰“ä¸åˆ°)
+    public float MaxAngle = Const.ErrorAngle;//é»˜è®¤è§’åº¦å·®,æˆ˜æ–—æ¨¡å—è®¾ç½®ä¸ºæŠ€èƒ½ä¼¤å®³è§’åº¦
     public int Attempt;
 
     public override void OnStart()
     {
-        //ÀÛ¼ÆÊ§°Ü´ÎÊı,·ÅÆú¾ö²ß??
+        //ç´¯è®¡å¤±è´¥æ¬¡æ•°,æ”¾å¼ƒå†³ç­–??
         Attempt = 0;
 
     }
 
     public override TaskStatus OnUpdate()
     {
+
+        if(sdself.Value.OnTactic)//??
+            return TaskStatus.Success;
+
+
         ResultType ret = sdself.Value.IsTargetWithinRange(MaxRange, MinRange, MaxAngle);
         switch (ret)
         {
@@ -45,7 +41,7 @@ public class MoveToTarget : Action
                 }
                 else
                 {
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);//´Ë´¦ÒÑÊµÏÖ´ò¶Ïwalk turn??
+                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);//æ­¤å¤„å·²å®ç°æ‰“æ–­walk turn??
                     Attempt++;//when to quit tactic
                 }
                 break;
@@ -89,105 +85,3 @@ public class MoveToTarget : Action
     }
 }
 
-//¶şÈË×ª = LookAt+WalkLeft/Right??
-public class MoveToPosition : Action
-{
-    public Vector3 targetpos;
-    public SharedRole sdself;
-
-    public override TaskStatus OnUpdate()
-    {
-        ResultType ret = sdself.Value.MoveToPosition(targetpos);
-        switch (ret)
-        {
-            case ResultType.TOOFAR:
-                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKFORWARD)
-                {
-                    ResultType hasPath = sdself.Value.MoveToTarget(targetpos);
-                    if (hasPath != ResultType.SUCCESS)
-                        sdself.Value.Status.OnStateBreak();
-                }
-                else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);
-                break;
-
-            case ResultType.LEFTSIDE:
-                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKTURNLEFT)
-                {
-                    sdself.Value.WalkTurnLeft();
-                }
-                else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
-                break;
-
-            case ResultType.RIGHTSIDE:
-                if (sdself.Value.Status.State == ANIMATIONSTATE.WALKTURNRIGHT)
-                {
-                    sdself.Value.WalkTurnRight();
-                }
-                else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
-                break;
-
-            case ResultType.SUCCESS:
-                sdself.Value.StopNav();
-                break;
-
-            case ResultType.FAILURE://no path??
-                sdself.Value.Status.OnStateBreak();
-                break;
-        }
-
-        if (ret == Common.ResultType.SUCCESS)
-            return TaskStatus.Success;
-        else
-            return TaskStatus.Failure;
-    }
-
-}
-
-public class FindAssaultTarget : Action
-{
-    public SharedRole sdtarget;
-    public SharedRole sdself;
-    public override void OnStart()
-    {
-
-    }
-
-    public override TaskStatus OnUpdate()
-    {
-
-        return TaskStatus.Success;
-    }
-}
-
-
-
-public class LaunchAssault: Action
-{
-    public SharedRole sdtarget;
-    public SharedRole sdself;
-    private List<int> asds;
-
-    public override void OnStart()
-    {
-        asds = sdself.Value.Assaults.Keys.ToList();
-        int id = Random.Range(0, asds.Count);
-        AssaultExtension ast = sdself.Value.GetAssaultById(asds[id]);
-        sdself.Value.UseAssault(ast, sdtarget.Value);      
-
-    }
-
-    public override TaskStatus OnUpdate()
-    {
-
-
-
-        return TaskStatus.Success;
-    }
-
-
-
-
-}

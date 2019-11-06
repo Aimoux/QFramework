@@ -1,0 +1,26 @@
+{
+  "1": {
+    "Actions": "20311+20312+20313", 
+    "CastType": 0, 
+    "CommonCoolDown": 0.0, 
+    "ID": 1, 
+    "MaxAngle": 90.0, 
+    "MaxRange": 2.0, 
+    "MinRange": 1.0, 
+    "TargetType": 1, 
+    "Type": 1, 
+    "Weight": 100
+  }, 
+  "2": {
+    "Actions": "20311+20312+20313", 
+    "CastType": 0, 
+    "CommonCoolDown": 0.0, 
+    "ID": 2, 
+    "MaxAngle": 90.0, 
+    "MaxRange": 2.0, 
+    "MinRange": 1.0, 
+    "TargetType": 1, 
+    "Type": 1, 
+    "Weight": 100
+  }
+}

@@ -102,7 +102,7 @@ public class RoleController : MonoBehaviour
         {
             nav.enabled = true;
             nav.isStopped = false;
-            nav.updatePosition = true;
+            nav.updatePosition = false;//??动画驱动是否应该更新??true则太空步
             nav.updateRotation = false;
             navigating = true;
         }

@@ -109,6 +109,26 @@
     "State": 1014, 
     "TargetType": 0
   }, 
+  "1015": {
+    "AnimationType": 1, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 1015, 
+    "Name": "TurnLeftStand", 
+    "State": 1015, 
+    "TargetType": 0
+  }, 
+  "1016": {
+    "AnimationType": 1, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 1016, 
+    "Name": "TurnRightStand", 
+    "State": 1016, 
+    "TargetType": 0
+  }, 
   "1021": {
     "AnimationType": 1, 
     "AttackDamageRatio": 1.0, 
