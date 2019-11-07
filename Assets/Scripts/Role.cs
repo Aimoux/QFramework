@@ -169,7 +169,7 @@ public class Role
     {
         InitAttributes();
         InitWeapon();
-
+        InitAssault();
 
     }
 
@@ -200,14 +200,17 @@ public class Role
     protected void InitWeapon()//
     {
         Status = PushState(0);
-        CurWeapon.GetCombos();
+        //CurWeapon.GetCombos();
     }
 
     public void InitAssault()
     {
         Assaults.Clear();
-
-
+        
+        foreach(int id in CurWeapon.Data.Actions.Values)
+        {
+            InitAssault(id);
+        }   
 
     }
 
@@ -215,7 +218,6 @@ public class Role
     {
         AssaultExtension assault = new AssaultExtension(id, this);
         Assaults[id] = assault;
-
     }
 
     public AssaultExtension GetAssaultById(int id)

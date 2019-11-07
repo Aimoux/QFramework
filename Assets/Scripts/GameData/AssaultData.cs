@@ -16,7 +16,6 @@ namespace GameData
         public int TargetType { get; set; }
         public int CastType { get; set; }
         public int Weight { get; set; }//默认释放概率??  wi/sum(wij)??
-        public List<int> Acts { get; set; }
         public string Actions { get; set; }
         public float CommonCoolDown { get; set; }//??
 

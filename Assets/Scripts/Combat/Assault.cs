@@ -16,22 +16,24 @@ public class Assault
     {        
         Caster = caster;
         Data = DataManager.Instance.Assaults[id];
-
-    }
-
-
-    //仇恨值更换对象
-    public virtual Role FindTarget(Role defaultTarget)
-    {               
-        return Caster.Target;
+        string combo = Data.Actions;
+        string fixedcomb = combo.Replace("\"", "");
+        fixedcomb = fixedcomb.Replace("/", "");
+        string[] states = fixedcomb.Split('+');
+        foreach (string state in states)
+        {
+            int actId = System.Convert.ToInt32(state);
+            Actions.Add(actId);
+        }
+        Actions.Add(0);//combo必须以Idle作为结束??
+        Actions.Reverse();//堆栈逆序
     }
 
     public virtual void Init()
     {
-        foreach(int id in Data.Acts)
-        {
-            Caster.GetAnimStateById(id).Init();//??
-        }
+       
+
+
     }
 
     public virtual void Start(Role target)
@@ -42,6 +44,12 @@ public class Assault
             Caster.PushState(act);
         }          
 
+    }
+
+    //仇恨值更换对象
+    public virtual Role FindTarget(Role defaultTarget)
+    {
+        return Caster.Target;
     }
 
     //不走cd,基本无用

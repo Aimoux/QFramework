@@ -99,10 +99,10 @@ namespace Common
         SINGLEATK3 = 3,
         SINGLEATK4 = 4,
         SINGLEATK5 = 5,
-        TWOCOMBO1 = 6,//二连击一段
+        TWOCOMBO1 = 6,//二连击
         TWOCOMBO2 = 7,
         TWOCOMBO3 = 8,
-        THREECOMBO1 = 9,//三连击一段
+        THREECOMBO1 = 9,//三连击
         THREECOMBO2 = 10,
 
         KICKATK1 = 2041,

@@ -64,39 +64,34 @@ public class Weapon
         this.OnDestroy();
     }
 
-    //avail combos for each weapon
-    public void GetCombos()
-    {
-        for (int i = 1; i <= Data.Combos.Count; i++)
-        {
-            string[] combos = Data.Combos[i].Split('-');//移除头尾的符号、/
-            foreach (string combo in combos)
-            {
-                List<int> ComboCmd = new List<int>();
-                string fixedcomb = combo.Replace("\"", "");
-                fixedcomb = fixedcomb.Replace("/","");
-                string[] states = fixedcomb.Split('+');      
 
-                if(states.Length >1)//测试专用??
-                    continue;
+    //public void GetCombos()
+    //{
+    //    for (int i = 1; i <= Data.Combos.Count; i++)
+    //    {
+    //        string[] combos = Data.Combos[i].Split('-');//移除头尾的符号、/
+    //        foreach (string combo in combos)
+    //        {
+    //            List<int> ComboCmd = new List<int>();
+    //            string fixedcomb = combo.Replace("\"", "");
+    //            fixedcomb = fixedcomb.Replace("/","");
+    //            string[] states = fixedcomb.Split('+');      
 
-                foreach (string state in states)
-                {
-                    int id = System.Convert.ToInt32(state);
-                    ComboCmd.Add(id);
-                }
-                ComboCmd.Add(0);//combo必须以Idle作为结束??
-                ComboCmd.Reverse();//堆栈逆序
-                ComboLists.Add(ComboCmd);
-            }
-        }
+    //            if(states.Length >1)//测试专用??
+    //                continue;
 
-    }
+    //            foreach (string state in states)
+    //            {
+    //                int id = System.Convert.ToInt32(state);
+    //                ComboCmd.Add(id);
+    //            }
+    //            ComboCmd.Add(0);//combo必须以Idle作为结束??
+    //            ComboCmd.Reverse();//堆栈逆序
+    //            ComboLists.Add(ComboCmd);
+    //        }
+    //    }
 
-    public AnimState CreateAnimStByName(string state)
-    {
-        return null;
-    }
+    //}
 
     public virtual void Enchant(Enchantium encho)//唯一附魔，后者会取代前者
     {

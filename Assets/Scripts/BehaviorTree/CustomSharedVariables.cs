@@ -17,6 +17,15 @@ namespace BehaviorDesigner.Runtime
     }
 
     [System.Serializable]
+    public class SharedAssault : SharedVariable<Assault>
+    {
+        public static implicit operator SharedAssault(Assault value)
+        {
+            return new SharedAssault { mValue = value };
+        }
+    }
+
+    [System.Serializable]
     public class SharedNavAgent : SharedVariable<NavMeshAgent>
     {
         public static implicit operator SharedNavAgent(NavMeshAgent value)
