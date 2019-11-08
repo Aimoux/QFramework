@@ -24,9 +24,9 @@ public class Assault
         Caster = caster;
         Data = DataManager.Instance.Assaults[id];
         string combo = Data.Actions;
-        string fixedcomb = combo.Replace("\"", "");
-        fixedcomb = fixedcomb.Replace("/", "");
-        string[] states = fixedcomb.Split('+');
+        // string fixedcomb = combo.Replace("\"", "");
+        // fixedcomb = fixedcomb.Replace("/", "");
+        string[] states = combo.Split('+');
         foreach (string state in states)
         {
             int actId = System.Convert.ToInt32(state);
@@ -56,8 +56,12 @@ public class Assault
     //role find near, here type=0, find most hated
     public virtual Role FindTarget(Role defaultTarget)
     {
+        Target = defaultTarget;
+        return Target;//??
+
+
         //嘲讽作用于仇恨值而不是buff??
-        if (this.Data.TargetType == TargetType.Target)// || (this.Caster.AbilityEffects.Taunt && (RoleSide)this.Data.AffectedSide == RoleSide.Enemy))
+        if (this.Data.TargetType == TargetType.Target)
         {
             if (defaultTarget != null)
             {
@@ -65,53 +69,32 @@ public class Assault
             }
             else
             {
-                float sqrDist = 0;
-                Role target = this.Caster.FindClosest(ref sqrDist);
-                if (sqrDist <= Data.MaxRange)
-                {
-                    this.Target = target;
-                }
-                else if (this.Caster.AbilityEffects.Taunt)  //修改放技能瞬间被战场操控者嘲讽，却攻击距离打不到战场操控者的bug
-                {
-                    this.Target = this.Caster.Target;
-                }
-                else
-                {
-                    this.Target = null; //这里应该是空的
-                }
+                // float sqrDist = 0;
+                // Role target = this.Caster.FindClosest(ref sqrDist);
+                // if (sqrDist <= Data.MaxRange)
+                // {
+                //     this.Target = target;
+                // }
+                // else if (this.Caster.AbilityEffects.Taunt)  //修改放技能瞬间被战场操控者嘲讽，却攻击距离打不到战场操控者的bug
+                // {
+                //     this.Target = this.Caster.Target;
+                // }
+                // else
+                // {
+                //     this.Target = null; //这里应该是空的
+                // }
             }
         }
         else if (this.Data.TargetType == TargetType.Self)
         {
             this.Target = this.Caster;
         }
-        //else if (this.Data.TargetType == TargetType.DeadBody)
-        //{
-        //    this.Target = null;
-        //    foreach (Role role in Logic.Instance.Roles.Where(role => role.RoleST == 6 && role.IsDeadBody && role.AniTotaltime < DataManager.Numerics[59].Param))
-        //    {
-        //        Target = role;
-        //    }
-        //    return Target;
-        //}
         else if (this.TargetSelector != null)
         {
             float max = -float.MaxValue;
             Role result = null;
-            foreach (Role role in Logic.Instance.GetSurvivors((RoleSide)Data.TargetSide))
+            foreach (Role role in Logic.Instance.GetAliveEnemies(Data.TargetSide))
             {
-                //if (Data.TargetClass == RoleType.Demon && !role.Config.IsDemon)
-                //    continue;
-
-                //if (Data.TargetClass == RoleType.Natural && role.Config.IsDemon)
-                //    continue;
-
-                //if (role.AbilityEffects.Void && !role.CheckInvisibility())
-                //    continue;
-
-                //if (this.Caster.AbilityEffects.Charm && role == this.Caster)
-                //    continue;
-
                 double distance = (role.Position - this.Caster.Position).magnitude;
                 if (distance >= Data.MinRange && distance <= Data.MaxRange)
                 {

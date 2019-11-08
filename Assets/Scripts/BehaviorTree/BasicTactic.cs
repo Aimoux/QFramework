@@ -8,13 +8,13 @@ using System.Collections.Generic;
 
 public class BasicTactic : Action
 {
-	public SharedRole sdtarget;
+	//public SharedRole sdtarget;
     public SharedRole sdself;
-	public override void OnStart()
-	{
-        //把移动st移除,改用行为树前置task的方式实现(比较聪明的AI,可直接在树中去掉此节点)
-        //生成移动\等待类行动指令时,可灵活设置其帧数?
-	}
+	// public override void OnStart()
+	// {
+    //     //把移动st移除,改用行为树前置task的方式实现(比较聪明的AI,可直接在树中去掉此节点)
+    //     //生成移动\等待类行动指令时,可灵活设置其帧数?
+	// }
 
 	public override TaskStatus OnUpdate()
 	{
@@ -23,17 +23,21 @@ public class BasicTactic : Action
         //null target -> Move To target task- >Use assault node
 
 
+        Assault ast = sdself.Value.SelectAssault();
+		if(ast == null)
+            return TaskStatus.Failure;
+		else
+            return TaskStatus.Success;
 
-
-		if(!sdself.Value.OnTactic)
-		{
- 			int rand = Random.Range(0, sdself.Value.CurWeapon.ComboLists.Count);
-			foreach(int st in sdself.Value.CurWeapon.ComboLists[rand])
-			{
-            	sdself.Value.PushState(st);
-        	}
-		}       
-        return TaskStatus.Success;
+        // if(!sdself.Value.OnTactic)
+		// {
+ 		// 	int rand = Random.Range(0, sdself.Value.CurWeapon.ComboLists.Count);
+		// 	foreach(int st in sdself.Value.CurWeapon.ComboLists[rand])
+		// 	{
+        //     	sdself.Value.PushState(st);
+        // 	}
+		// }       
+        // return TaskStatus.Success;
     }
 
     //暗黑骷髅杂兵AI

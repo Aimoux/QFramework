@@ -8,17 +8,28 @@ using Common;
 
 public class FindAssaultTarget : Action
 {
-    public SharedRole sdtarget;//??useless??
+    //public SharedRole sdtarget;//??useless??
     public SharedRole sdself;
-    public SharedAssault sdassault;
-    public override void OnStart()
-    {
-        sdtarget.Value = sdassault.Value.FindTarget(sdself.Value.Target);//special assault target(min hp)
-    }
+    public MoveToTarget move1;
+    public MoveToTarget move2;
+    //public SharedAssault sdassault;
+    // public override void OnStart()
+    // {
+    //     sdtarget.Value = sdassault.Value.FindTarget(sdself.Value.Target);//special assault target(min hp)
+    // }
 
     public override TaskStatus OnUpdate()
     {
+        Role target = sdself.Value.CurAssault.FindTarget(sdself.Value.Target);
 
-        return TaskStatus.Success;
+        if(target == null)
+            return TaskStatus.Failure;
+        else
+        {
+            move1.Target = target;
+            move2.Target = target;
+            return TaskStatus.Success;
+        }
+           
     }
 }

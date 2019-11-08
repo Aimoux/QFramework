@@ -222,11 +222,21 @@ public class Role
         return (AssaultExtension)ast;
     }
 
+    private List<int> tpids = new List<int>();
+    public Assault SelectAssault()
+    {
+        tpids = Assaults.Keys.ToList();
+        int id = Random.Range(0, Assaults.Count);
+        AssaultExtension ast = GetAssaultById(tpids[id]);
+        CurAssault = ast;
+        return ast;
+    }
+
     public void UseAssault(Assault ast, Role target)
     {
         Cmds.Clear();
         ast.Start(target);
-        CurAssault = ast;
+        //CurAssault = ast;
     }
 
     //同样使用状态模式来更换武器、服装??
@@ -263,7 +273,7 @@ public class Role
         StateUpdate();
         CurWeapon.Update(dt);
         BehaviorDesigner.Runtime.BehaviorManager.instance.Tick(Controller.tree);//决策放在逻辑帧的最后??
-
+        //应该在Tick中call update，而不是update call tick??
     }
 
     //每个Tick被调用，入口尚未添加??
@@ -519,6 +529,7 @@ public class Role
                 sqrDist = sqr;
             }
         }
+        Target = near;
         return near; 
     }
 
