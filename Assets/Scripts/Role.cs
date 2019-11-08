@@ -125,14 +125,6 @@ public class Role
 
     public Dictionary<Role, float> Hates = new Dictionary<Role, float>();//此人的仇恨表
     public List<Role> HatedBy = new List<Role>();//仇恨此人的列表
-    //仇恨来源:初见\伤害(anst or weapon 固有+lostHP)\第三方辅助\
-    //仇恨清除,仇恨转移:
-
-    //4、“目标更换事件”触发条件一：一旦怪物的仇恨表中开始有数据存在（即不为空），就会触发一次“目标更换事件”；
-    //5、“目标更换事件”触发条件二：如果怪物或NPC仇恨列表中“当前战斗目标”和“当前最大仇恨值目标”不同，且“当前第一、第二仇恨值比值”>110%，则会触发“目标更换事件”；
-    //6、“目标更换事件”触发条件三：一旦怪物或NPC仇恨列表中有一个目标仇恨值达到仇恨上限，即65535时，则会触发“目标更换事件”（注意：该事件会在“极限衰减”过程之前完成）；
-    //7、“目标更换事件”触发条件四：怪物或NPC仇恨列表中，“当前战斗目标”的仇恨值发生衰减或清除事件（不管是因为什么原因），都会触发“目标更换事件”；
-    //8、“目标更换事件”触发条件五：怪物或NPC在响应“呼救”和“召集”技能或者怪物在受到“愤怒嘲讽”技能时，会立刻触发一次“目标更换事件”（可以通过让技能携带一个具有“目标更换事件”触发功能的脚本来实现）。
 
     //读取存档(队友装备)
     public static Role Create(Hero hero)
@@ -484,14 +476,10 @@ public class Role
             lostHP += emtForces[i] * 0.75f * (1f - emtResists[i]);
         }
 
-
         //考虑自身姿态的影响及后果（扣除耐力，增加exte）
         //特殊效果的处理
-
-
         return 0f;
     }
-
 
     protected virtual float Remedy(RoleAttribute type, float force, Role from)
     {
@@ -504,67 +492,35 @@ public class Role
         else if (type == RoleAttribute.MP)
         {
 
+
         }
         return 0f;
     }
 
-    //被行为树调用
-    //开场、受攻击、上个目标丢失
-    //仇恨值系统,距离,对己伤害,目标状态(血量,体力)
-    //角色状态:距离\血量\体力,具象化为定量的仇恨值,或是与仇恨值平级的存在??
-    //寻找目标:按AnimStateExtension配置的TargetType(默认为最近?),仇恨值仅用于转移攻击目标判定?
-    public virtual Role FindTarget()
-    {
-        // Role target = null;
-        // int hate = 0;
-        // foreach (var kv in HatredDict)
-        // {
-        //     if (kv.Value > hate)
-        //     {
-        //         hate = kv.Value;
-        //         target = kv.Key;
-        //     }
-        // }
-        if(Target != null)
-            return Target;
+    //仇恨来源:初见\伤害(anst or weapon 固有+lostHP)\第三方辅助\
+    //仇恨清除,仇恨转移:
+    //4、“目标更换事件”触发条件一：一旦怪物的仇恨表中开始有数据存在（即不为空），就会触发一次“目标更换事件”；
+    //5、“目标更换事件”触发条件二：如果怪物或NPC仇恨列表中“当前战斗目标”和“当前最大仇恨值目标”不同，且“当前第一、第二仇恨值比值”>110%，则会触发“目标更换事件”；
+    //6、“目标更换事件”触发条件三：一旦怪物或NPC仇恨列表中有一个目标仇恨值达到仇恨上限，即65535时，则会触发“目标更换事件”（注意：该事件会在“极限衰减”过程之前完成）；
+    //7、“目标更换事件”触发条件四：怪物或NPC仇恨列表中，“当前战斗目标”的仇恨值发生衰减或清除事件（不管是因为什么原因），都会触发“目标更换事件”；
+    //8、“目标更换事件”触发条件五：怪物或NPC在响应“呼救”和“召集”技能或者怪物在受到“愤怒嘲讽”技能时，会立刻触发一次“目标更换事件”（可以通过让技能携带一个具有“目标更换事件”触发功能的脚本来实现）。
 
+    //默认攻击目标(最近), assault中默认找最仇恨??
+    public virtual Role FindClosest(ref float sqrDist)
+    {
+        sqrDist = float.MaxValue;
+        Role near = null;
         foreach(Role role in Logic.Instance.GetAliveEnemies(Faction))
         {
-            Target = role;//interface selector??  vs hatred? 加权?
-            return role;
+            float sqr = SquarePlanarDist(role);
+            if (sqr < sqrDist)
+            {
+                near = role;
+                sqrDist = sqr;
+            }
         }
-
-        return null; 
-
+        return near; 
     }
-
-    //if(idle or move) ->FindTarget ->Move(Rotate) ->Atk {atk1, atk2, atk3}{gen random avail comb sets and push}
-    //if(out range) ->Find->Move()->...cycle
-    //can not rotate in atk motion(other than attached in anim clip)
-    //behaviour pattern gen and select( supported by sufficient anim combo)
-
-    //virtual behavior
-    //override behav for each npc??
-
-    //Atk Combo ids
-    //public virtual void GenTactic()
-    //{
-    //    if(OnTactic)
-    //        return;
-
-    //    //random walkst dir
-    //    if(Target != null)
-    //    {
-    //        if(HasReachTarget() == ResultType.RUNNING)
-    //            Cmds.Push(new WalkState(this));
-    //        else
-    //        {
-    //            Cmds.Push(new AttackLiteState(this));//每把武器的combo不同,读取自weapon配置??
-    //            Cmds.Push(new AttackHeavyState(this));
-    //        }
-
-    //    }
-    //}
 
     //碰撞检定优先于朝向检定优先于距离检定
     //Dist为最短距离,非两圆心距离

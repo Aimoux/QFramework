@@ -14,11 +14,17 @@ public class BasicTactic : Action
 	{
         //把移动st移除,改用行为树前置task的方式实现(比较聪明的AI,可直接在树中去掉此节点)
         //生成移动\等待类行动指令时,可灵活设置其帧数?
-
 	}
 
 	public override TaskStatus OnUpdate()
 	{
+        //if not idle return;
+        // target = role.defaultfindtarget by hatred\dist\?
+        //null target -> Move To target task- >Use assault node
+
+
+
+
 		if(!sdself.Value.OnTactic)
 		{
  			int rand = Random.Range(0, sdself.Value.CurWeapon.ComboLists.Count);

@@ -13,7 +13,8 @@ namespace GameData
         public float MaxRange { get; set; }
         public float MinRange { get; set; }
         public float MaxAngle { get; set; }
-        public int TargetType { get; set; }
+        public int TargetSide { get; set; }//自己0,友军1,敌人-1
+        public Common.TargetType TargetType { get; set; }//可以使用枚举??
         public int CastType { get; set; }
         public int Weight { get; set; }//默认释放概率??  wi/sum(wij)??
         public string Actions { get; set; }

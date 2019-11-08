@@ -21,7 +21,8 @@ public class FindTarget : Conditional
     {
         if (sdtarget.Value == null)
         {
-            sdtarget.Value = sdself.Value.FindTarget();
+            float dist = 0f;
+            sdtarget.Value = sdself.Value.FindClosest(ref dist);
         }
 
         if (sdtarget.Value == null)
