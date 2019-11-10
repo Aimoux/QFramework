@@ -24,7 +24,8 @@ public class MoveToPosition : Action
                         sdself.Value.Status.OnStateBreak();
                 }
                 else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKFORWARD);
                 break;
 
             case ResultType.LEFTSIDE:
@@ -33,7 +34,8 @@ public class MoveToPosition : Action
                     sdself.Value.WalkTurnLeft();
                 }
                 else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNLEFT);
                 break;
 
             case ResultType.RIGHTSIDE:
@@ -42,11 +44,12 @@ public class MoveToPosition : Action
                     sdself.Value.WalkTurnRight();
                 }
                 else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNRIGHT);
                 break;
 
             case ResultType.SUCCESS:
-                sdself.Value.StopNav();
+                //sdself.Value.StopNav();
                 break;
 
             case ResultType.FAILURE://no path??

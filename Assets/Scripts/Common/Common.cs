@@ -22,7 +22,8 @@ namespace Common
         IDLE =0,
         MOTION =1,//移动
         ATTACK =2,//攻击
-        HITREACTION =2,//受击
+        HITREACTION =3,//受击
+        DEATH =4,//gg
 
 
     }
@@ -89,7 +90,7 @@ namespace Common
         #endregion
 
         DEATH = 4,
-        BLOCK = 4,//防御
+        BLOCK = 5,//防御
     }
 
     public enum AssaultType
@@ -113,24 +114,6 @@ namespace Common
 
     }
 
-    //由一个或多个AnimState组成
-    //执行中\中断\完成
-    //将目标或自身状态作为决策参数(可选)
-    //考虑用行为树配置(适用于可组合\替换\拆解,不适用于共有的基础模块)
-    //理清Tactic\AnimState\Talent的区别与联系
-    public class Tactic// tact as interface, combo继承tact??
-    {
-        public int Combo;//??random combo?? kneel for mercy?? faker joker??
-        public int ComboRange;//??走近几步接突刺(前跃斩)
-        public Vector3 Destination;//only useful when Combo =0? 撤退需要转身?战术撤退不必转身?
-        public int Action;// for none-combat tact: run to heal, kneel
-                          //所有可能的连击组合 weapon data中配置此处的子集key,combo broken??
-                          //push命令以combo为单位, 不同combo之间存在 common cd??
-
-
-    }
-
-
     //武器冲击力类型，影响受击方的硬直
     // public enum ImpactType
     // {
@@ -144,14 +127,10 @@ namespace Common
 
     // }
 
-
     public enum PERSONALITY
     {
         COWARD =0, //懦弱
         BOLD = 1,//勇敢
-
-
-
     }
 
     public enum ResultType//多用途,寻路以及可释放技能

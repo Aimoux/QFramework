@@ -111,11 +111,11 @@ public class AnimStateExtension : AnimState
     //    base.OnStateUpdate();
     //}
 
-    public void OnStateExit1011()
-    {
-        base.OnStateExit();
-        Caster.Controller.StopNav();
-    }
+    // public void OnStateExit1011()
+    // {
+    //     base.OnStateExit();
+    //     Caster.Controller.StopNav();
+    // }
 
     #endregion
 
@@ -126,17 +126,17 @@ public class AnimStateExtension : AnimState
     //    base.OnStateUpdate();
     //}
 
-    public void OnStateExit1015()
-    {
-        Caster.Controller.StopNav();
-        base.OnStateExit();
-    }
+    // public void OnStateExit1015()
+    // {
+    //     Caster.Controller.StopNav();
+    //     base.OnStateExit();
+    // }
 
-    public void OnStateExit1016()
-    {
-        Caster.Controller.StopNav();
-        base.OnStateExit();
-    }
+    // public void OnStateExit1016()
+    // {
+    //     Caster.Controller.StopNav();
+    //     base.OnStateExit();
+    // }
 
     //public void OnStateUpdate1025()
     //{

@@ -24,14 +24,13 @@ public class MoveToTarget : Action
 
     public override TaskStatus OnUpdate()
     {
-
         // if(sdself.Value.OnTactic)//??
         //     return TaskStatus.Success;
         int type = DataManager.Instance.Animations[(int)sdself.Value.Status.State].AnimationType;
-        if(type >1)
+        if(type >1 || Target == null)
             return TaskStatus.Failure;
 
-        ResultType ret = sdself.Value.IsTargetWithinRange(MaxRange, MinRange, MaxAngle);
+        ResultType ret = sdself.Value.IsTargetWithinRange(Target, MaxRange, MinRange, MaxAngle);
         switch (ret)
         {
             case ResultType.TOOFAR:
@@ -44,7 +43,8 @@ public class MoveToTarget : Action
                 }
                 else
                 {
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);//此处已实现打断walk turn??
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKFORWARD);//此处已实现打断
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKFORWARD);
                     Attempt++;//when to quit tactic
                 }
                 break;
@@ -55,7 +55,8 @@ public class MoveToTarget : Action
                     sdself.Value.WalkBack();
                 }
                 else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKBACK);
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKBACK);
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKBACK);
                 break;
 
             case ResultType.LEFTSIDE:
@@ -64,7 +65,8 @@ public class MoveToTarget : Action
                     sdself.Value.WalkTurnLeft();
                 }
                 else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNLEFT);
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNLEFT);
                 break;
 
             case ResultType.RIGHTSIDE:
@@ -73,16 +75,20 @@ public class MoveToTarget : Action
                     sdself.Value.WalkTurnRight();
                 }
                 else
-                    sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
+                    //sdself.Value.Status.OnStateBreak(ANIMATIONSTATE.WALKTURNRIGHT);
+                    sdself.Value.PushState((int)ANIMATIONSTATE.WALKTURNRIGHT);
                 break;
 
             case ResultType.SUCCESS:
-                sdself.Value.StopNav();
+                //sdself.Value.StopNav();
                 break;
         }
 
         if (ret == Common.ResultType.SUCCESS)
+        {
+            Target = null;
             return TaskStatus.Success;
+        }           
         else
             return TaskStatus.Failure;
     }

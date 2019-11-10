@@ -118,6 +118,7 @@ public class Role
 
     public Hero hero;//是否有必要??
     public bool IsPause;
+    public bool IsDead;
     public bool OnTactic//是否正在执行决策(决策打断或正常结束时,需要新的策略)
     {
         get { return Cmds.Count > 0; }//最后的动作一开始,就可以进行下一个决策??
@@ -270,6 +271,9 @@ public class Role
 //role驱动行为树更合适，行为树仅提供决策，大部分逻辑仍在role中完成??
     public virtual void Update(float dt)
     {
+        if(IsDead )
+            return;
+
         StateUpdate();
         CurWeapon.Update(dt);
         BehaviorDesigner.Runtime.BehaviorManager.instance.Tick(Controller.tree);//决策放在逻辑帧的最后??
@@ -301,10 +305,10 @@ public class Role
 
         //不需要完整播放完的动画（idle，walk）设置其framecount为1??
         //can transit=2, 可以去掉break?
-        if (Status.CurFrame >= Status.FrameCount || Status.IsBreak)
+        if (Status.CurFrame >= Status.FrameCount)// || Status.IsBreak)
         {
             //if cmds 皆不可用（或没有），自动转向idle??
-            if (Cmds.Count == 0)
+            if (Cmds.Count == 0)//motion除外?
             {
                 PushState(0);//Idle可合并入walk(vertical =0)??
             }
@@ -403,39 +407,37 @@ public class Role
         Steady -= force;
         if(Steady <= 0)
         {
-            int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(float)atk.State];
+            int type = DataManager.Instance.WeaponImpacts[wp.Data.Category][(int)atk.State];
             OnStatusBreak(type);
         }    
         return force;
     }
 
-    //受击硬直处理
+    //受击硬直处理,push 即可，不再需要break??
     public virtual void OnStatusBreak(int impact)//受击需要分层状态机??
     {
+        //打断之后,立即clear cmd,但是gen tact应在break state结束时进行?
+        Cmds.Clear();//打断一个,整个策略放弃??
+        Steady = Data.Steady;//重置韧性
         //如果硬直类似亚特大的带有交互性质，考虑用TimeLine??
         //暂不考虑自身状态对最终硬直的影响??
-        Status.OnStateBreak((ANIMATIONSTATE)impact);
+        PushState(impact);
+    }
 
-        //打断之后,立即clear cmd,但是gen tact应在break state结束时进行?
-        Cmds.Clear();//??打断一个,整个策略放弃??
-        Steady = Data.Steady;//重置韧性
-
-        AnimState BreakState = null;
-        // switch ((ANIMATIONSTATE)impact)//pool?
-        // {
-        //     case ANIMATIONSTATE.BREAKLITE :
-        //         BreakState = new BreakLiteState(this);
-        //         break;
-
-        //     case ANIMATIONSTATE.BREAKHEAVY :
-        //         BreakState = new BreakHeavyState(this);
-        //         break;
-
-        //     default :
-        //      BreakState = new BreakLiteState(this);
-        //         break;
-        // }
-        SetState(BreakState);//??
+    //当前动作被打断（比如受攻击）
+    //比较当前动作与state的优先级
+    //默认attack可以打断walk, Walk不可打断HitReaction??
+    //与transit 0,1,2的关联??
+    //不应包含push
+    public virtual bool OnStateBreak(ANIMATIONSTATE state, bool forceBreak = false)
+    {
+        bool can = true;
+        if(can)
+        {
+            //OnStateBreak();
+            PushState((int)state);
+        }
+        return can;
     }
 
     //被击中    
@@ -443,6 +445,14 @@ public class Role
     {
         //Pop HUD "How Dare You!"
         float lost  = CalculateLostHP(wp.ForceDict);
+        HP -= (int)lost;
+        if(HP <=0)
+        {
+            End(wp.Owner);
+            return;
+        }
+            
+
         CalculateImpact(wp);//韧性计算
 
         //回魔计算
@@ -452,7 +462,7 @@ public class Role
         //耐力扣除(仅限防御状态??)
 
         //更新仇恨值
-        Hates[wp.Owner] += lost;
+        //Hates[wp.Owner] += lost;
     }
 
     //受自身姿态影响：防御/背刺
@@ -488,7 +498,7 @@ public class Role
 
         //考虑自身姿态的影响及后果（扣除耐力，增加exte）
         //特殊效果的处理
-        return 0f;
+        return lostHP;
     }
 
     protected virtual float Remedy(RoleAttribute type, float force, Role from)
@@ -535,13 +545,13 @@ public class Role
 
     //碰撞检定优先于朝向检定优先于距离检定
     //Dist为最短距离,非两圆心距离
-    public ResultType IsTargetWithinRange(float MaxRange, float MinRange, float Angle)//可用于技能攻击长度范围,以及角度范围
+    public ResultType IsTargetWithinRange(Role target, float MaxRange, float MinRange, float Angle)//可用于技能攻击长度范围,以及角度范围
     {
-        float dist = SquarePlanarDist(Target);//质心距离
-        float arriveDist = (Data.Radius + MaxRange + Target.Data.Radius) * (Data.Radius + MaxRange + Target.Data.Radius);
+        float dist = SquarePlanarDist(target);//质心距离
+        float arriveDist = (Data.Radius + MaxRange + target.Data.Radius) * (Data.Radius + MaxRange + target.Data.Radius);
 
         Vector2 from = RoleUtil.To2DPlanarUnit(Forward);
-        Vector2 to = new Vector2(Target.Position.x - Position.x, Target.Position.z - Position.z);//招式角度范围,与nav无关
+        Vector2 to = new Vector2(target.Position.x - Position.x, target.Position.z - Position.z);//招式角度范围,与nav无关
         float angle = Vector2.SignedAngle(from, to);
 
         if (dist < MinRange * MinRange)//圆心距离
@@ -558,7 +568,6 @@ public class Role
 
     public ResultType MoveToTarget(Vector3 pos)
     {
-        Controller.StartNav();
         return Controller.MoveToPosByNav(pos);// later check path
     }
 
@@ -576,6 +585,11 @@ public class Role
     public void WalkTurnRight()
     {
 
+    }
+
+    public void StartNav()
+    {
+        Controller.StartNav();
     }
 
     public void StopNav()
@@ -624,9 +638,10 @@ public class Role
 
     public virtual void End(Role Murder)
     {
-        this.Status = null;//应移植controller??
         Logic.Instance.RoleDead(this);
-
+        Controller.tree.enabled = false;
+        Debug.LogError("Died: " + Data.ID);
+        PushState(4);
     }
 
 }

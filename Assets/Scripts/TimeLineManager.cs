@@ -21,7 +21,7 @@ public class TimeLineManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        loader.Recycle2Cache();
+        //loader.Recycle2Cache();
         loader = null;
     }
 

@@ -21,13 +21,15 @@ public class FindAssaultTarget : Action
     public override TaskStatus OnUpdate()
     {
         Role target = sdself.Value.CurAssault.FindTarget(sdself.Value.Target);
+        
+        move1.Target = target;
+        move2.Target = target;
 
         if(target == null)
             return TaskStatus.Failure;
         else
         {
-            move1.Target = target;
-            move2.Target = target;
+           
             return TaskStatus.Success;
         }
            

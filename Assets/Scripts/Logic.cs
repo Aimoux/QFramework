@@ -7,8 +7,6 @@ using Common;
 using GameData;
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
-
-
 public class Logic : MonoSingleton<Logic>
 {
     public IBattleScene Scene;
@@ -92,8 +90,6 @@ public class Logic : MonoSingleton<Logic>
                 pos += 3;
             }
         }
-
-
     }
 
     private Role CreateMonsterByID(int mid, int side)
@@ -159,7 +155,7 @@ public class Logic : MonoSingleton<Logic>
             {
                 //Debug.Log("Tick Start: " + element.obj.name);
                 role.Update(passTime);
-                //BehaviorManager.instance.Tick(role.Controller.tree);// call role.onenterframe in task to drive
+                //BehaviorManager.instance.Tick(role.Controller.tree);// call 
             }
             //else
             //{

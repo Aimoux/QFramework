@@ -69,29 +69,34 @@ public class RoleController : MonoBehaviour
         loader = null;
     }
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position,transform.position+transform.forward*10f);
+    }
+
     public void Init()
     {
         loader = role.Loader;
 
         anim.runtimeAnimatorController = loader.LoadSync<RuntimeAnimatorController>(role.CurWeapon.Data.Animator);
 
-        model.GetComponent<RoleSensor>().Self = role;
+        model.GetComponentInChildren<RoleSensor>().Self = role;
 
         if(wpModel == null)
         {
             GameObject wpsrc = loader.LoadSync<GameObject>(role.CurWeapon.Data.Model);
             GameObject wp= GameObject.Instantiate(wpsrc) as GameObject;          
             wpModel = wp.transform;
-        }
-
-        wpModel.SetParent(wpPos);
-        wpModel.localPosition = Vector3.zero;
-        wpModel.localRotation = Quaternion.identity;
-        wpModel.localScale = Vector3.one;
+            wpModel.SetParent(wpPos);
+            wpModel.localPosition = Vector3.zero;
+            wpModel.localRotation = Quaternion.identity;
+            wpModel.localScale = Vector3.one;
+        }      
 
         wpModel.GetComponent<HitSensor>().wp = role.CurWeapon;
 
-//tree at last??
+        //tree at last??
         tree.ExternalBehavior = loader.LoadSync<ExternalBehavior>(role.Data.Behavior);
         tree.SetVariableValue(Const.SharedSelf, role);
 
@@ -102,6 +107,7 @@ public class RoleController : MonoBehaviour
         {
             nav.enabled = true;
             nav.isStopped = false;
+            //nav.updatePosition = true;
             nav.updatePosition = false;//??动画驱动是否应该更新??true则太空步
             nav.updateRotation = false;
             navigating = true;
@@ -143,6 +149,7 @@ public class RoleController : MonoBehaviour
 
         nav.SetDestination(pos);
         nav.speed = (anim.deltaPosition / Time.deltaTime).magnitude;//浮空判断??
+        //nav.Warp(transform.position);
         nav.nextPosition = transform.position;//Animator Apply root motion
         Vector3 targetFWD = nav.desiredVelocity;
         targetFWD = new Vector3(targetFWD.x, 0f, targetFWD.z).normalized;
@@ -152,6 +159,7 @@ public class RoleController : MonoBehaviour
         //apply root motion下,仍然可以代码控制pos,rote,二者共同作用
         //跑动中确有必要修正模型朝向(前进动画中朝向不变,但目标速度可能有垂直于追方朝向的分量)
         transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(targetFWD, Vector3.up), Const.MaxRoteAngDelta);
+
         //role.Position = transform.position;//非移动状态下如何传递值,利用动画??
         //role.Forward = transform.forward;//受控/滞空 直接传递模型的朝向位置??
 

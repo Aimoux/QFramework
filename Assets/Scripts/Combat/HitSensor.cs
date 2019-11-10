@@ -7,8 +7,16 @@ using UnityEngine;
 public class HitSensor : MonoBehaviour
 {
     public Weapon wp;//初始化中赋值
+
+    // private void Update() {
+
+    //     Debug.Log("hit info: " + wp.Owner.Data.ID +"with weapon: "+ wp.Data.ID);
+
+    // }
     private void OnTriggerEnter(Collider other)
     {
+         //Debug.Break();
+
         if(!wp.Owner.Status.IsWeaponEnable)//能否确保被打断时此处为false??
             return;
 
@@ -19,6 +27,7 @@ public class HitSensor : MonoBehaviour
             //一个打击事件的信息传递
             //攻击方需要知道自己的哪一个武器（武器状态，计算伤害）击中了哪一个敌人
             //受击方需要知道伤害（效果）数值和攻击者是谁（反击、仇恨转移）
+            //Debug.Break();
             wp.OnHit(Masochism);//武器自身的命中特殊效果
             wp.Owner.OnSadism(wp, Masochism);//攻击方收益计算
             Masochism.OnMasoch(wp);//受击方损失计算                                 
@@ -36,5 +45,7 @@ public class HitSensor : MonoBehaviour
 
         return null;
     }
+
+   
 }
 

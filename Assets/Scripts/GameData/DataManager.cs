@@ -35,8 +35,8 @@ class DataManager : Singleton<DataManager>
 
     }
 
-    private Dictionary<int, Dictionary<float, RoleAttributeData>> _RoleAttributes;
-    public Dictionary<int, Dictionary<float, RoleAttributeData>> RoleAttributes
+    private Dictionary<int, Dictionary<int, RoleAttributeData>> _RoleAttributes;
+    public Dictionary<int, Dictionary<int, RoleAttributeData>> RoleAttributes
     {
         get
         {
@@ -48,8 +48,8 @@ class DataManager : Singleton<DataManager>
         }
     }
 
-    private Dictionary<int, Dictionary<float, WeaponAttributeData>> _WeaponAttribues;
-    public Dictionary<int, Dictionary<float, WeaponAttributeData>> WeaponAttributes
+    private Dictionary<int, Dictionary<int, WeaponAttributeData>> _WeaponAttribues;
+    public Dictionary<int, Dictionary<int, WeaponAttributeData>> WeaponAttributes
     {
         get
         {
@@ -62,8 +62,8 @@ class DataManager : Singleton<DataManager>
 
     }
 
-    private Dictionary<int, Dictionary<float, WeaponAddData>> _WeaponAdds;
-    public Dictionary<int, Dictionary<float, WeaponAddData>> WeaponAdds
+    private Dictionary<int, Dictionary<int, WeaponAddData>> _WeaponAdds;
+    public Dictionary<int, Dictionary<int, WeaponAddData>> WeaponAdds
     {
         get
         {
@@ -76,8 +76,8 @@ class DataManager : Singleton<DataManager>
 
     }
 
-    private Dictionary<int, Dictionary<float, LevelMonsterData>> _LevelMonsters;
-    public Dictionary<int, Dictionary<float, LevelMonsterData>> LevelMonsters
+    private Dictionary<int, Dictionary<int, LevelMonsterData>> _LevelMonsters;
+    public Dictionary<int, Dictionary<int, LevelMonsterData>> LevelMonsters
     {
         get
         {
@@ -115,8 +115,8 @@ class DataManager : Singleton<DataManager>
         }
     }
 
-    private Dictionary<int, Dictionary<float, int[]>> _WeaponFrames;
-    public Dictionary<int, Dictionary<float, int[]>> WeaponFrames
+    private Dictionary<int, Dictionary<int, int[]>> _WeaponFrames;
+    public Dictionary<int, Dictionary<int, int[]>> WeaponFrames
     {
         get 
         {
@@ -128,8 +128,8 @@ class DataManager : Singleton<DataManager>
         }
     }
 
-    private Dictionary<int, Dictionary<float, int>> _WeaponImpacts;
-    public Dictionary<int, Dictionary<float, int>> WeaponImpacts//[wptype][atktype]
+    private Dictionary<int, Dictionary<int, int>> _WeaponImpacts;
+    public Dictionary<int, Dictionary<int, int>> WeaponImpacts//[wptype][atktype]
     {
         get 
         {
@@ -151,8 +151,8 @@ class DataManager : Singleton<DataManager>
         }
     }
 
-    private Dictionary<int, Dictionary<float, int>> _Transits;
-    public Dictionary<int, Dictionary<float, int>> Transits
+    private Dictionary<int, Dictionary<int, int>> _Transits;
+    public Dictionary<int, Dictionary<int, int>> Transits
     {
         get 
         {
