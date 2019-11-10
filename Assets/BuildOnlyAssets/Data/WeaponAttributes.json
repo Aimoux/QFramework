@@ -1,6 +1,6 @@
 {
   "1": {
-    "1.0": {
+    "1": {
       "DamageBlunt": 0, 
       "DamageElectric": 0, 
       "DamageFire": 0, 
@@ -10,7 +10,7 @@
       "DamageSlash": 10, 
       "Level": 1
     }, 
-    "2.0": {
+    "2": {
       "DamageBlunt": 0, 
       "DamageElectric": 0, 
       "DamageFire": 0, 
@@ -20,7 +20,7 @@
       "DamageSlash": 20, 
       "Level": 2
     }, 
-    "3.0": {
+    "3": {
       "DamageBlunt": 0, 
       "DamageElectric": 0, 
       "DamageFire": 0, 
@@ -32,7 +32,7 @@
     }
   }, 
   "2": {
-    "1.0": {
+    "1": {
       "DamageBlunt": 0, 
       "DamageElectric": 0, 
       "DamageFire": 10, 
@@ -42,7 +42,7 @@
       "DamageSlash": 0, 
       "Level": 1
     }, 
-    "2.0": {
+    "2": {
       "DamageBlunt": 0, 
       "DamageElectric": 0, 
       "DamageFire": 15, 
@@ -52,7 +52,7 @@
       "DamageSlash": 0, 
       "Level": 2
     }, 
-    "3.0": {
+    "3": {
       "DamageBlunt": 0, 
       "DamageElectric": 0, 
       "DamageFire": 20, 

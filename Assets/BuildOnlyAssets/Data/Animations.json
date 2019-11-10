@@ -9,6 +9,16 @@
     "State": 0, 
     "TargetType": 0
   }, 
+  "4": {
+    "AnimationType": 4, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 4, 
+    "Name": "Death", 
+    "State": 4, 
+    "TargetType": 0
+  }, 
   "104": {
     "AnimationType": 1, 
     "AttackDamageRatio": 1.0, 

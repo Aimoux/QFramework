@@ -1,113 +1,113 @@
 {
   "1": {
-    "10.0": {
+    "10": {
       "DexterityAdd": 2, 
       "MentalAdd": 2, 
       "StrengthAdd": 2
     }, 
-    "11.0": {
+    "11": {
       "DexterityAdd": 3, 
       "MentalAdd": 3, 
       "StrengthAdd": 3
     }, 
-    "12.0": {
+    "12": {
       "DexterityAdd": 4, 
       "MentalAdd": 4, 
       "StrengthAdd": 4
     }, 
-    "13.0": {
+    "13": {
       "DexterityAdd": 5, 
       "MentalAdd": 5, 
       "StrengthAdd": 5
     }, 
-    "14.0": {
+    "14": {
       "DexterityAdd": 6, 
       "MentalAdd": 6, 
       "StrengthAdd": 6
     }, 
-    "15.0": {
+    "15": {
       "DexterityAdd": 7, 
       "MentalAdd": 7, 
       "StrengthAdd": 7
     }, 
-    "16.0": {
+    "16": {
       "DexterityAdd": 8, 
       "MentalAdd": 8, 
       "StrengthAdd": 8
     }, 
-    "17.0": {
+    "17": {
       "DexterityAdd": 9, 
       "MentalAdd": 9, 
       "StrengthAdd": 9
     }, 
-    "18.0": {
+    "18": {
       "DexterityAdd": 10, 
       "MentalAdd": 10, 
       "StrengthAdd": 10
     }, 
-    "19.0": {
+    "19": {
       "DexterityAdd": 11, 
       "MentalAdd": 11, 
       "StrengthAdd": 11
     }, 
-    "20.0": {
+    "20": {
       "DexterityAdd": 12, 
       "MentalAdd": 12, 
       "StrengthAdd": 12
     }
   }, 
   "2": {
-    "10.0": {
+    "10": {
       "DexterityAdd": 4, 
       "MentalAdd": 4, 
       "StrengthAdd": 4
     }, 
-    "11.0": {
+    "11": {
       "DexterityAdd": 5, 
       "MentalAdd": 5, 
       "StrengthAdd": 5
     }, 
-    "12.0": {
+    "12": {
       "DexterityAdd": 6, 
       "MentalAdd": 6, 
       "StrengthAdd": 6
     }, 
-    "13.0": {
+    "13": {
       "DexterityAdd": 7, 
       "MentalAdd": 7, 
       "StrengthAdd": 7
     }, 
-    "14.0": {
+    "14": {
       "DexterityAdd": 8, 
       "MentalAdd": 8, 
       "StrengthAdd": 8
     }, 
-    "15.0": {
+    "15": {
       "DexterityAdd": 9, 
       "MentalAdd": 9, 
       "StrengthAdd": 9
     }, 
-    "16.0": {
+    "16": {
       "DexterityAdd": 10, 
       "MentalAdd": 10, 
       "StrengthAdd": 10
     }, 
-    "17.0": {
+    "17": {
       "DexterityAdd": 11, 
       "MentalAdd": 11, 
       "StrengthAdd": 11
     }, 
-    "18.0": {
+    "18": {
       "DexterityAdd": 12, 
       "MentalAdd": 12, 
       "StrengthAdd": 12
     }, 
-    "19.0": {
+    "19": {
       "DexterityAdd": 13, 
       "MentalAdd": 13, 
       "StrengthAdd": 13
     }, 
-    "20.0": {
+    "20": {
       "DexterityAdd": 14, 
       "MentalAdd": 14, 
       "StrengthAdd": 14
