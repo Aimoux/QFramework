@@ -186,12 +186,13 @@ namespace Common
     //武器的特殊动作效果目标:群嘲\随机嘲\最远嘲
     public enum TargetType
     {
-        None = 0,
-        Self = 1,
-        Target = 2,
-        Random = 3,
-        All = 4,
-        DeadBody = 5,
+        TARGET = 0,//原目标(最近)
+        MAXHATRED =1,//仇恨值
+        SELF = 2,
+        NONE = 3,
+        Random = 4,
+        All = 5,
+        DeadBody = 6,
         Nearest = 10,
         Farthest = 11,
         Weakest = 12,
@@ -259,6 +260,7 @@ namespace Common
         public const float ErrorAngle = 10f;//当前朝向与目标方向夹角小于此数值,可认为已正面之
         public const float ErrorArrive = 0.5f;//与某点距离小于此数值,可认为已到达
         public const float MaxRoteAngDelta = 5f;//单帧旋转最大角度
+        public const float InitialHate = 10f;//初始仇恨
 
         //private int idVertical = Animator.StringToHash("Vertical");
         //    private int idJump = Animator.StringToHash("Jump");

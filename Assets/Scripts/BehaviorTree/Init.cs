@@ -19,6 +19,7 @@ public class Init : Action
 
     public override TaskStatus OnUpdate()
     {
+        sdself.Value.InitOnBattleStart();
         this.Disabled = true;
         return TaskStatus.Success;
 

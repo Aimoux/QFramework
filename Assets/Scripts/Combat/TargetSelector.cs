@@ -47,6 +47,19 @@ class MaxHPSelector : ITargetSelector
     }
 }
 
+class MinHPSelector : ITargetSelector
+{
+    public TargetType Type
+    {
+        get { return TargetType.MinHP; }
+    }
+
+    public float Select(Role role)
+    {
+        return -role.HP;
+    }
+}
+
 class NearestSelector : ITargetSelector
 {
     public TargetType Type
@@ -112,6 +125,32 @@ class MinMPSelector : ITargetSelector
     }
 }
 
+//class MaxHatredSelector : ITargetSelector
+//{
+//    public TargetType Type
+//    {
+//        get { return TargetType.MAXHATRED; }
+//    }
+
+//    public float Select(Role role)
+//    {
+//        return role.Attributes.Strength;
+//    }
+//}
+
+//class MaxStrengthSelector : ITargetSelector
+//{
+//    public TargetType Type
+//    {
+//        get { return TargetType.MaxStrength; }
+//    }
+
+//    public float Select(Role role)
+//    {
+//        return role.Attributes.Strength;
+//    }
+//}
+
 //class MaxIntelligenceSelector : ITargetSelector
 //{
 //    public TargetType Type
@@ -124,18 +163,7 @@ class MinMPSelector : ITargetSelector
 //        return role.Attributes.Intelligence;
 //    }
 //}
-class MaxStrengthSelector : ITargetSelector
-{
-    public TargetType Type
-    {
-        get { return TargetType.MaxStrength; }
-    }
 
-    public float Select(Role role)
-    {
-        return role.Attributes.Strength;
-    }
-}
 //class MaxAgilitySelector : ITargetSelector
 //{
 //    public TargetType Type
@@ -148,18 +176,7 @@ class MaxStrengthSelector : ITargetSelector
 //        return role.Attributes.Agility;
 //    }
 //}
-class MinHPSelector : ITargetSelector
-{
-    public TargetType Type
-    {
-        get { return TargetType.MinHP; }
-    }
 
-    public float Select(Role role)
-    {
-        return -role.HP;
-    }
-}
 
 //class MaxADSelector : ITargetSelector
 //{

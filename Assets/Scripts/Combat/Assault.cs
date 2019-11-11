@@ -54,14 +54,30 @@ public class Assault
 
     //target type selector
     //role find near, here type=0, find most hated
+    //仇恨来源:初见\伤害(anst or weapon 固有+lostHP)\第三方辅助\
+    //仇恨清除,仇恨转移:
+    //4、“目标更换事件”触发条件一：一旦怪物的仇恨表中开始有数据存在（即不为空），就会触发一次“目标更换事件”；
+    //5、“目标更换事件”触发条件二：如果怪物或NPC仇恨列表中“当前战斗目标”和“当前最大仇恨值目标”不同，且“当前第一、第二仇恨值比值”>110%，则会触发“目标更换事件”；
+    //6、“目标更换事件”触发条件三：一旦怪物或NPC仇恨列表中有一个目标仇恨值达到仇恨上限，即65535时，则会触发“目标更换事件”（注意：该事件会在“极限衰减”过程之前完成）；
+    //7、“目标更换事件”触发条件四：怪物或NPC仇恨列表中，“当前战斗目标”的仇恨值发生衰减或清除事件（不管是因为什么原因），都会触发“目标更换事件”；
+    //8、“目标更换事件”触发条件五：怪物或NPC在响应“呼救”和“召集”技能或者怪物在受到“愤怒嘲讽”技能时，会立刻触发一次“目标更换事件”（可以通过让技能携带一个具有“目标更换事件”触发功能的脚本来实现）。
+
     public virtual Role FindTarget(Role defaultTarget)
     {
-        Target = defaultTarget;
-        return Target;//??
-
-
         //嘲讽作用于仇恨值而不是buff??
-        if (this.Data.TargetType == TargetType.Target)
+        if (this.Data.TargetType == TargetType.MAXHATRED)
+        {
+            float hate = 0f;
+            foreach(Role role in Caster.Hates.Keys)
+            {
+                if(Caster.Hates[role] > hate)
+                {
+                    hate = Caster.Hates[role];
+                    Target = role;
+                }
+            }
+        }
+        else if (this.Data.TargetType == TargetType.TARGET)
         {
             if (defaultTarget != null)
             {
@@ -69,23 +85,11 @@ public class Assault
             }
             else
             {
-                // float sqrDist = 0;
-                // Role target = this.Caster.FindClosest(ref sqrDist);
-                // if (sqrDist <= Data.MaxRange)
-                // {
-                //     this.Target = target;
-                // }
-                // else if (this.Caster.AbilityEffects.Taunt)  //修改放技能瞬间被战场操控者嘲讽，却攻击距离打不到战场操控者的bug
-                // {
-                //     this.Target = this.Caster.Target;
-                // }
-                // else
-                // {
-                //     this.Target = null; //这里应该是空的
-                // }
+                float dist = 0f;
+                Target = Caster.FindClosest(ref dist);
             }
         }
-        else if (this.Data.TargetType == TargetType.Self)
+        else if (this.Data.TargetType == TargetType.SELF)
         {
             this.Target = this.Caster;
         }
