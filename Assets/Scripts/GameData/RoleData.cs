@@ -19,6 +19,8 @@ namespace GameData
         public int MinLevel { get; set; }
         public float Radius { get; set; }
         public float Steady { get; set; }//基础出手韧性??
+        public Dictionary<int, string> Stunts { get; set; }//特技ID:TimeLine路径
+        public Dictionary<int, int> StuntUnlockLevel { get; set; }
 
         public RoleData Clone()
         {

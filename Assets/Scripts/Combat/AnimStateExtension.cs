@@ -25,7 +25,7 @@ public class AnimStateExtension : AnimState
             return methodMap;
         }
     }
-    public AnimStateExtension(Role Controller, int ID) : base(Controller, ID)
+    public AnimStateExtension(Role Controller, int ID, int Count, int Start, int End) : base(Controller, ID, Count, Start, End)
     {
 
 

@@ -118,5 +118,29 @@
     "TargetType": 1, 
     "Type": 1, 
     "Weight": 100
+  }, 
+  "101": {
+    "Actions": "2061", 
+    "CastType": 0, 
+    "CommonCoolDown": 0.0, 
+    "ID": 101, 
+    "MaxAngle": 90.0, 
+    "MaxRange": 2.0, 
+    "MinRange": 1.0, 
+    "TargetType": 1, 
+    "Type": 2, 
+    "Weight": 100
+  }, 
+  "102": {
+    "Actions": "2062", 
+    "CastType": 0, 
+    "CommonCoolDown": 0.0, 
+    "ID": 102, 
+    "MaxAngle": 90.0, 
+    "MaxRange": 2.0, 
+    "MinRange": 1.0, 
+    "TargetType": 1, 
+    "Type": 2, 
+    "Weight": 100
   }
 }

@@ -11,6 +11,7 @@ public class Assault
     public int ID;
     public AssaultData Data;
     public List<int> Actions = new List<int>();
+    public string StuntPath;
 
     public Dictionary<TargetType, ITargetSelector> TargetSelectors;
 

@@ -35,29 +35,16 @@ public abstract class AnimState
     public Role Target;//可以与Controller.Target不同
     #endregion
 
-    public AnimState(Role Controller, int id)
+    public AnimState(Role Controller, int id, int Count, int Start, int End)
     { 
         Caster = Controller;
         ID = id;
         Data = DataManager.Instance.Animations[ID];
         State = (ANIMATIONSTATE)Data.State;
-        try 
-        {
-            int[] frames = DataManager.Instance.WeaponFrames[Controller.CurWeapon.Data.ID][(int)State];
-            FrameCount = frames[0];
-            FrameStart = frames[1];
-            FrameEnd = frames[2];
 
-            //根据物理时间步长进行换算
-            FrameCount = Mathf.RoundToInt(FrameCount * Common.Const.DeltaFrame / Time.fixedDeltaTime);
-            FrameStart = Mathf.RoundToInt(FrameStart * Common.Const.DeltaFrame / Time.fixedDeltaTime);
-            FrameEnd = Mathf.RoundToInt(FrameEnd * Common.Const.DeltaFrame / Time.fixedDeltaTime);
-        }
-        catch 
-        {
-            Debug.LogError("wp id=: " + Controller.CurWeapon.Data.ID + " st=: " + State);
-        }
-        
+        FrameCount = Mathf.RoundToInt(Count * Common.Const.DeltaFrame / Time.fixedDeltaTime);
+        FrameStart = Mathf.RoundToInt(Start * Common.Const.DeltaFrame / Time.fixedDeltaTime);
+        FrameEnd = Mathf.RoundToInt(End * Common.Const.DeltaFrame / Time.fixedDeltaTime);
        
     }
 
@@ -73,21 +60,49 @@ public abstract class AnimState
         //IsBreak = false;
         Caster.Controller.SetState(this);
 
-        if( Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
+        switch(Data.AnimationType)
         {
-            //起始到打击检测结束进行出手韧性保护
-            Caster.Steady *= Caster.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
-            Caster.StopNav();
-        } 
-        else if(Data.AnimationType ==(int)ANIMATIONTYPE.MOTION)
-        {
-            Caster.StartNav();
+            case (int)ANIMATIONTYPE.ATTACK:
+                OnAttackEnter();
+                break;
+
+            case (int)ANIMATIONTYPE.MOTION:
+                OnMotionEnter();
+                break;
+
+            case (int)ANIMATIONTYPE.DEATH:
+                OnDeathEnter();
+                break;
+
+            case (int)ANIMATIONTYPE.STUNT:
+                OnStuntEnter();
+                break;
         }
-        else if(Data.AnimationType ==(int)ANIMATIONSTATE.DEATH)
-            Caster.IsDead = true;
 
         // if(Caster.ID == 2)
         //     Debug.LogError(Caster.ID + " enter state: " + State);
+    }
+
+    private void OnAttackEnter()
+    {
+        //起始到打击检测结束进行出手韧性保护
+        Caster.Steady *= Caster.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
+        Caster.StopNav();
+    }
+
+    private void OnMotionEnter()
+    {
+        Caster.StartNav();
+    }
+
+    private void OnStuntEnter()//enter:攻方timeline.play, 关键帧(enable):目标timeline.play??
+    {
+        Caster.PlayTimeLine(Caster.CurAssault.StuntPath);
+    }
+
+    private void OnDeathEnter()
+    {
+        Caster.IsDead = true;
     }
 
     public virtual void OnStateBreak()//walk to target
@@ -101,7 +116,7 @@ public abstract class AnimState
     }
 
 
-    // 結束
+    // 结束
     public virtual void OnStateExit()
     {
         //motion以及idle设置为loop true
@@ -110,6 +125,32 @@ public abstract class AnimState
         //     Caster.StopNav();
         // }
 
+        switch(Data.AnimationType)
+        {
+            case (int)ANIMATIONTYPE.STUNT:
+
+                OnStuntExit();
+                break;
+
+
+
+        }
+
+    }
+
+    private void OnAttackExit()
+    {
+
+    }
+
+    private void OnMotionExit()
+    {
+
+    }
+
+    private void OnStuntExit()
+    {
+        Caster.StopTimeLine();
     }
 
     // 更新

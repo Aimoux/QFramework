@@ -1,0 +1,16 @@
+{
+  "101": {
+    "FrameCount": 190, 
+    "FrameEnd": 70, 
+    "FrameStart": 60, 
+    "ID": 101, 
+    "Name": "Dance"
+  }, 
+  "102": {
+    "FrameCount": 58, 
+    "FrameEnd": 12, 
+    "FrameStart": 10, 
+    "ID": 102, 
+    "Name": "Pray"
+  }
+}

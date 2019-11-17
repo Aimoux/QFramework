@@ -173,6 +173,17 @@ class DataManager : Singleton<DataManager>
         }
     }
 
+    private Dictionary<int, TimeLineFrameData> _TimeLineFrames;
+    public Dictionary<int, TimeLineFrameData> TimeLineFrames
+    {
+        get 
+        {
+            if(_TimeLineFrames == null)
+                Load("Data/TimeLineFrames.json", ref _TimeLineFrames);
+            return _TimeLineFrames;
+        }
+    }
+
 
     protected DataManager()
     {

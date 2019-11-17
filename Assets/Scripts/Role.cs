@@ -191,6 +191,7 @@ public class Role
 
     protected void InitWeapon()//
     {
+        CurWeapon.Init();
         Status = PushState(0);
         //CurWeapon.GetCombos();
     }
@@ -204,12 +205,19 @@ public class Role
             InitAssault(id);
         }   
 
+        //加入角色特技(TimeLine)??
+        foreach(int id in Data.Stunts.Keys)
+        {
+            InitStunt(id);
+        }
+
     }
 
-    public void InitAssault(int id)
+    public AssaultExtension InitAssault(int id)
     {
         AssaultExtension assault = new AssaultExtension(id, this);
         Assaults[id] = assault;
+        return assault;
     }
 
     public AssaultExtension GetAssaultById(int id)
@@ -220,6 +228,23 @@ public class Role
             Debug.LogError("has no assault: " + id);
         }
         return (AssaultExtension)ast;
+    }
+
+    public AssaultExtension InitStunt(int id)
+    {
+        AssaultExtension stunt = InitAssault(id);
+        stunt.StuntPath = Data.Stunts[id];
+        TimeLineFrameData frameData = DataManager.Instance.TimeLineFrames[id];
+        foreach(int st in stunt.Actions)
+        {
+            if(st == 0)
+                continue;
+
+            AnimStateExtension aset = new AnimStateExtension(this, st, frameData.FrameCount, frameData.FrameStart, frameData.FrameEnd);
+            SetAnimStateDict(aset);
+        }       
+
+        return stunt;
     }
 
     private List<int> tpids = new List<int>();
@@ -282,10 +307,14 @@ public class Role
         AnimState st;
         if (!States.TryGetValue(id, out st))
         {
-            st = new AnimStateExtension(this, id);
-            States[id] = st;
+            Debug.LogError("find no state: " + id);
         }
         return (AnimStateExtension)st;
+    }
+
+    public void SetAnimStateDict(AnimStateExtension ase)
+    {
+        States[ase.ID] = ase;
     }
 
     public AnimStateExtension PushState(int id)
@@ -659,6 +688,18 @@ public class Role
         Controller.tree.enabled = false;
         Debug.LogError("Died: " + Data.ID);
         PushState(4);
+    }
+
+    public void PlayTimeLine(string path)
+    {
+
+        Controller.PlayTimeLine(path);
+
+    }
+
+    public void StopTimeLine()
+    {
+        Controller.StopTimeLine();
     }
 
 }

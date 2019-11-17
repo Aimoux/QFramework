@@ -11,7 +11,14 @@
     "Picture": "LilyBody", 
     "Portrait": "LilyPorn", 
     "Radius": 1.0, 
-    "Steady": 100.0
+    "Steady": 100.0, 
+    "StuntUnlockLevel": {
+      "101": 10, 
+      "102": 15
+    }, 
+    "Stunts": {
+      "101": "Resources/TimeLines/Dance"
+    }
   }, 
   "2": {
     "Behavior": "Resources/Behaviors/Rookie", 
@@ -25,6 +32,13 @@
     "Picture": "CirBdy", 
     "Portrait": "Circle", 
     "Radius": 1.0, 
-    "Steady": 100.0
+    "Steady": 100.0, 
+    "StuntUnlockLevel": {
+      "101": 10, 
+      "102": 15
+    }, 
+    "Stunts": {
+      "101": "Resources/TimeLines/Dance"
+    }
   }
 }

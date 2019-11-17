@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.AI;
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
+using UnityEngine.Timeline;
+using UnityEngine.Playables;
 using Common;
 using GameData;
 using QF.Res;
@@ -16,6 +18,7 @@ public class RoleController : MonoBehaviour
     public Role role;
     public Animator anim;//在预制体中绑定??
     public NavMeshAgent nav;//预制体中绑定??
+    public PlayableDirector director;
     public bool isGrounded { get { return IsOnGround(); } }//落地检测的应用场合??
     public UIFloatingBar floatingBar;
     public BehaviorTree tree;
@@ -205,6 +208,30 @@ public class RoleController : MonoBehaviour
     {
         //stateId equal + trigger，可解决anystate，trans to self的问题??
         anim.SetInteger(Const.StateID, (int)state.State);
+    }
+
+//有受击方的director播放
+//应制作source obj List或者Dicitonary看了??
+    public void PlayTimeLine(string path)
+    {
+        Debug.Log("Binding Timeline Tracks!");
+        director.playableAsset = loader.LoadSync<PlayableAsset>(path);//同步加载??   
+
+        foreach (var playableAssetOutput in director.playableAsset.outputs)
+        {
+            if (playableAssetOutput.streamName == Const.Role)
+            {
+                director.SetGenericBinding(playableAssetOutput.sourceObject, anim);
+            }
+        }
+
+        //位置校对位于StateEnter中??
+        director.Play();      
+    }
+
+    public void StopTimeLine()
+    {
+        director.Stop();
     }
 
 }

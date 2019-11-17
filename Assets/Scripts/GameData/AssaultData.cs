@@ -9,7 +9,7 @@ namespace GameData
     public class AssaultData
     {
         public int ID { get; set; }
-        public int Type { get; set; }
+        public int Type { get; set; }//特技\武器招数??
         public float MaxRange { get; set; }
         public float MinRange { get; set; }
         public float MaxAngle { get; set; }

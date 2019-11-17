@@ -584,8 +584,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 054ebf15f8adcf24093a99157f705944, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerAnim: {fileID: 2126668480}
-  botAnim: {fileID: 1621008707}
+  playerAnim: {fileID: 0}
+  botAnim: {fileID: 0}
 --- !u!1 &1565272460
 GameObject:
   m_ObjectHideFlags: 0
@@ -692,7 +692,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100008, guid: 69f9453aa1f131d468b897880d264c61, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 13700004, guid: 69f9453aa1f131d468b897880d264c61, type: 3}
       propertyPath: m_BlendShapeWeights.Array.size
@@ -808,12 +808,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 69f9453aa1f131d468b897880d264c61, type: 3}
---- !u!95 &1621008707 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 9500000, guid: 69f9453aa1f131d468b897880d264c61,
-    type: 3}
-  m_PrefabInstance: {fileID: 1621008706}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1635076611
 GameObject:
   m_ObjectHideFlags: 0
@@ -1061,7 +1055,7 @@ MonoBehaviour:
   lastJump: 0
   openFire: 0
   operate: 0
---- !u!1001 &1730758065
+--- !u!1001 &1794119896
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2

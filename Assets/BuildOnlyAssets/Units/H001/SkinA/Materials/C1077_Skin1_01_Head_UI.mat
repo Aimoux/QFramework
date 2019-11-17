@@ -1,0 +1,349 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: C1077_Skin1_01_Head_UI
+  m_Shader: {fileID: 4800000, guid: 3c3a4d9d203e1ce41938609a63a64683, type: 3}
+  m_ShaderKeywords: _EMISSION
+  m_LightmapFlags: 1
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  m_SavedProperties:
+    serializedVersion: 2
+    m_TexEnvs:
+    - first:
+        name: _BumpMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _DetailAlbedoMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _DetailMask
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _DetailNormalMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _DetailTex
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _EffectTex
+      second:
+        m_Texture: {fileID: 2800000, guid: 6be4856d1449f2e45846148730786b93, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _EmissionMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _FlowTex
+      second:
+        m_Texture: {fileID: 2800000, guid: 31137841b7c33704aa9b9261bb1e9f8e, type: 3}
+        m_Scale: {x: 1, y: 0.5}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _LightTex
+      second:
+        m_Texture: {fileID: 2800000, guid: b42918566d3e2fa4f8de7d2e9c086c1e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MainTex
+      second:
+        m_Texture: {fileID: 2800000, guid: e0957d1dda8dcf549b9675295a8907ed, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MaskDetail
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MaskTex
+      second:
+        m_Texture: {fileID: 2800000, guid: 6871643b163c07b4fbc40f350a427e86, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MaskTex_OP
+      second:
+        m_Texture: {fileID: 2800000, guid: 31137841b7c33704aa9b9261bb1e9f8e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MaskTex_RGB
+      second:
+        m_Texture: {fileID: 2800000, guid: 6871643b163c07b4fbc40f350a427e86, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _Matcap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MatcapTex
+      second:
+        m_Texture: {fileID: 2800000, guid: e6c8415bbc57dfe41894797ecfad2fdd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MetallicGlossMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _NoiseTex
+      second:
+        m_Texture: {fileID: 2800000, guid: 561699746a1262b4ab633e2b3956ff22, type: 3}
+        m_Scale: {x: 1, y: 0.5}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _Normal
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _NormalTex
+      second:
+        m_Texture: {fileID: 2800000, guid: b672b2f1dbb499243a74964e6db5e180, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _OcclusionMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _ParallaxMap
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _Ramp2DMap
+      second:
+        m_Texture: {fileID: 2800000, guid: 503de9b8e757d1c4d9c9c70336bc459f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _RampMap
+      second:
+        m_Texture: {fileID: 2800000, guid: 5b85f968a78d8c648902da6f4042d36a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _ReflectTex
+      second:
+        m_Texture: {fileID: 8900000, guid: 5edfb1adc2ce31f4d97e9d2d96dc00fa, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - first:
+        name: _AmbientYOffset
+      second: 0.22
+    - first:
+        name: _Brightness
+      second: 0.96
+    - first:
+        name: _BumpScale
+      second: 1
+    - first:
+        name: _Cutoff
+      second: 0.5
+    - first:
+        name: _DetailNormalMapScale
+      second: 1
+    - first:
+        name: _DetailPower
+      second: 1
+    - first:
+        name: _DstBlend
+      second: 0
+    - first:
+        name: _EffectPower
+      second: 1
+    - first:
+        name: _EmissPower
+      second: 2
+    - first:
+        name: _EmissiPower
+      second: 0.43
+    - first:
+        name: _Gloss
+      second: 1
+    - first:
+        name: _GlossMapScale
+      second: 1
+    - first:
+        name: _Glossiness
+      second: 0.5
+    - first:
+        name: _GlossyReflections
+      second: 1
+    - first:
+        name: _HeightLightCompensation
+      second: 2.4
+    - first:
+        name: _InterpolationN
+      second: 0
+    - first:
+        name: _MMultiplier
+      second: 14.78
+    - first:
+        name: _MaskFactor
+      second: 0
+    - first:
+        name: _Metallic
+      second: 0
+    - first:
+        name: _Mode
+      second: 0
+    - first:
+        name: _NormalIntensity
+      second: 1
+    - first:
+        name: _OcclusionStrength
+      second: 1
+    - first:
+        name: _Offset
+      second: -0.38
+    - first:
+        name: _OutlineSize
+      second: 0.025
+    - first:
+        name: _Parallax
+      second: 0.02
+    - first:
+        name: _ReflectPower
+      second: 0.1
+    - first:
+        name: _ReflectionFactor
+      second: 0
+    - first:
+        name: _ReflectionMultiplier
+      second: 24.99
+    - first:
+        name: _Scroll2X
+      second: 0
+    - first:
+        name: _Scroll2Y
+      second: 0
+    - first:
+        name: _ScrollUVX
+      second: 0
+    - first:
+        name: _ShadowHeight
+      second: 0.01
+    - first:
+        name: _Shadowlevel
+      second: 0.7794116
+    - first:
+        name: _SmoothnessTextureChannel
+      second: 0
+    - first:
+        name: _SpecFactor
+      second: 0
+    - first:
+        name: _SpecMultiplier
+      second: 6.47
+    - first:
+        name: _SpecPower
+      second: 1
+    - first:
+        name: _SpecularHighlights
+      second: 1
+    - first:
+        name: _SpecularPower
+      second: 1
+    - first:
+        name: _Speed
+      second: 0.6837604
+    - first:
+        name: _SrcBlend
+      second: 1
+    - first:
+        name: _TopLight
+      second: 2.290597
+    - first:
+        name: _TopLightPower
+      second: 5
+    - first:
+        name: _UVSec
+      second: 0
+    - first:
+        name: _ZWrite
+      second: 1
+    m_Colors:
+    - first:
+        name: _AmbientColor
+      second: {r: 1, g: 1, b: 1, a: 1}
+    - first:
+        name: _BackColor
+      second: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - first:
+        name: _Color
+      second: {r: 0.588, g: 0.588, b: 0.588, a: 1}
+    - first:
+        name: _DetailColor
+      second: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - first:
+        name: _EmissiColor
+      second: {r: 1, g: 0.77205884, b: 0.77205884, a: 1}
+    - first:
+        name: _EmissionColor
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: _FlowColor
+      second: {r: 0.5182201, g: 0.75706965, b: 0.99264705, a: 1}
+    - first:
+        name: _FrontColor
+      second: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - first:
+        name: _HeightColor
+      second: {r: 0.40413287, g: 0.34742647, b: 0.46323532, a: 1}
+    - first:
+        name: _NoiseColor
+      second: {r: 0.9485294, g: 0.5868184, b: 0.3905709, a: 1}
+    - first:
+        name: _ReflectColor
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: _RimColor
+      second: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - first:
+        name: _ShadowColor
+      second: {r: 0.73367214, g: 0.77894646, b: 0.86764705, a: 0}
+    - first:
+        name: _SpecCol
+      second: {r: 0, g: 0, b: 0, a: 0}
+    - first:
+        name: _SpecColor
+      second: {r: 0, g: 0, b: 0, a: 0}

@@ -6,8 +6,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 0, 
     "Name": "Idle", 
-    "State": 0, 
-    "TargetType": 0
+    "State": 0
   }, 
   "4": {
     "AnimationType": 4, 
@@ -16,8 +15,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 4, 
     "Name": "Death", 
-    "State": 4, 
-    "TargetType": 0
+    "State": 4
   }, 
   "104": {
     "AnimationType": 1, 
@@ -26,8 +24,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 104, 
     "Name": "Jump", 
-    "State": 104, 
-    "TargetType": 0
+    "State": 104
   }, 
   "105": {
     "AnimationType": 1, 
@@ -36,8 +33,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 105, 
     "Name": "Fall", 
-    "State": 105, 
-    "TargetType": 0
+    "State": 105
   }, 
   "301": {
     "AnimationType": 3, 
@@ -46,8 +42,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 301, 
     "Name": "BreakLite", 
-    "State": 301, 
-    "TargetType": 0
+    "State": 301
   }, 
   "302": {
     "AnimationType": 3, 
@@ -56,8 +51,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 302, 
     "Name": "BreakHeavy", 
-    "State": 302, 
-    "TargetType": 0
+    "State": 302
   }, 
   "303": {
     "AnimationType": 3, 
@@ -66,8 +60,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 303, 
     "Name": "KonckDown", 
-    "State": 303, 
-    "TargetType": 0
+    "State": 303
   }, 
   "304": {
     "AnimationType": 3, 
@@ -76,8 +69,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 304, 
     "Name": "KnockUp", 
-    "State": 304, 
-    "TargetType": 0
+    "State": 304
   }, 
   "1011": {
     "AnimationType": 1, 
@@ -86,8 +78,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1011, 
     "Name": "WalkForward", 
-    "State": 1011, 
-    "TargetType": 0
+    "State": 1011
   }, 
   "1012": {
     "AnimationType": 1, 
@@ -96,8 +87,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1012, 
     "Name": "WalkBack", 
-    "State": 1012, 
-    "TargetType": 0
+    "State": 1012
   }, 
   "1013": {
     "AnimationType": 1, 
@@ -106,8 +96,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1013, 
     "Name": "WalkLeft", 
-    "State": 1013, 
-    "TargetType": 0
+    "State": 1013
   }, 
   "1014": {
     "AnimationType": 1, 
@@ -116,8 +105,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1014, 
     "Name": "WalkRight", 
-    "State": 1014, 
-    "TargetType": 0
+    "State": 1014
   }, 
   "1015": {
     "AnimationType": 1, 
@@ -126,8 +114,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1015, 
     "Name": "TurnLeftStand", 
-    "State": 1015, 
-    "TargetType": 0
+    "State": 1015
   }, 
   "1016": {
     "AnimationType": 1, 
@@ -136,8 +123,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1016, 
     "Name": "TurnRightStand", 
-    "State": 1016, 
-    "TargetType": 0
+    "State": 1016
   }, 
   "1021": {
     "AnimationType": 1, 
@@ -146,8 +132,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1021, 
     "Name": "RunForward", 
-    "State": 1021, 
-    "TargetType": 0
+    "State": 1021
   }, 
   "1022": {
     "AnimationType": 1, 
@@ -156,8 +141,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1022, 
     "Name": "RunBack", 
-    "State": 1022, 
-    "TargetType": 0
+    "State": 1022
   }, 
   "1023": {
     "AnimationType": 1, 
@@ -166,8 +150,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1023, 
     "Name": "RunLeft", 
-    "State": 1023, 
-    "TargetType": 0
+    "State": 1023
   }, 
   "1024": {
     "AnimationType": 1, 
@@ -176,8 +159,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1024, 
     "Name": "RunRight", 
-    "State": 1024, 
-    "TargetType": 0
+    "State": 1024
   }, 
   "1031": {
     "AnimationType": 1, 
@@ -186,8 +168,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1031, 
     "Name": "RollForward", 
-    "State": 1031, 
-    "TargetType": 0
+    "State": 1031
   }, 
   "1032": {
     "AnimationType": 1, 
@@ -196,8 +177,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 1032, 
     "Name": "RollBack", 
-    "State": 1032, 
-    "TargetType": 0
+    "State": 1032
   }, 
   "2011": {
     "AnimationType": 2, 
@@ -206,8 +186,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2011, 
     "Name": "SingleAtk1", 
-    "State": 2011, 
-    "TargetType": 0
+    "State": 2011
   }, 
   "2012": {
     "AnimationType": 2, 
@@ -216,8 +195,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2012, 
     "Name": "SingleAtk2", 
-    "State": 2012, 
-    "TargetType": 0
+    "State": 2012
   }, 
   "2013": {
     "AnimationType": 2, 
@@ -226,8 +204,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2013, 
     "Name": "SingleAtk3", 
-    "State": 2013, 
-    "TargetType": 0
+    "State": 2013
   }, 
   "2014": {
     "AnimationType": 2, 
@@ -236,8 +213,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2014, 
     "Name": "SingleAtk4", 
-    "State": 2014, 
-    "TargetType": 0
+    "State": 2014
   }, 
   "2015": {
     "AnimationType": 2, 
@@ -246,8 +222,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2015, 
     "Name": "SingleAtk5", 
-    "State": 2015, 
-    "TargetType": 0
+    "State": 2015
   }, 
   "2041": {
     "AnimationType": 2, 
@@ -256,8 +231,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2041, 
     "Name": "KickAtk1", 
-    "State": 2041, 
-    "TargetType": 0
+    "State": 2041
   }, 
   "2042": {
     "AnimationType": 2, 
@@ -266,8 +240,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2042, 
     "Name": "KickAtk2", 
-    "State": 2042, 
-    "TargetType": 0
+    "State": 2042
   }, 
   "2051": {
     "AnimationType": 2, 
@@ -276,8 +249,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2051, 
     "Name": "JumpAtk1", 
-    "State": 2051, 
-    "TargetType": 0
+    "State": 2051
   }, 
   "2052": {
     "AnimationType": 2, 
@@ -286,8 +258,25 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 2052, 
     "Name": "JumpAtk2", 
-    "State": 2052, 
-    "TargetType": 0
+    "State": 2052
+  }, 
+  "2061": {
+    "AnimationType": 5, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 2061, 
+    "Name": "StuntAtk1", 
+    "State": 2061
+  }, 
+  "2062": {
+    "AnimationType": 5, 
+    "AttackDamageRatio": 1.0, 
+    "AttackImpactRatio": 1.0, 
+    "DefenseImpactRatio": 1.0, 
+    "ID": 2062, 
+    "Name": "StuntAtk2", 
+    "State": 2062
   }, 
   "20211": {
     "AnimationType": 2, 
@@ -296,8 +285,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20211, 
     "Name": "TwoCombo1Part1", 
-    "State": 20211, 
-    "TargetType": 0
+    "State": 20211
   }, 
   "20212": {
     "AnimationType": 2, 
@@ -306,8 +294,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20212, 
     "Name": "TwoCombo1Part2", 
-    "State": 20212, 
-    "TargetType": 0
+    "State": 20212
   }, 
   "20221": {
     "AnimationType": 2, 
@@ -316,8 +303,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20221, 
     "Name": "TwoCombo2Part1", 
-    "State": 20221, 
-    "TargetType": 0
+    "State": 20221
   }, 
   "20222": {
     "AnimationType": 2, 
@@ -326,8 +312,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20222, 
     "Name": "TwoCombo2Part2", 
-    "State": 20222, 
-    "TargetType": 0
+    "State": 20222
   }, 
   "20231": {
     "AnimationType": 2, 
@@ -336,8 +321,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20231, 
     "Name": "TwoCombo3Part1", 
-    "State": 20231, 
-    "TargetType": 0
+    "State": 20231
   }, 
   "20232": {
     "AnimationType": 2, 
@@ -346,8 +330,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20232, 
     "Name": "TwoCombo3Part2", 
-    "State": 20232, 
-    "TargetType": 0
+    "State": 20232
   }, 
   "20311": {
     "AnimationType": 2, 
@@ -356,8 +339,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20311, 
     "Name": "ThreeCombo1Part1", 
-    "State": 20311, 
-    "TargetType": 0
+    "State": 20311
   }, 
   "20312": {
     "AnimationType": 2, 
@@ -366,8 +348,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20312, 
     "Name": "ThreeCombo1Part2", 
-    "State": 20312, 
-    "TargetType": 0
+    "State": 20312
   }, 
   "20313": {
     "AnimationType": 2, 
@@ -376,8 +357,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20313, 
     "Name": "ThreeCombo1Part3", 
-    "State": 20313, 
-    "TargetType": 0
+    "State": 20313
   }, 
   "20321": {
     "AnimationType": 2, 
@@ -386,8 +366,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20321, 
     "Name": "ThreeCombo2Part1", 
-    "State": 20321, 
-    "TargetType": 0
+    "State": 20321
   }, 
   "20322": {
     "AnimationType": 2, 
@@ -396,8 +375,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20322, 
     "Name": "ThreeCombo2Part2", 
-    "State": 20322, 
-    "TargetType": 0
+    "State": 20322
   }, 
   "20323": {
     "AnimationType": 2, 
@@ -406,8 +384,7 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 20323, 
     "Name": "ThreeCombo2Part3", 
-    "State": 20323, 
-    "TargetType": 0
+    "State": 20323
   }, 
   "101101": {
     "AnimationType": 1, 
@@ -416,7 +393,6 @@
     "DefenseImpactRatio": 1.0, 
     "ID": 101101, 
     "Name": "WalkForwardWithFire", 
-    "State": 1011, 
-    "TargetType": 0
+    "State": 1011
   }
 }

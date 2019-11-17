@@ -24,7 +24,7 @@ namespace Common
         ATTACK =2,//攻击
         HITREACTION =3,//受击
         DEATH =4,//gg
-
+        STUNT =5,//特技
 
     }
 
@@ -76,6 +76,8 @@ namespace Common
         KICKATK2 = 2042,
         JUMPATK1 = 2051,
         JUMPATK2 = 2052,
+        STUNTATK1 = 2061,//特技1 TimeLine, 帧数机制?Idle替代?
+        STUNTATK2 = 2062,
 
         #endregion
 
@@ -243,6 +245,9 @@ namespace Common
     {
         public const string StateID = "StateID";
         public const string Vertical = "Vertical";
+        public const string Caster = "Caster";
+        public const string Target = "Target";
+        public const string Role = "Role";
         public const string Jump ="Jump";
         public const string OnGround = "OnGround";
         public const string AttackLite = "AttackLite";
