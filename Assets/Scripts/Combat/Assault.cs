@@ -44,6 +44,98 @@ public class Assault
 
     }
 
+    public virtual ResultType CanUse(Role target)
+    {
+        //if (this.Data.TalentShowType == TalentShowType.Move && this.Caster.AbilityEffects.UnMove)
+        //{
+        //    return ResultType.UnMove;
+        //}
+        //if (this.Caster.AbilityEffects.OnlyNormalAttack && this.Caster.BasicTalent.Data.ID != this.Data.ID)
+        //{
+        //    return ResultType.OnlyNormalAttack;
+        //}
+
+        //if (this.Data.CostMP > this.Caster.MP)
+        //{
+        //    return ResultType.MPNotEnough;
+        //}
+        //if (this.Duration > 0.000001)
+        //{
+        //    return ResultType.Cooldown;
+        //}
+
+        //if (this.Caster.AbilityEffects.Sleep)
+        //{
+        //    return ResultType.Stun;
+        //}
+        //if (this.Caster.AbilityEffects.UnHeal)
+        //{
+        //    //此技能或者子技能属于回血技能的
+        //    if (this.Data.DamageType == InjuryType.Heal && !this.Data.AffectMP)
+        //    {
+        //        return ResultType.UnHeal;
+        //    }
+        //    List<Talent> childTalents = this.Caster.GetChildTalents(this.Data.TalentGroupID);
+        //    foreach (Talent childTalent in childTalents)
+        //    {
+        //        if (childTalent != null && childTalent.Data.DamageType == InjuryType.Heal && !childTalent.Data.AffectMP)
+        //        {
+        //            return ResultType.UnHeal;
+        //        }
+        //    }
+        //}
+        //if (this.Data.DamageType == InjuryType.AttackDamage && this.Caster.AbilityEffects.Disable)
+        //{
+        //    return ResultType.Disable;
+        //}
+
+        //if (this.Data.DamageType != InjuryType.AttackDamage && this.Caster.AbilityEffects.Inhibition)
+        //{
+        //    return ResultType.Silence;
+        //}
+
+        //if (this != this.Caster.BasicTalent && this.Caster.AbilityEffects.MindChain)
+        //{
+        //    return ResultType.MindChain;
+        //}
+
+        //if (this.TargetSelector != null)
+        //    target = this.FindTarget(target);
+
+        //if (target == null)
+        //{
+        //    return ResultType.NoTarget;
+        //}
+
+        //if (target.AbilityEffects.Void && !target.CheckInvisibility())
+        //{
+        //    return ResultType.Untargetable;
+        //}
+
+        //if (((int)target.Side * this.TargetSide < 0) && (GameData.TargetSide)this.TargetSide != GameData.TargetSide.All)
+        //{
+        //    return ResultType.SideDiff;
+        //}
+
+        //double distance = (target.Position - this.Caster.Position).magnitude;
+        //if (MathUtil.FGreat((float)distance, this.MaxRange))
+        //{
+        //    return ResultType.TooFar;
+        //}
+
+        //if (distance < this.MinRange)
+        //{
+        //    return ResultType.TooNear;
+        //}
+
+        //if (!this.Data.OutOfScreen && this.Caster.IsOutOfBattleArea)
+        //{
+        //    return ResultType.OutOfScreen;
+        //}
+        //this.IsCanCast = true;
+        return ResultType.SUCCESS;
+    }
+
     public virtual void Start(Role target)
     {
         //Caster.PushState((int)Common.ANIMATIONSTATE.SINGLEATK1);
@@ -138,6 +230,8 @@ public class Assault
 
 
     }
+
+
 }
 
 

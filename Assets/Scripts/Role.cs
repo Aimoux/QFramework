@@ -247,14 +247,56 @@ public class Role
         return stunt;
     }
 
-    private List<int> tpids = new List<int>();
+    private List<float> wegts = new List<float>();
+    private List<float> wegtsum = new List<float>();
+    private Dictionary<int, int> AssaultWeights = new Dictionary<int, int>(); 
     public Assault SelectAssault()
     {
-        tpids = Assaults.Keys.ToList();
-        int id = Random.Range(0, Assaults.Count);
-        AssaultExtension ast = GetAssaultById(tpids[id]);
-        CurAssault = ast;
-        return ast;
+        //权重，随机，限制
+        //create universal move assault??
+        float sum = 0f;
+        foreach(Assault asst in Assaults.Values)
+        {
+            if (asst.CanUse(Target) == ResultType.SUCCESS)
+            {
+                sum += asst.Data.Weight;
+            }                
+        }
+
+        AssaultWeights.Clear();
+        wegts.Clear();
+        int num = 0;
+        foreach (var kv in Assaults)
+        {
+            if (kv.Value.CanUse(Target) == ResultType.SUCCESS)
+            {
+                wegts.Add(kv.Value.Data.Weight / sum);
+                AssaultWeights[num] = kv.Key;
+                num++;
+            }                  
+        }
+
+        wegtsum.Clear();
+        wegtsum.AddRange(wegts);
+        for (int i = 0; i < wegts.Count; i++)
+        {
+            for (int j = 0; j < i; j++)
+            {
+                wegtsum[i] += wegts[j];
+            }
+        }
+
+        float rand = Random.Range(0f, 1f);
+        for (int i = 0; i < wegtsum.Count; i++)
+        {
+            if(wegtsum[i] >= rand)
+            {
+                AssaultExtension aset = GetAssaultById(AssaultWeights[i]);
+                return aset;
+            }
+        }
+
+        return null;
     }
 
     public void UseAssault(Assault ast, Role target)
