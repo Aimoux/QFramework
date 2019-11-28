@@ -62,20 +62,24 @@ public abstract class AnimState
 
         switch(Data.AnimationType)
         {
-            case (int)ANIMATIONTYPE.ATTACK:
-                OnAttackEnter();
-                break;
-
             case (int)ANIMATIONTYPE.MOTION:
                 OnMotionEnter();
                 break;
 
-            case (int)ANIMATIONTYPE.DEATH:
-                OnDeathEnter();
+            case (int)ANIMATIONTYPE.ATTACK:
+                OnAttackEnter();
                 break;
 
             case (int)ANIMATIONTYPE.STUNT:
                 OnStuntEnter();
+                break;
+
+            case (int)ANIMATIONTYPE.HITREACTION:
+                OnHitEnter();
+                break;
+
+            case (int)ANIMATIONTYPE.DEATH:
+                OnDeathEnter();
                 break;
         }
 
@@ -83,21 +87,30 @@ public abstract class AnimState
         //     Debug.LogError(Caster.ID + " enter state: " + State);
     }
 
-    private void OnAttackEnter()
-    {
-        //起始到打击检测结束进行出手韧性保护
-        Caster.Steady *= Caster.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
-        Caster.StopNav();
-    }
-
     private void OnMotionEnter()
     {
         Caster.StartNav();
     }
 
+    private void OnAttackEnter()
+    {
+        //起始到打击检测结束进行出手韧性保护
+        Caster.Steady *= Caster.CurWeapon.Data.ImpactRatio * Data.DefenseImpactRatio;
+        Caster.Stamina -= (int)(Caster.CurWeapon.Data.StaminaCost * Data.StaminaCostRatio);
+        Caster.Stamina = Caster.Stamina < 0 ? 0 : Caster.Stamina;
+        Caster.StopNav();
+    }
+
     private void OnStuntEnter()//enter:攻方timeline.play, 关键帧(enable):目标timeline.play??
     {
         Caster.PlayTimeLine(Caster.CurAssault.StuntPath);
+    }
+
+    //vs Role.OnStatusBreak()
+    private void OnHitEnter()
+    {
+        //Caster.BreakAssault();
+
     }
 
     private void OnDeathEnter()
@@ -127,20 +140,27 @@ public abstract class AnimState
 
         switch(Data.AnimationType)
         {
-            case (int)ANIMATIONTYPE.STUNT:
-
-                OnStuntExit();
+            case (int)ANIMATIONTYPE.ATTACK:
+                OnAttackExit();
                 break;
 
-
-
+            case (int)ANIMATIONTYPE.STUNT:
+                OnStuntExit();
+                break;
         }
 
     }
 
     private void OnAttackExit()
     {
-
+        if(Caster.CurAssault != null)
+        {
+            //避免Actions中出现重复state??
+            if(ID == Caster.CurAssault.Actions[0])
+            {
+                Caster.CurAssault.End();
+            }
+        }
     }
 
     private void OnMotionExit()

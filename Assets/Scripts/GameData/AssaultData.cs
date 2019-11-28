@@ -16,8 +16,9 @@ namespace GameData
         public int TargetSide { get; set; }//自己0,友军1,敌人-1
         public Common.TargetType TargetType { get; set; }//可以使用枚举??
         public int CastType { get; set; }
-        public int Weight { get; set; }//默认释放概率??  wi/sum(wij)??
+        public int Weight { get; set; }//权重概率
         public string Actions { get; set; }
+        public int ManaCost { get; set; }
         public float CommonCoolDown { get; set; }//??
 
     }

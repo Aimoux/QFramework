@@ -145,6 +145,7 @@ namespace Common
         TOONEAR = 5,//模型碰到一起,与技能距离判定共用此结果??
         RUNNING = 6,
         NOTARGET = 7,
+        MANALOW =8,
         //SAMETICK = 999,
         //COOLDOWN = 999,
 
@@ -319,7 +320,1120 @@ namespace Common
             return dir;
         }
     }
-   
+
 
 }
 
+
+public class MathUtil
+{
+    public static int bits(int num, int start, int count)
+    {
+        int remain = num >> start;
+        int mask = (int)Mathf.Pow(2, count) - 1;
+        return remain & mask;
+    }
+
+    public static int makeBits(params int[] values)
+    {
+        int num_args = values.Length;
+
+        int value = 0;
+        int b0 = 0;
+
+        for (int i = num_args; i > 1; i = i - 2)
+        {
+            int b = values[i - 2];
+            int v = values[i - 1];
+
+            int v2 = bits(v, 0, b);
+            if (v != v2)
+            {
+                Debug.LogError("makebits value out of bit range : " + v);
+                return 0;
+            }
+
+            v = v << b0;
+            value = value + v;
+            b0 = b0 + b;
+        }
+
+        return value;
+    }
+
+    public static System.Collections.Generic.List<int> splitbits(int value, params int[] values)
+    {
+        System.Collections.Generic.List<int> list = new System.Collections.Generic.List<int>();
+        int num_args = values.Length;
+        int b0 = 0;
+        for (int i = num_args; i > 1; i = i - 1)
+        {
+            int b = values[i - 1];
+            list.Add(bits(value, b0, b));
+            b0 = b0 + b;
+        }
+        list.Reverse();
+        return list;
+    }
+
+    public static bool FGreat(float numA, float numB)
+    {
+        return Math.Abs(numA - numB) < 0.00015f || numA > numB;
+    }
+}
+
+//public class DeepCopy
+//{
+//    public static T Clone<T>(T source)
+//    {
+//        if (!typeof(T).IsSerializable)
+//        {
+//            throw new ArgumentException("The type must be serializable.", "source");
+//        }
+
+//        // Don't serialize a null object, simply return the default for that object
+//        if (object.ReferenceEquals(source, null))
+//        {
+//            return default(T);
+//        }
+//#if SERVER
+//        string data = Newtonsoft.Json.JsonConvert.SerializeObject(source);
+//        return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(data);
+//#else
+//        string data = fastJSON.JSON.ToJSON(source);
+//        return fastJSON.JSON.ToObject<T>(data);
+//#endif
+//    }
+
+//    /// <summary>
+//    /// 将Source的属性值赋值给Target
+//    /// </summary>
+//    /// <param name="source">Source.</param>
+//    /// <param name="target">Target.</param>
+//    /// <typeparam name="T">The 1st type parameter.</typeparam>
+//    /// <typeparam name="U">The 2nd type parameter.</typeparam>
+//    public static void CloneValue<T, U>(T source, ref U target)
+//    {
+
+//        //		string data = fastJSON.JSON.ToJSON(source);
+//        //		target =  fastJSON.JSON.ToObject<U>(data);
+
+
+//        Type sourceType = source.GetType();
+//        Type targetType = target.GetType();
+//        PropertyInfo[] PropertyList = targetType.GetProperties();
+
+//        foreach (PropertyInfo targetPI in PropertyList)
+//        {
+//            string name = targetPI.Name;
+//            PropertyInfo sourcePI = sourceType.GetProperty(name);
+//            if (sourcePI != null)
+//            {
+//                object value = sourcePI.GetValue(source, null);
+//                targetPI.SetValue(target, value, null);
+//            }
+//        }
+//    }
+//}
+
+
+//public class DelayInvoker : MonoBehaviour
+//{
+//    public static IEnumerator Invoke(Action action, float delaySeconds)
+//    {
+//        yield return new WaitForSeconds(delaySeconds);
+//        action();
+//    }
+//}
+
+//public class DebugStatisticsUtil : BehaviourSingleton<DebugStatisticsUtil>
+//{
+//    void Update()
+//    {
+//        // fps 计算
+//        if (fpsCheckbattleBegin > 0)
+//        {
+//            if (Time.timeScale > 0 && Time.deltaTime > 0.0f)
+//            {
+//                fpsCheckbattleAccum += (Time.timeScale / Time.deltaTime);
+//                ++fpsCheckbattleFrames;
+//            }
+//        }
+
+//        // 
+//        if (fpsCheckUIBegin > 0)
+//        {
+//            // 开始了战斗, 停止
+//            if (this.battleBegin > 0f)
+//            {
+//                // 重置
+//                fpsCheckUIBegin = 0;
+//                fpsCheckUIAccum = 0.0f;
+//                fpsCheckUIFrames = 0;
+//            }
+//            else
+//            {
+
+//                if (Time.deltaTime > 0.0f)
+//                {
+//                    fpsCheckUITimeLeft -= Time.deltaTime;
+//                    fpsCheckUIAccum += (Time.timeScale / Time.deltaTime);
+//                    ++fpsCheckUIFrames;
+//                }
+
+
+//                if (fpsCheckUITimeLeft <= 0.0f) // 到达更新间隔
+//                {
+//                    LogFpsCheckUI(false);
+//                    // 重置
+//                    fpsCheckUIBegin = 0;
+//                    fpsCheckUIAccum = 0.0f;
+//                    fpsCheckUIFrames = 0;
+//                }
+//            }
+//        }
+//    }
+
+//    // 1. 网速监控: 逻辑服务器的话，给出平均返回时间即可 (因为丢包就会失败，然后会增加等待，等于会包含在内)
+//    private long sendBegin = 0;
+//    private List<string> networkList = new List<string>(); // 暂时不用, 采用 pixel 方式发到网站
+//    private List<int> networkListTime = new List<int>(); // 只记录时间
+
+//    public void LogNetworkMessage(bool isSend = true, string serverRunTime = "", string reason = "")
+//    {
+//#if !SERVER
+//        try
+//        {
+//            if (UpComingBuffer.GetInstance() == null || UpComingBuffer.GetInstance().UpComingEventList == null ||
+//                UpComingBuffer.GetInstance().UpComingEventList.Count <= 0)
+//            {
+//                return; // 未进入游戏内, 先不记录
+//            }
+
+//            if (isSend)
+//            {
+//                this.sendBegin = Local.GetMilliseconds();
+//                return;
+//            }
+
+//            if (sendBegin == 0)
+//            {
+//                return; // 非请自来
+//            }
+
+//            long nowTime = Local.GetMilliseconds();
+
+//            //networkList.Add(string.Format("-NETWORKSPEED - {0}_{1}_{2}", Config.UserId, reason, nowTime - this.sendBegin));
+//            int runTime_ = 0;
+//            if (serverRunTime.Length > 0)
+//            {
+//                runTime_ = int.Parse(serverRunTime);
+//            }
+
+//            if (runTime_ < 800)
+//            {
+//                networkListTime.Add((int)(nowTime - this.sendBegin - 35 - 15)); // sub 1 frame + decode time
+//            }
+
+//            // 累计到上限次数,追加给网络协议
+//            if (networkListTime.Count > 4)
+//            {
+//                int avgNum = (int)(networkListTime.Sum() / networkListTime.Count * 1f);
+
+//                Debug.Log(string.Format("LogNetworkMessage^^^^^^^^^^^^^^^^^^^^^^^_TIME: {0}", avgNum));
+//                TrackUtil.Instance.LogPixelUnlimit(UICommon.Pixel_GameServerNetworkTime + "_" + avgNum + "_" + Config.Address);
+
+//                networkList.Clear();
+//                networkListTime.Clear();
+//            }
+
+//            sendBegin = 0;
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogNetworkMessage exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+//    // 2. fps监控（战斗内和战斗外）
+//    // 战斗外触发式检测, 在特定场景或者开窗口后 并且检测间隔要5分钟, 每次检测 6s, 如果被战斗或者切换焦点打断, 则重新开始
+//    public float fpsCheckUIUpdateInterval = 6.0f; // fps更新间隔
+
+//    private float fpsCheckUITimeLeft = 0.0f; // 当前更新间隔的计时
+//    private float fpsCheckUIAccum = 0.0f; // fps累积
+//    private int fpsCheckUIFrames = 0; // 帧数累积
+//    private long fpsCheckUIBegin = 0;
+//    private List<string> fpsCheckUIList = new List<string>(); // 暂时不用, 采用 pixel 方式发到网站
+//    private List<int> fpsCheckUITimeList = new List<int>(); // 只记录时间
+//    private int fpsCheckUITimeListMax = 0; // 统计最大上限
+
+//    public void LogFpsCheckUI(bool isBegin = true, string reason = "")
+//    {
+//#if !SERVER
+//        try
+//        {
+//            if (isBegin)
+//            {
+//                if (fpsCheckUITimeLeft > 0)
+//                {
+//                    return; // 还在检测中
+//                }
+
+//                // 随机几率开始检测
+//                var random = new System.Random();
+//                var num = random.Next(1, 100);
+//                if (num > 90)
+//                {
+//                    return;
+//                }
+
+//                this.fpsCheckUIBegin = Local.GetMilliseconds();
+//                fpsCheckUITimeLeft = fpsCheckUIUpdateInterval;
+//                fpsCheckUIAccum = 0.0f;
+//                fpsCheckUIFrames = 0;
+//                return;
+//            }
+
+//            if (fpsCheckUIBegin == 0)
+//            {
+//                return; // 非请自来
+//            }
+
+//            float fps = fpsCheckUIAccum / fpsCheckUIFrames;
+//            if (fps > 3)
+//            {
+//                fpsCheckUITimeList.Add((int)Math.Ceiling(fps));
+//            }
+
+//            // 累计到上限次数,追加给网络协议
+//            if (fpsCheckUITimeList.Count > fpsCheckUITimeListMax)
+//            {
+//                int avgNum = (int)(fpsCheckUITimeList.Sum() / fpsCheckUITimeList.Count * 1f);
+
+//                string pixelStr_ = UICommon.Pixel_UISceneFPS + "_" + avgNum;
+//                if (reason != "")
+//                {
+//                    pixelStr_ += "_" + reason;
+//                }
+
+//                Debug.Log(string.Format("LogFpsCheckUI^^^^^^^^^^^^^^^^^^^^^^^_FPS: {0}", avgNum));
+//                TrackUtil.Instance.LogPixelUnlimit(pixelStr_);
+
+//                fpsCheckUIList.Clear();
+//                fpsCheckUITimeList.Clear();
+
+//                fpsCheckUITimeListMax++;
+//                if (fpsCheckUITimeListMax > 3)
+//                {
+//                    fpsCheckUITimeListMax = 3;
+//                }
+//            }
+
+//            fpsCheckUIBegin = 0;
+//            fpsCheckUIAccum = 0.0f;
+//            fpsCheckUIFrames = 0;
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogFpsCheckUI exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+//    // 战斗中触发式检测, 检测整个战斗生命
+//    private float fpsCheckbattleAccum = 0.0f; // fps累积
+
+//    private int fpsCheckbattleFrames = 0; // 帧数累积
+//    private long fpsCheckbattleBegin = 0;
+//    private List<string> fpsCheckbattleList = new List<string>(); // 暂时不用, 采用 pixel 方式发到网站
+//    private List<int> fpsCheckbattleTimeList = new List<int>(); // 只记录时间
+
+//    public void LogFpsCheckbattle(bool isBegin = true, string reason = "")
+//    {
+//#if !SERVER
+//        try
+//        {
+//            if (isBegin)
+//            {
+//                this.fpsCheckbattleBegin = Local.GetMilliseconds();
+//                fpsCheckbattleAccum = 0.0f;
+//                fpsCheckbattleFrames = 0;
+//                return;
+//            }
+
+//            if (fpsCheckbattleBegin == 0)
+//            {
+//                return; // 非请自来
+//            }
+
+//            //battleLoadingList.Add(string.Format("-NETWORKSPEED - {0}_{1}_{2}", Config.UserId, reason, nowTime - this.sendBegin));
+//            float fps = fpsCheckbattleAccum / fpsCheckbattleFrames;
+//            fpsCheckbattleTimeList.Add((int)Math.Ceiling(fps));
+
+//            // 累计到上限次数,追加给网络协议
+//            if (fpsCheckbattleTimeList.Count > 2)
+//            {
+//                int avgNum = (int)(fpsCheckbattleTimeList.Sum() / fpsCheckbattleTimeList.Count * 1f);
+
+//                string pixelStr_ = UICommon.Pixel_BattleSceneFPS + "_" + avgNum;
+//                if (reason != "")
+//                {
+//                    pixelStr_ += "_" + reason;
+//                }
+
+//                Debug.Log(string.Format("LogFpsCheckbattle^^^^^^^^^^^^^^^^^^^^^^^_FPS: {0}", avgNum));
+//                TrackUtil.Instance.LogPixelUnlimit(pixelStr_);
+
+//                fpsCheckbattleList.Clear();
+//                fpsCheckbattleTimeList.Clear();
+//            }
+
+//            fpsCheckbattleBegin = 0;
+//            fpsCheckbattleAccum = 0.0f;
+//            fpsCheckbattleFrames = 0;
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogFpsCheckbattle exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+
+//    // 3. 以及战斗loading时间
+//    private long battleBegin = 0;
+
+//    private List<string> battleLoadingList = new List<string>(); // 暂时不用, 采用 pixel 方式发到网站
+//    private List<int> battleLoadingListTime = new List<int>(); // 只记录时间
+
+//    public void LogBattleLoading(bool isBegin = true, string reason = "")
+//    {
+//#if !SERVER
+//        try
+//        {
+//            if (isBegin)
+//            {
+//                this.battleBegin = Local.GetMilliseconds();
+//                return;
+//            }
+
+//            if (battleBegin == 0)
+//            {
+//                return; // 非请自来
+//            }
+
+//            long nowTime = Local.GetMilliseconds();
+
+//            //battleLoadingList.Add(string.Format("-NETWORKSPEED - {0}_{1}_{2}", Config.UserId, reason, nowTime - this.sendBegin));
+//            battleLoadingListTime.Add((int)(nowTime - this.battleBegin));
+
+//            // 累计到上限次数,追加给网络协议
+//            if (battleLoadingListTime.Count > 3)
+//            {
+//                int avgNum = (int)(battleLoadingListTime.Sum() / battleLoadingListTime.Count * 1f);
+
+//                string pixelStr_ = UICommon.Pixel_BattleLoadingTime + "_" + avgNum;
+//                if (reason != "")
+//                {
+//                    pixelStr_ += "_" + reason;
+//                }
+
+//                Debug.Log(string.Format("LogBattleLoading^^^^^^^^^^^^^^^^^^^^^^^_TIME: {0}", avgNum));
+//                TrackUtil.Instance.LogPixelUnlimit(pixelStr_);
+
+//                battleLoadingList.Clear();
+//                battleLoadingListTime.Clear();
+//            }
+
+//            battleBegin = 0;
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogBattleLoading exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+//    // 4. 网站登录需要时间统计
+//    private long webBegin = 0;
+
+//    public void LogWebLoginTime(bool isBegin = true, string reason = "")
+//    {
+//#if !SERVER
+//        try
+//        {
+//            if (isBegin)
+//            {
+//                this.webBegin = Local.GetMilliseconds();
+//                return;
+//            }
+
+//            if (webBegin == 0)
+//            {
+//                return; // 非请自来
+//            }
+
+//            long nowTime = Local.GetMilliseconds();
+
+//            //battleLoadingList.Add(string.Format("-NETWORKSPEED - {0}_{1}_{2}", Config.UserId, reason, nowTime - this.sendBegin));
+
+//            int avgNum = (int)(nowTime - this.webBegin);
+
+//            string pixelStr_ = UICommon.Pixel_WebLoginTime + "_" + avgNum;
+//            if (reason != "")
+//            {
+//                pixelStr_ += "_" + reason;
+//            }
+
+//            Debug.Log(string.Format("LogWebLoginTime^^^^^^^^^^^^^^^^^^^^^^^_TIME: {0}", avgNum));
+//            TrackUtil.Instance.LogPixelUnlimit(pixelStr_);
+
+//            webBegin = 0;
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogWebLoginTime exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+//    // 5. 内存占用
+//    public void LogTotalMemory()
+//    {
+//#if !SERVER
+//        try
+//        {
+//            int totalMemory = SystemInfo.systemMemorySize;
+//            string pixelStr_ = UICommon.Pixel_TotalMemory + "_" + totalMemory;
+//            Debug.Log(string.Format("LogToalMemory^^^^^^^^^^^^^^^^^^^^^^^_TIME: {0}", totalMemory));
+//            TrackUtil.Instance.LogPixelUnlimit(pixelStr_);
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogToalMemory exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+//    // 6. 机型类型
+
+//    // 7. 连接 proxy 的时间
+//    public void LogProxyConnectTime(int time = 0, string reason = "")
+//    {
+//#if !SERVER
+//        try
+//        {
+//            string pixelStr_ = UICommon.Pixel_ProxyConnectTime + "_" + time + "_" + Config.Address;
+//            if (reason != "")
+//            {
+//                pixelStr_ += "_" + reason;
+//            }
+//            Debug.Log(string.Format("LogProxyConnectTime^^^^^^^^^^^^^^^^^^^^^^^_TIME: {0}", time));
+//            TrackUtil.Instance.LogPixelUnlimit(pixelStr_);
+//        }
+//        catch (Exception e)
+//        {
+//            Debug.Log("DebugStatisticsUtil LogProxyConnectTime exception: " + e.ToString());
+//        }
+//#endif
+//    }
+
+
+//    private DebugStatisticsUtil()
+//    {
+//    }
+
+//    private void SaveToDebugList()
+//    {
+//    }
+//}
+
+
+//public class QuickSort
+//{
+
+//    public static void Sort<T>(List<T> list, IComparer<T> comparer)
+//    {
+//        int start = 0;
+//        int end = list.Count - 1;
+
+//        Sort(list, start, end, comparer);
+//    }
+
+//    public static void Sort<T>(List<T> list, int start, int end, IComparer<T> comparer)
+//    {
+//        while (start < end)
+//        {
+//            int i, j = 0;
+
+//            if (comparer.Compare(list[end], list[start]) < 0)
+//            {
+//                swap(list, start, end);
+//            }
+
+//            if (end - start == 1)
+//            {
+//                break;
+//            }
+
+//            i = (start + end) / 2;
+
+
+//            if (comparer.Compare(list[i], list[start]) < 0)
+//            {
+//                swap(list, i, start);
+//            }
+//            else
+//            {
+
+//                if (comparer.Compare(list[end], list[i]) < 0)
+//                {
+//                    swap(list, i, end);
+//                }
+//            }
+
+//            if (end - start == 2)
+//            {
+//                break;
+//            }
+
+//            T Pivot = list[i];
+
+//            swap(list, i, end - 1);
+
+//            i = start; j = end - 1;
+//            for (; ; )
+//            {
+//                while (comparer.Compare(list[++i], Pivot) < 0)
+//                {
+//                    if (i > end)
+//                    {
+//                    }
+//                }
+//                while (comparer.Compare(Pivot, list[--j]) < 0)
+//                {
+//                    if (j < start)
+//                    {
+
+//                    }
+//                }
+
+//                if (j < i)
+//                {
+//                    break;
+//                }
+
+//                swap(list, i, j);
+//            }
+
+//            swap(list, end - 1, i);
+
+//            if (i - start < end - i)
+//            {
+//                j = start;
+//                i = i - 1;
+//                start = i + 2;
+//            }
+//            else
+//            {
+//                j = i + 1;
+//                i = end;
+//                end = j - 2;
+//            }
+
+//            Sort(list, j, i, comparer);
+//        }
+//    }
+
+
+//    public static void swap<T>(List<T> list, int a, int b)
+//    {
+//        T temp = list[a];
+//        list[a] = list[b];
+//        list[b] = temp;
+//    }
+
+//}
+
+//#if !SERVER
+//public class UIUtil : MonoBehaviour
+//{
+//    public static void ClearContainer(Transform container)
+//    {
+//        // 清空
+//        for (int i = 0; i < container.childCount; i++)
+//        {
+//            GameObject obj = container.GetChild(i).gameObject;
+//            Destroy(obj);
+//        }
+//    }
+//}
+//#endif
+
+//#if !SERVER
+//public class GameUtil : MonoBehaviour
+//{
+//    public static bool IsGameRestarting = false;
+//    private static long _systemTotalMem = 0;
+//    private static long _systemAvailableMem = 0;
+//    private static long _lastAvailMemGetTime = 0;
+
+//    public static long GetSystemTotalMem()
+//    {
+//        if (_systemTotalMem == 0)
+//        {
+//            _systemTotalMem = PlatformTools.HGGetSystemTotalMem();
+//        }
+
+//        return _systemTotalMem;
+//    }
+
+//    public static long GetSystemAvailableMem()
+//    {
+//        long ct = DateTime.UtcNow.Ticks / 10000000;
+//        if (ct > _lastAvailMemGetTime + 10)
+//        {
+//            _lastAvailMemGetTime = ct;
+//            _systemAvailableMem = PlatformTools.HGGetSystemAvailableMem();
+//        }
+
+//        return _systemAvailableMem;
+//    }
+
+//    public static string FormatFileSize(long number)
+//    {
+//        float result = number;
+//        string suffix = "B";
+//        if (result > 900)
+//        {
+//            suffix = "KB";
+//            result = result / 1024;
+//        }
+//        if (result > 900)
+//        {
+//            suffix = "MB";
+//            result = result / 1024;
+//        }
+//        if (result > 900)
+//        {
+//            suffix = "GB";
+//            result = result / 1024;
+//        }
+//        if (result > 900)
+//        {
+//            suffix = "TB";
+//            result = result / 1024;
+//        }
+//        if (result > 900)
+//        {
+//            suffix = "PB";
+//            result = result / 1024;
+//        }
+
+//        var value = result.ToString(result < 100 ? "#0.00" : "#0");
+//        return value + suffix;
+//    }
+
+//    public static string GenerateUuid()
+//    {
+//        return GetMd5(SystemInfo.deviceUniqueIdentifier.ToString());
+//    }
+
+//    public static string GetMd5(string str)
+//    {
+//        MD5 md5 = System.Security.Cryptography.MD5.Create();
+//        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(str);
+//        byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+//        // Convert the byte array to hexadecimal string
+//        StringBuilder sb = new StringBuilder();
+//        for (int i = 0; i < hashBytes.Length; i++)
+//        {
+//            sb.Append(hashBytes[i].ToString("X2"));
+//        }
+//        return sb.ToString();
+//    }
+
+//    /**
+//    * UpdateFinish
+//    * ConnectServerError
+//    * LoginServerFailed
+//    * ServerChanged
+//    * ServerDisconnectError
+//    * LanguageChanged
+//    * AccountLinked
+//    * TimezoneChanged
+//    */
+//    public static void RestartGame(bool needKillApp = false, string reason = "")
+//    {
+//        IsGameRestarting = true;
+//        Debug.Log("================ Restart Game for [" + reason + "], kill app: " + needKillApp.ToString() + " =============");
+
+//        PlayerPrefs.SetString("RestartReason", reason);
+//        PlayerPrefs.Save();
+
+//        bool isRestarted = false;
+//        if (needKillApp)
+//        {
+//#if (!UNITY_EDITOR && UNITY_ANDROID)
+//            isRestarted = true;
+//            string msg = LocalizationManager.Instance.GetString("KEY.6497");
+//            PlatformTools.HGPopupRestartGameMessage(msg,LocalizationManager.Instance.GetString("KEY.6496"));
+//#endif
+//        }
+
+//        if (!isRestarted)
+//        {
+//            GateKeeper.ClearGameVersion();
+//            LoadingManager.Clear();
+//            LevelLoader.Clear();
+//            ChatBuffer.Clear();
+
+//            NetworkManager.Instance.Reset();
+//            LevelBuffer.ClearStaticVariable();
+//            ShopBuffer.ClearStaticVariable();
+//            UIManager.Instance.clearUICache();
+
+//            Player.Instance.ClearServerList();
+//            GuildBuffer.ClearStaticVariable();
+//            FacebookManager.Instance.clearCache();
+//            Player.Instance.LoginInfo = null;
+//            Player.Instance.IsInBraveMelee = false;
+
+//            SingletonStack.DestoryLoadingSceneSingleton();
+
+//            TrackUtil.Instance.LogPixelAndRestartGame();
+//        }
+//    }
+
+//    public static void QuitGame()
+//    {
+//        TrackUtil.Instance.LogPixelAndQuit(UICommon.Pixel_QuitGame);
+//        //Application.Quit();
+//    }
+
+//    public static void GCCollect()
+//    {
+//        Resources.UnloadUnusedAssets();
+//        System.GC.Collect();
+//        //PlatformTools.HGGCCollect();
+//    }
+
+//    public static bool NeedLowQuality()
+//    {
+//        return false;
+//#if UNITY_IPHONE
+//#if UNITY_5
+//        UnityEngine.iOS.DeviceGeneration iOSGen = UnityEngine.iOS.Device.generation;
+//        if (iOSGen == UnityEngine.iOS.DeviceGeneration.iPhone3G ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPhone3GS ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPhone4 ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPhone4S ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPad1Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPad2Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPadMini1Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPadMini2Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPodTouch1Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPodTouch2Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPodTouch3Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPodTouch4Gen ||
+//            iOSGen == UnityEngine.iOS.DeviceGeneration.iPodTouch5Gen
+//            )
+//#else
+//        var iOSGen = iPhone.generation;
+//        if (iOSGen == iPhoneGeneration.iPhone3G ||
+//            iOSGen == iPhoneGeneration.iPhone3GS ||
+//            iOSGen == iPhoneGeneration.iPhone4 ||
+//            iOSGen == iPhoneGeneration.iPhone4S ||
+//            iOSGen == iPhoneGeneration.iPad1Gen ||
+//            iOSGen == iPhoneGeneration.iPad2Gen ||
+//            iOSGen == iPhoneGeneration.iPadMini1Gen ||
+//            iOSGen == iPhoneGeneration.iPadMini2Gen ||
+//            iOSGen == iPhoneGeneration.iPodTouch1Gen ||
+//            iOSGen == iPhoneGeneration.iPodTouch2Gen ||
+//            iOSGen == iPhoneGeneration.iPodTouch3Gen ||
+//            iOSGen == iPhoneGeneration.iPodTouch4Gen ||
+//            iOSGen == iPhoneGeneration.iPodTouch5Gen
+//            )
+//#endif
+//        {
+//            return true;
+//        }
+//#endif
+//        return false;
+//    }
+//}
+
+
+//public class TrackUtil : BehaviourSingleton<TrackUtil>
+//{
+//    /*
+//    * GS: game start
+//    * LS: Login Start
+//    * LF: Login Finished
+//    * US: Update Start
+//    * UF1: Update Finish and connect to server (there is no files need update)
+//    * UF2: Update Finish and need to Restart (there is some files need update)
+//    * SLS: Server login success
+//    * SLF: Server login failed
+//    * EMS: enter main scene
+//    */
+//    private string _csVersion = "";
+
+//    // -- uuid for each device to append to pixel url for track before login
+//    private string _uuid = "";
+
+//    public Dictionary<string, int> sendPixelTimes = new Dictionary<string, int>();
+
+//    private TrackUtil()
+//    {
+//        ParseCsVersion();
+//    }
+
+//    private string ParseCsVersion()
+//    {
+//        if (!string.IsNullOrEmpty(GateKeeper.CS_DLL_VERSION))
+//        {
+//            string[] sarray = GateKeeper.CS_DLL_VERSION.Split('_');
+//            if (sarray.Length > 2)
+//            {
+//                _csVersion = sarray[2].Replace("v", "");
+//                Debug.Log("Cs version parse as : " + _csVersion);
+//            }
+//        }
+//        return _csVersion;
+//    }
+
+//    public void LogPixelAndQuit(string type)
+//    {
+//        LogPixel(type);
+//        InvokeRepeating("DoExitGame", 1, 0);
+//    }
+
+//    private void DoExitGame()
+//    {
+//        Debug.Log("================Quit Game after 1s=============");
+//        Application.Quit();
+//    }
+
+//    public void LogPixel(string type)
+//    {
+//        // 防止重复发送
+//        if (!this.sendPixelTimes.ContainsKey(type))
+//        {
+//            this.sendPixelTimes[type] = 0;
+//        }
+//        if (this.sendPixelTimes[type] > 1)  // 最多发两次，预防没发送成功
+//        {
+//            return;
+//        }
+//        this.sendPixelTimes[type]++;
+
+//        int startNums = PlayerPrefs.GetInt("StartNums", 0);
+//        if (startNums <= 50)
+//        {
+//            StartCoroutine(PostRequest(type, startNums));
+//        }
+//    }
+
+//    public void LogPixelUnlimit(string type)
+//    {
+//        int startNums = PlayerPrefs.GetInt("StartNums", 0);
+//        StartCoroutine(PostRequest(type, startNums));
+//    }
+
+//    IEnumerator PostRequest(string type, int startNums)
+//    {
+//        string uidStr = "";
+//        if (type == UICommon.Pixel_LoginStart)
+//        {
+//            string restartReason = PlayerPrefs.GetString("RestartReason", "");
+//            if (!string.IsNullOrEmpty(restartReason))
+//            {
+//                uidStr += "&restartReason=" + restartReason;
+//                PlayerPrefs.SetString("RestartReason", "");
+//                PlayerPrefs.Save();
+//            }
+
+//            int totalMemory = SystemInfo.systemMemorySize;
+//            uidStr += "&totalMemory=" + totalMemory;
+//        }
+
+//        if (Application.platform == RuntimePlatform.Android)
+//        {
+//            uidStr += "&os=2";
+//        }
+//        else
+//        {
+//            uidStr += "&os=1";
+//        }
+//        uidStr += "&type=" + type;
+
+//        if (GateKeeper.Is50mClient)
+//        {
+//            uidStr += "&is50mClient=1";
+//        }
+//        else
+//        {
+//            uidStr += "&is50mClient=0";
+//        }
+
+//        if (GateKeeper.APP_HD_VALUE == 1)
+//        {
+//            uidStr += "&hd=1";
+//        }
+//        else
+//        {
+//            uidStr += "&hd=0";
+//        }
+
+//        if (GateKeeper.IsNewbie)
+//        {
+//            uidStr += "&newbie=1";
+//        }
+
+//        if (GateKeeper.IsAmazonApp)
+//        {
+//            uidStr += "&isAmazon=1";
+//        }
+//        else
+//        {
+//            uidStr += "&isAmazon=0";
+//        }
+
+//        if (string.IsNullOrEmpty(_csVersion))
+//        {
+//            _csVersion = ParseCsVersion();
+//        }
+//        uidStr += "&version=" + _csVersion;
+//        uidStr += "&appVersion=" + GateKeeper.AppVersion;
+//        uidStr += "&obbVersion=" + GateKeeper.ObbVersion;
+//        uidStr += "&channel=" + GateKeeper.Channel;
+
+//        if (_uuid == "")
+//        {
+//            if (GateKeeper.PixelUUID != "")
+//            {
+//                _uuid = GateKeeper.PixelUUID;
+//            }
+//            else
+//            {
+//                _uuid = GameUtil.GenerateUuid();
+//            }
+//        }
+//        uidStr += "&uuid=" + _uuid;
+//        uidStr += "&user_id=" + Config.UserId;
+
+//        if (GateKeeper.IsWithCG)
+//        {
+//            uidStr += "&sn=-1";
+//        }
+//        else
+//        {
+//            uidStr += "&sn=" + startNums;
+//        }
+
+//        string url = "http://" + GateKeeper.SITE_DOMAIN + "/pixel.jpg?client=u3d" + uidStr;
+//        Debug.Log("Log Pixel: " + url);
+
+//        bool useWWW = true;
+//        if (useWWW)
+//        {
+//            WWW www;
+//            www = new WWW(url);
+//            float begin = Time.realtimeSinceStartup;
+//            while (!www.isDone && Time.realtimeSinceStartup - begin < 2.0f)
+//            {
+//                yield return new WaitForEndOfFrame();
+//            }
+//            if (!www.isDone)
+//            {
+//                Debug.Log("Log Pixel: (retry)" + url);
+//                www = new WWW(url + "&retry");
+//                yield return www;
+//                if (!string.IsNullOrEmpty(www.error))
+//                {
+//                    throw new Exception(www.error);
+//                }
+//            }
+//            Debug.Log("Log Pixel: (ret)" + type + ":" + www.text.Length);
+//        }
+//        else
+//        {
+//            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+//            request.Timeout = 1000 * 1;
+//            request.Method = "GET";
+//            request.BeginGetResponse(new AsyncCallback(ReadCallback), request);
+
+//            Debug.Log("Start OpenReadAsync: " + type);
+//            yield return request;
+//        }
+//    }
+
+//    private void ReadCallback(IAsyncResult ar)
+//    {
+//        Debug.Log("ReadCallback response: " + ar.ToString());
+//    }
+
+//    public void LogPixelAndRestartGame()
+//    {
+//        LogPixel(UICommon.Pixel_RestartGame);
+//        StartCoroutine(DoLoadLoadingScene());
+//    }
+
+//    private IEnumerator DoLoadLoadingScene()
+//    {
+//        // 如果后台下载已经开始，需要等下载解压都完成才能重新加载loading界面
+//        if (LoadingManager.s_needUpdate/* && GateKeeper.ConfirmBgDownload*/)
+//        {
+//            Debug.Log("Need wait partial download finish before restart");
+//            /*UIPatchProgress.Show(true, null);
+//            while (!UIPatchProgress.PatchDone)
+//            {
+//                yield return new WaitForEndOfFrame();
+//            }*/
+//            yield return new WaitForEndOfFrame();
+//            Debug.Log("Partial Download and Patch Done, Restart Loading");
+//            Application.LoadLevel(0);
+//        }
+//        else
+//        {
+//            Debug.Log("No background download running, wait for a while before restart");
+//            yield return new WaitForSeconds(0.2f);
+//            Application.LoadLevel(0);
+//        }
+//    }
+//}
+
+//#endif
+
+public class PlayerPrefsKey
+{
+    public const string UpdateFileNums = "UpdateFileNums";
+    public const string LocalDeviceId = "LocalDeviceId";
+    public const string Localuuid = "Localuuid";
+    public const string TimeForLunch = "TimeForLunch";
+    public const string TimeForSupper = "TimeForSupper";
+    public const string NightTreat = "NightTreat";
+    public const string MorningShopReloaded = "MorningShopReloaded";
+    public const string ArenaRewarded = "ArenaRewarded";
+    public const string Showfps = "Showfps";
+    public const string BGMMute = "BGMMute";
+    public const string HeroIdCachae = "HeroIdCachae";
+    public const string RuneDeckLocalName = "RuneDeckLocalName";
+    public const string UpcomingRefreshDate = "UpcomingRefreshDate";
+    public const string StartNums = "StartNums";
+    public const string UpdateNums = "UpdateNums";
+    public const string InstallDate = "InstallDate";
+    public const string RestartReason = "RestartReason";
+    public const string UseSystemLanguage = "UseSystemLanguage";
+    public const string Language = "Language";
+    public const string SoundMute = "SoundMute";
+    public const string RunePageIndex = "RunePageIndex";
+    public const string Setting = "Setting";
+    public const string NextCanMatchTime = "NextCanMatchTime";
+    public const string GiftPackage = "GiftPackage";
+    public const string BattleCount = "BattleCount";
+    public const string UnrealTutorailNewPlayer = "UnrealTutorailNewPlayer";
+}

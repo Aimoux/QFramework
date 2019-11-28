@@ -21,6 +21,7 @@ namespace GameData
         public int IceResistance { get; set; }
         public int ElectricResistance { get; set; }
         public int MagicResistance { get; set; }
+        public int StaminaRegen { get; set; }//耐力回复速度，受体力影响??
 
         //MAGIC = 3,
         //FIRE = 4,

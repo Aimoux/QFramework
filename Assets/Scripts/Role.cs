@@ -292,6 +292,7 @@ public class Role
             if(wegtsum[i] >= rand)
             {
                 AssaultExtension aset = GetAssaultById(AssaultWeights[i]);
+                CurAssault = aset;
                 return aset;
             }
         }
@@ -303,7 +304,6 @@ public class Role
     {
         Cmds.Clear();
         ast.Start(target);
-        //CurAssault = ast;
     }
 
     public void InitOnBattleStart()
@@ -417,12 +417,28 @@ public class Role
                 AnimState next = Cmds.Pop();
                 if (Status.CanTransit(next) > 0)
                 {
-                    SetState(next);
+                    if (next.Data.AnimationType == (int)ANIMATIONTYPE.ATTACK)
+                    {
+                        if (this.Stamina > 0)
+                            SetState(next);
+                        else
+                            BreakAssault();
+                    }
+                    else
+                        SetState(next);
                     break;
                 }
             }
         }
 
+    }
+
+    //打断当前技能,ClearCmds，顺序应在打断之前
+    public void BreakAssault()
+    {
+        Cmds.Clear();
+        if (CurAssault != null)
+            CurAssault.Break();
     }
 
     // 设定状态，缓存状态堆栈，转换判定?? 连击判定??
@@ -514,28 +530,11 @@ public class Role
     //受击硬直处理,push 即可，不再需要break??
     public virtual void OnStatusBreak(int impact)//受击需要分层状态机??
     {
-        //打断之后,立即clear cmd,但是gen tact应在break state结束时进行?
-        Cmds.Clear();//打断一个,整个策略放弃??
+        BreakAssault();
         Steady = Data.Steady;//重置韧性
         //如果硬直类似亚特大的带有交互性质，考虑用TimeLine??
         //暂不考虑自身状态对最终硬直的影响??
         PushState(impact);
-    }
-
-    //当前动作被打断（比如受攻击）
-    //比较当前动作与state的优先级
-    //默认attack可以打断walk, Walk不可打断HitReaction??
-    //与transit 0,1,2的关联??
-    //不应包含push
-    public virtual bool OnStateBreak(ANIMATIONSTATE state, bool forceBreak = false)
-    {
-        bool can = true;
-        if(can)
-        {
-            //OnStateBreak();
-            PushState((int)state);
-        }
-        return can;
     }
 
     //被击中    
@@ -734,9 +733,7 @@ public class Role
 
     public void PlayTimeLine(string path)
     {
-
         Controller.PlayTimeLine(path);
-
     }
 
     public void StopTimeLine()
@@ -744,4 +741,51 @@ public class Role
         Controller.StopTimeLine();
     }
 
+}
+
+public class AbilityEffects : GameDataArray<bool>
+{
+    //public AbilityEffects()
+    //{ }
+
+    public AbilityEffects(int cap): base(cap)
+    { }
+
+    public bool Reflector { get; set; }
+    public bool UseSkillDizzy { get; set; }
+    public bool MoneyReward { get; set; }
+    public bool MagicShilde { get; set; }
+    public bool InvisiBility { get; set; }
+    public bool UnInvisiBility { get; set; }
+    public bool UseSkillBreak { get; set; }
+    public bool Poisoning { get; set; }
+    public bool UnHeal { get; set; }
+    public bool UnBuff { get; set; }
+    public bool UnMove { get; set; }
+    public bool ASleep { get; set; }
+    public bool ResistAddArmor { get; set; }
+    public bool CureToDamage { get; set; }
+    public bool RepeatTalent { get; set; }
+    public bool Taunt { get; set; }
+    public bool OnlyNormalAttack { get; set; }
+    public bool Inhuman { get; set; }
+    public bool Solidifying { get; set; }
+    public bool Root { get; set; }
+    public bool Inhibition { get; set; }
+    public bool Disable { get; set; }
+    public bool Static { get; set; }
+    public bool Void { get; set; }
+    public bool Invincible { get; set; }
+    public bool Unaffected { get; set; }
+    public bool UseMoveSkillDizzy { get; set; }
+    public bool Charm { get; set; }
+    public bool Directed { get; set; }
+    public bool Incurable { get; set; }
+    public bool Norecover { get; set; }
+    public bool MindChain { get; set; }
+    public bool MindGain { get; set; }
+    public bool Sleep { get; set; }
+    public bool Imprisonment { get; set; }
+    public bool Immoblilize { get; set; }
+    public bool MagicDamageLifeSteal { get; set; }
 }

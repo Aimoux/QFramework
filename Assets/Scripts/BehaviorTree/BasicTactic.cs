@@ -22,7 +22,6 @@ public class BasicTactic : Action
         // target = role.defaultfindtarget by hatred\dist\?
         //null target -> Move To target task- >Use assault node
 
-
         Assault ast = sdself.Value.SelectAssault();
 		if(ast == null)
             return TaskStatus.Failure;

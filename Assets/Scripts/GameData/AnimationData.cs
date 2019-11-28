@@ -12,6 +12,7 @@ namespace GameData
         public string Name { get; set; }
         public int AnimationType { get; set; }
         public float AttackDamageRatio { get; set; }
+        public float StaminaCostRatio { get; set; }
         public float AttackImpactRatio { get; set; }
         public float DefenseImpactRatio { get; set; }
 

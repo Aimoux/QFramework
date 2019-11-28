@@ -25,15 +25,13 @@ public class Assault
         Caster = caster;
         Data = DataManager.Instance.Assaults[id];
         string combo = Data.Actions;
-        // string fixedcomb = combo.Replace("\"", "");
-        // fixedcomb = fixedcomb.Replace("/", "");
         string[] states = combo.Split('+');
         foreach (string state in states)
         {
             int actId = System.Convert.ToInt32(state);
             Actions.Add(actId);
         }
-        Actions.Add(0);//combo必须以Idle作为结束??
+        //Actions.Add(0);//combo必须以Idle作为结束??
         Actions.Reverse();//堆栈逆序
     }
 
@@ -55,35 +53,11 @@ public class Assault
         //    return ResultType.OnlyNormalAttack;
         //}
 
-        //if (this.Data.CostMP > this.Caster.MP)
-        //{
-        //    return ResultType.MPNotEnough;
-        //}
-        //if (this.Duration > 0.000001)
-        //{
-        //    return ResultType.Cooldown;
-        //}
-
         //if (this.Caster.AbilityEffects.Sleep)
         //{
         //    return ResultType.Stun;
         //}
-        //if (this.Caster.AbilityEffects.UnHeal)
-        //{
-        //    //此技能或者子技能属于回血技能的
-        //    if (this.Data.DamageType == InjuryType.Heal && !this.Data.AffectMP)
-        //    {
-        //        return ResultType.UnHeal;
-        //    }
-        //    List<Talent> childTalents = this.Caster.GetChildTalents(this.Data.TalentGroupID);
-        //    foreach (Talent childTalent in childTalents)
-        //    {
-        //        if (childTalent != null && childTalent.Data.DamageType == InjuryType.Heal && !childTalent.Data.AffectMP)
-        //        {
-        //            return ResultType.UnHeal;
-        //        }
-        //    }
-        //}
+
         //if (this.Data.DamageType == InjuryType.AttackDamage && this.Caster.AbilityEffects.Disable)
         //{
         //    return ResultType.Disable;
@@ -92,19 +66,6 @@ public class Assault
         //if (this.Data.DamageType != InjuryType.AttackDamage && this.Caster.AbilityEffects.Inhibition)
         //{
         //    return ResultType.Silence;
-        //}
-
-        //if (this != this.Caster.BasicTalent && this.Caster.AbilityEffects.MindChain)
-        //{
-        //    return ResultType.MindChain;
-        //}
-
-        //if (this.TargetSelector != null)
-        //    target = this.FindTarget(target);
-
-        //if (target == null)
-        //{
-        //    return ResultType.NoTarget;
         //}
 
         //if (target.AbilityEffects.Void && !target.CheckInvisibility())
@@ -117,28 +78,37 @@ public class Assault
         //    return ResultType.SideDiff;
         //}
 
-        //double distance = (target.Position - this.Caster.Position).magnitude;
-        //if (MathUtil.FGreat((float)distance, this.MaxRange))
-        //{
-        //    return ResultType.TooFar;
-        //}
+        if (this.TargetSelector != null)
+            target = this.FindTarget(target);
 
-        //if (distance < this.MinRange)
-        //{
-        //    return ResultType.TooNear;
-        //}
+        if (target == null)
+        {
+            return ResultType.NOTARGET;
+        }
 
-        //if (!this.Data.OutOfScreen && this.Caster.IsOutOfBattleArea)
-        //{
-        //    return ResultType.OutOfScreen;
-        //}
-        //this.IsCanCast = true;
+        double distance = (target.Position - Caster.Position).magnitude;
+        if (MathUtil.FGreat((float)distance, Data.MaxRange))
+        {
+            return ResultType.TOOFAR;
+        }
+
+        if (distance < Data.MinRange)
+        {
+            return ResultType.TOONEAR;
+        }
+
+        //特技消耗mp，武器消耗耐力（cantransit break）
+        if (Data.ManaCost > this.Caster.MP)
+        {
+            return ResultType.MANALOW; 
+        }
+
         return ResultType.SUCCESS;
     }
 
     public virtual void Start(Role target)
     {
-        //Caster.PushState((int)Common.ANIMATIONSTATE.SINGLEATK1);
+        //Actions.Insert(0, 0);
         foreach (int act in Actions)
         {
             Caster.PushState(act);
@@ -221,14 +191,12 @@ public class Assault
 
     public virtual void Break()
     {
-
         End();
     }
 
     public virtual void End()
     {
-
-
+        Caster.CurAssault = null;
     }
 
 
