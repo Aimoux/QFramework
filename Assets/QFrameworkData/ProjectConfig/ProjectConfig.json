@@ -1,5 +1,6 @@
 {
   "Namespace": "QFramework.Example",
   "UIScriptDir": "/Scripts/UI",
-  "UIPrefabDir": "/Art/UIPrefab"
+  "UIPrefabDir": "/BuildOnlyAssets/Art/UIPrefab",
+  "IsDefaultNamespace": true
 }

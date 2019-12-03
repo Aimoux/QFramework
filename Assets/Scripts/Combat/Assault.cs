@@ -33,6 +33,18 @@ public class Assault
         }
         //Actions.Add(0);//combo必须以Idle作为结束??
         Actions.Reverse();//堆栈逆序
+
+        this.TargetSelectors = new Dictionary<TargetType, ITargetSelector>()
+        {
+            {TargetType.Random, new RandomSelector()},
+            {TargetType.Weakest, new WeakestSelector()},
+            {TargetType.MaxHP, new MaxHPSelector()},
+            {TargetType.MinHP, new MinHPSelector()},
+            {TargetType.Nearest, new NearestSelector(this.Caster)},
+            {TargetType.Farthest, new FarthestSelector(this.Caster)},
+            {TargetType.MaxMP, new MaxMPSelector()},
+            {TargetType.MinMP, new MinMPSelector()},
+        };
     }
 
     public virtual void Init()
@@ -87,10 +99,12 @@ public class Assault
         }
 
         double distance = (target.Position - Caster.Position).magnitude;
-        if (MathUtil.FGreat((float)distance, Data.MaxRange))
-        {
-            return ResultType.TOOFAR;
-        }
+
+        //最远目标距离，与武器有效攻击范围
+        // if (MathUtil.FGreat((float)distance, Data.MaxRange))
+        // {
+        //     return ResultType.TOOFAR;
+        // }
 
         if (distance < Data.MinRange)
         {
