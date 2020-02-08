@@ -4,8 +4,8 @@
       "src": [
         {
           "files": [
-            "QF.Extensions.csproj",
-            "QF.Singleton.csproj"
+            "QFramework.CSharpExtension.csproj",
+            "QFramework.IOC.csproj"
           ]
         }
       ],

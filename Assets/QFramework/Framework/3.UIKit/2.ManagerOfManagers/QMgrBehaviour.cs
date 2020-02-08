@@ -23,20 +23,17 @@
  * THE SOFTWARE.
  ****************************************************************************/
 
-using QF;
-using QF.Extensions;
 
 namespace QFramework 
 {
 	using System;
-	using System.Collections.Generic;
 	
 	/// <summary>
 	/// manager基类
 	/// </summary>
 	public abstract class QMgrBehaviour : QMonoBehaviour,IManager
 	{
-		private readonly QEventSystem mEventSystem = NonPublicObjectPool<QEventSystem>.Instance.Allocate();
+		private readonly QEventSystem mEventSystem = Dependencies.EventSystem.NonPublicObjectPool<QEventSystem>.Instance.Allocate();
 
 		#region IManager
 		public virtual void Init() {}

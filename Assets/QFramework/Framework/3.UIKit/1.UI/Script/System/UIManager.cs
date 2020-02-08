@@ -25,9 +25,6 @@
  * THE SOFTWARE.
  ****************************************************************************/
 
-using QF;
-using QF.Extensions;
-
 namespace QFramework
 {
 	using UnityEngine;
@@ -82,6 +79,7 @@ namespace QFramework
 
 		void ISingleton.OnSingletonInit()
 		{
+
 		}
 
 		private static UIManager mInstance;
@@ -122,9 +120,19 @@ namespace QFramework
 			mCanvasScaler.referenceResolution = new UnityEngine.Vector2(width, height);
 		}
 
+		public Vector2 GetResolution()
+		{
+			return mCanvasScaler.referenceResolution;
+		}
+
 		public void SetMatchOnWidthOrHeight(float heightPercent)
 		{
 			mCanvasScaler.matchWidthOrHeight = heightPercent;
+		}
+
+		public float GetMatchOnWithOrHeight()
+		{
+			return mCanvasScaler.matchWidthOrHeight;
 		}
 
 		public IPanel OpenUI(string uiBehaviourName, UILevel canvasLevel, IUIData uiData = null,
@@ -267,9 +275,7 @@ namespace QFramework
 			}
 			else
 			{
-				var nameSplits = fullBehaviourName.Split('.');
-				retValue = nameSplits[nameSplits.Length - 1];
-				mFullname4UIBehaviourName.Add(fullBehaviourName, retValue);
+				retValue = typeof(T).Name;
 			}
 
 			return retValue;
@@ -393,6 +399,16 @@ namespace QFramework
 			UIManager.Instance.SetMatchOnWidthOrHeight(matchOnWidthOrHeight);
 		}
 
+		public static Vector2 GetResolution()
+		{
+			return UIManager.Instance.GetResolution();
+		}
+
+		public static float GetMatchOrWidthOrHeight()
+		{
+			return UIManager.Instance.GetMatchOnWithOrHeight();
+		}
+
 		#region 高频率调用的 api 只能在 Mono 层使用
 
 		internal static T OpenPanel<T>(UILevel canvasLevel = UILevel.Common, IUIData uiData = null,
@@ -411,6 +427,16 @@ namespace QFramework
 		internal static void ClosePanel<T>() where T : UIPanel
 		{
 			UIManager.Instance.CloseUI<T>();
+		}
+		
+		internal static void ShowPanel<T>() where T : UIPanel
+		{
+			UIManager.Instance.ShowUI<T>();
+		}
+
+		internal static void HidePanel<T>() where T : UIPanel
+		{
+			UIManager.Instance.HideUI<T>();
 		}
 
 		public static void CloseAllPanel()
@@ -450,6 +476,16 @@ namespace QFramework
 		public static void ClosePanel(string panelName)
 		{
 			UIManager.Instance.CloseUI(panelName);
+		}
+
+		public static void ShowPanel(string panelName)
+		{
+			UIManager.Instance.ShowUI(panelName);
+		}
+
+		public static void HidePanel(string panelName)
+		{
+			UIManager.Instance.HideUI(panelName);
 		}
 
 		#endregion

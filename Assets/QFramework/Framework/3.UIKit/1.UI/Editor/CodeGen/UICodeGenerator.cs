@@ -25,8 +25,7 @@
  ****************************************************************************/
 
 using System.Linq;
-using QF.Extensions;
-using QF.GraphDesigner;
+using QFramework.CodeGen;
 
 namespace QFramework
 {
@@ -39,8 +38,15 @@ namespace QFramework
 		[MenuItem("Assets/@UI Kit - Create UICode (alt+c) &c")]
 		public static void CreateUICode()
 		{
-			mScriptKitInfo = null;
 			var objs = Selection.GetFiltered(typeof(GameObject), SelectionMode.Assets | SelectionMode.TopLevel);
+			
+			DoCreateCode(objs);
+		}
+
+		public static void DoCreateCode(Object[] objs)
+		{
+			mScriptKitInfo = null;
+
 			var displayProgress = objs.Length > 1;
 			if (displayProgress) EditorUtility.DisplayProgressBar("", "Create UIPrefab Code...", 0);
 			for (var i = 0; i < objs.Length; i++)
@@ -53,6 +59,7 @@ namespace QFramework
 			AssetDatabase.Refresh();
 			if (displayProgress) EditorUtility.ClearProgressBar();
 		}
+		
 
 		private void CreateCode(GameObject obj, string uiPrefabPath)
 		{
@@ -187,24 +194,7 @@ namespace QFramework
 		}
 
 		private static readonly UICodeGenerator mInstance = new UICodeGenerator();
-
-		#region ScriptKit 
-		public static void CreateScriptUICode(ScriptKitInfo info)
-		{
-			mScriptKitInfo = info;
-			var objs = Selection.GetFiltered(typeof(GameObject), SelectionMode.Assets | SelectionMode.TopLevel);
-			var displayProgress = objs.Length > 1;
-			if (displayProgress) EditorUtility.DisplayProgressBar("", "<color=#EE6A50>ScriptKit:Create ScriptUI Code...</color>", 0);
-			for (var i = 0; i < objs.Length; i++)
-			{
-				mInstance.CreateCode(objs[i] as GameObject, AssetDatabase.GetAssetPath(objs[i]));
-				if (displayProgress)
-					EditorUtility.DisplayProgressBar("", "<color=#EE6A50>ScriptKit:Create ScriptUI Code...</color>", (float) (i + 1) / objs.Length);
-			}
-
-			AssetDatabase.Refresh();
-			if (displayProgress) EditorUtility.ClearProgressBar();
-		}	
+		
 
 
 		private static void HotScriptBind(GameObject uiPrefab){
@@ -217,6 +207,5 @@ namespace QFramework
 		}		
 
 		private static ScriptKitInfo mScriptKitInfo;
-		#endregion
 	}
 }

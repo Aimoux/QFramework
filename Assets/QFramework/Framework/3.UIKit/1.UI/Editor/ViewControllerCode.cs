@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using QF;
-using QF.Extensions;
+
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
@@ -71,9 +68,8 @@ namespace QFramework
             scriptsFolder.CreateDirIfNotExists();
 
 
-            var panelCodeInfo = new PanelCodeInfo();
+            var panelCodeInfo = new PanelCodeInfo {GameObjectName = generateInfo.name};
 
-            panelCodeInfo.GameObjectName = generateInfo.name;
 
             // 搜索所有绑定
             BindCollector.SearchBinds(gameObject.transform, "", panelCodeInfo);
@@ -93,20 +89,16 @@ namespace QFramework
         [DidReloadScripts]
         static void AddComponent2GameObject()
         {
-//            Debug.Log("DidReloadScripts");
             var generateClassName = EditorPrefs.GetString("GENERATE_CLASS_NAME");
             var gameObjectName = EditorPrefs.GetString("GAME_OBJECT_NAME");
-//            Debug.Log(generateClassName);
 
             if (string.IsNullOrEmpty(generateClassName))
             {
-//                Debug.Log("不继续操作");
                 EditorPrefs.DeleteKey("GENERATE_CLASS_NAME");
                 EditorPrefs.DeleteKey("GAME_OBJECT_NAME");
             }
             else
             {
-//                Debug.Log("继续操作");
 
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -118,13 +110,22 @@ namespace QFramework
 
                 if (type == null)
                 {
-//                    Debug.Log("编译失败");
+                    Debug.Log("编译失败");
                     return;
                 }
 
-//                Debug.Log(type);
+                Debug.Log(type);
 
                 var gameObject = GameObject.Find(gameObjectName);
+
+                if (!gameObject)
+                {
+                    Debug.Log("上次的 View Controller 生成失败,找不到 GameObject:{0}".FillFormat(gameObjectName));
+
+                    Clear();
+                    return;
+                }
+                
 
                 var scriptComponent = gameObject.GetComponent(type);
 
@@ -146,9 +147,11 @@ namespace QFramework
                 {
                     var name = bindInfo.Name;
 
+                    var componentName = bindInfo.BindScript.ComponentName.Split('.').Last();
+                    
                     serialiedScript.FindProperty(name).objectReferenceValue =
                         gameObject.transform.Find(bindInfo.PathToElement)
-                            .GetComponent(bindInfo.BindScript.ComponentName);
+                            .GetComponent(componentName);
                 }
 
 
@@ -177,15 +180,9 @@ namespace QFramework
                     {
                         fullPrefabFolder.CreateDirIfNotExists();
 
-                        var genereateFolder = fullPrefabFolder + "/" + gameObject.name + ".prefab";
-#if UNITY_2018_3_OR_NEWER
-                        PrefabUtility.SaveAsPrefabAssetAndConnect(gameObject,
-                            fullPrefabFolder + "/" + gameObject.name + ".prefab",
-                            InteractionMode.AutomatedAction);
-#else
-                        genereateFolder = prefabFolder + "/" + gameObject.name + ".prefab";
-                        PrefabUtility.CreatePrefab(genereateFolder, gameObject, ReplacePrefabOptions.ConnectToPrefab);
-#endif
+                        var genereateFolder = prefabFolder + "/" + gameObject.name + ".prefab";
+                        
+                        PrefabUtils.SaveAndConnect(genereateFolder,gameObject);
                     }
                 }
                 else
@@ -194,11 +191,16 @@ namespace QFramework
                     serialiedScript.ApplyModifiedPropertiesWithoutUndo();
                 }
 
-                EditorPrefs.DeleteKey("GENERATE_CLASS_NAME");
-                EditorPrefs.DeleteKey("GAME_OBJECT_NAME");
-                
+                Clear();
+
                 EditorUtils.MarkCurrentSceneDirty();
             }
+        }
+
+        static void Clear()
+        {
+            EditorPrefs.DeleteKey("GENERATE_CLASS_NAME");
+            EditorPrefs.DeleteKey("GAME_OBJECT_NAME");
         }
     }
 }

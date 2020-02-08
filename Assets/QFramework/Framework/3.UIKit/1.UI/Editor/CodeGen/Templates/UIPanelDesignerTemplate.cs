@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  ****************************************************************************/
 
-using QF.GraphDesigner;
-using QF.Extensions;
+using System;
+using QFramework.CodeGen;
+
 using System.CodeDom;
 
 namespace QFramework
@@ -53,6 +54,10 @@ namespace QFramework
                 Attributes = MemberAttributes.Const | MemberAttributes.Public,
                 InitExpression = Ctx.Data.GameObjectName.ToCodeSnippetExpression()
             };
+
+            Ctx.CurrentDeclaration.Comments.Add(
+                new CodeCommentStatement("Generate Id:{0}".FillFormat(Guid.NewGuid().ToString())));
+            
             Ctx.CurrentDeclaration.Members.Add(nameField);
 
             Ctx.Data.BindInfos.ForEach(info =>
